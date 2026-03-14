@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Przypomnienie o przyjeździe — Pokoje Borowa</title>
+</head>
+<body style="margin:0; padding:0; background-color:#F0F2F5; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color:#F0F2F5;">
+    <tr>
+      <td align="center" style="padding:40px 16px;">
+        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="max-width:600px;">
+
+          <!-- HEADER -->
+          <tr>
+            <td style="background-color:#111827; padding:28px 32px; text-align:center;">
+              <p style="margin:0 0 6px 0; font-size:10px; font-weight:700; letter-spacing:3px; color:#6EE7B7; text-transform:uppercase;">Pokoje w górach</p>
+              <p style="margin:0; font-size:26px; font-weight:700; color:#FFFFFF; letter-spacing:-0.5px;"><%= typeof hotel !== 'undefined' && hotel && hotel.name ? hotel.name : 'Pokoje Borowa' %></p>
+            </td>
+          </tr>
+
+          <!-- HERO -->
+          <tr>
+            <td style="background-color:#92400E; padding:32px; text-align:center;">
+              <p style="margin:0 0 12px 0; font-size:40px; line-height:1;">🏔️</p>
+              <p style="margin:0; font-size:22px; font-weight:700; color:#FFFFFF; line-height:1.3;">Jutro Cię czekamy!</p>
+            </td>
+          </tr>
+
+          <!-- CONTENT -->
+          <tr>
+            <td style="background-color:#FFFFFF; padding:40px 32px;">
+
+              <p style="margin:0 0 8px 0; font-size:17px; font-weight:600; color:#111827;">
+                Cześć, <%= typeof guest !== 'undefined' && guest && guest.firstName ? guest.firstName : 'Gościu' %>!
+              </p>
+              <p style="margin:0 0 12px 0; font-size:15px; line-height:1.7; color:#4B5563;">
+                To przypomnienie o przyjeździe dla rezerwacji nr <strong><%= typeof reservation !== 'undefined' && reservation && reservation.id ? reservation.id : '—' %></strong><% if (typeof reservation !== 'undefined' && reservation && reservation.checkIn && reservation.checkOut) { %> (zameldowanie: <%= reservation.checkIn %>, wymeldowanie: <%= reservation.checkOut %>)<% } %>.
+              </p>
+              <p style="margin:0 0 32px 0; font-size:15px; line-height:1.7; color:#4B5563;">
+                Jutro czekamy na Ciebie w <strong><%= typeof hotel !== 'undefined' && hotel && hotel.name ? hotel.name : 'Pokoje Borowa' %></strong>. Poniżej najważniejsze informacje na dzień przyjazdu.
+              </p>
+
+              <!-- Reservation summary -->
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin-bottom:16px; border:1px solid #E5E7EB; border-radius:8px;">
+                <tr>
+                  <td colspan="2" style="padding:12px 20px; border-bottom:1px solid #E5E7EB; background-color:#F9FAFB;">
+                    <p style="margin:0; font-size:11px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:#6B7280;">Twoja rezerwacja</p>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding:13px 20px; border-bottom:1px solid #F3F4F6; font-size:13px; color:#6B7280; width:45%;">Numer rezerwacji</td>
+                  <td style="padding:13px 20px; border-bottom:1px solid #F3F4F6; font-size:14px; font-weight:700; color:#111827; text-align:right;"><%= typeof reservation !== 'undefined' && reservation && reservation.id ? reservation.id : '—' %></td>
+                </tr>
+                <tr>
+                  <td style="padding:13px 20px; border-bottom:1px solid #F3F4F6; font-size:13px; color:#6B7280;">Zameldowanie</td>
+                  <td style="padding:13px 20px; border-bottom:1px solid #F3F4F6; font-size:14px; font-weight:600; color:#111827; text-align:right;"><%= typeof reservation !== 'undefined' && reservation && reservation.checkIn ? reservation.checkIn : '—' %></td>
+                </tr>
+                <tr>
+                  <td style="padding:13px 20px; border-bottom:1px solid #F3F4F6; font-size:13px; color:#6B7280;">Wymeldowanie</td>
+                  <td style="padding:13px 20px; border-bottom:1px solid #F3F4F6; font-size:14px; font-weight:600; color:#111827; text-align:right;"><%= typeof reservation !== 'undefined' && reservation && reservation.checkOut ? reservation.checkOut : '—' %></td>
+                </tr>
+                <% if (typeof reservation !== 'undefined' && reservation && reservation.nightsCount != null) { %>
+                <tr>
+                  <td style="padding:13px 20px; border-bottom:1px solid #F3F4F6; font-size:13px; color:#6B7280;">Liczba nocy</td>
+                  <td style="padding:13px 20px; border-bottom:1px solid #F3F4F6; font-size:14px; font-weight:600; color:#111827; text-align:right;"><%= reservation.nightsCount %></td>
+                </tr>
+                <% } %>
+                <% if (typeof rooms !== 'undefined' && rooms && Array.isArray(rooms) && rooms.length) { %>
+                <tr>
+                  <td style="padding:13px 20px; font-size:13px; color:#6B7280;">Pokoje</td>
+                  <td style="padding:13px 20px; font-size:14px; font-weight:600; color:#111827; text-align:right;"><%= rooms.map(function(r) { return r.name; }).join(', ') %></td>
+                </tr>
+                <% } %>
+              </table>
+
+              <!-- Check-in time -->
+              <% if (typeof hotel !== 'undefined' && hotel && hotel.checkInTime) { %>
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin-bottom:16px; background-color:#ECFDF5; border:1px solid #A7F3D0; border-radius:8px;">
+                <tr>
+                  <td style="padding:16px 20px;">
+                    <p style="margin:0 0 4px 0; font-size:11px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:#065F46;">Godzina zameldowania</p>
+                    <p style="margin:0; font-size:20px; font-weight:700; color:#059669;"><%= hotel.checkInTime %></p>
+                  </td>
+                </tr>
+              </table>
+              <% } %>
+
+              <!-- Address -->
+              <% if (typeof hotel !== 'undefined' && hotel && hotel.address) { %>
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin-bottom:16px; border:1px solid #E5E7EB; border-radius:8px;">
+                <tr>
+                  <td style="padding:16px 20px;">
+                    <p style="margin:0 0 6px 0; font-size:11px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:#6B7280;">Adres</p>
+                    <p style="margin:0 0 14px 0; font-size:15px; font-weight:600; color:#111827;"><%= hotel.address %></p>
+                    <% if (typeof hotelMapsUrl !== 'undefined' && hotelMapsUrl) { %>
+                    <a href="<%= hotelMapsUrl %>" style="display:inline-block; background-color:#111827; color:#FFFFFF; font-size:13px; font-weight:600; text-decoration:none; padding:10px 20px; border-radius:6px; letter-spacing:0.3px;">📍 Pokaż na mapie Google</a>
+                    <% } %>
+                  </td>
+                </tr>
+              </table>
+              <% } %>
+
+              <!-- Check-in instructions -->
+              <% if (typeof hotel !== 'undefined' && hotel && hotel.checkInInstructions) { %>
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin-bottom:16px; border:1px solid #E5E7EB; border-radius:8px;">
+                <tr>
+                  <td style="padding:12px 20px; border-bottom:1px solid #E5E7EB; background-color:#F9FAFB;">
+                    <p style="margin:0; font-size:11px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:#6B7280;">Instrukcja zameldowania</p>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding:16px 20px; font-size:14px; line-height:1.7; color:#374151; white-space:pre-line;"><%= hotel.checkInInstructions %></td>
+                </tr>
+              </table>
+              <% } %>
+
+              <!-- WiFi -->
+              <% if (typeof hotel !== 'undefined' && hotel && (hotel.wifiName || hotel.wifiPassword)) { %>
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin-bottom:16px; background-color:#EFF6FF; border:1px solid #BFDBFE; border-radius:8px;">
+                <tr>
+                  <td colspan="2" style="padding:12px 20px; border-bottom:1px solid #BFDBFE; background-color:#DBEAFE;">
+                    <p style="margin:0; font-size:11px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:#1E40AF;">📶 Wi-Fi</p>
+                  </td>
+                </tr>
+                <% if (hotel.wifiName) { %>
+                <tr>
+                  <td style="padding:13px 20px; <%= hotel.wifiPassword ? 'border-bottom:1px solid #DBEAFE;' : '' %> font-size:13px; color:#3B82F6; width:45%;">Sieć</td>
+                  <td style="padding:13px 20px; <%= hotel.wifiPassword ? 'border-bottom:1px solid #DBEAFE;' : '' %> font-size:14px; font-weight:700; color:#1E3A8A; text-align:right;"><%= hotel.wifiName %></td>
+                </tr>
+                <% } %>
+                <% if (hotel.wifiPassword) { %>
+                <tr>
+                  <td style="padding:13px 20px; font-size:13px; color:#3B82F6;">Hasło</td>
+                  <td style="padding:13px 20px; font-size:14px; font-weight:700; color:#1E3A8A; text-align:right; letter-spacing:0.5px;"><%= hotel.wifiPassword %></td>
+                </tr>
+                <% } %>
+              </table>
+              <% } %>
+
+              <!-- Amenities -->
+              <% if (typeof hotel !== 'undefined' && hotel && hotel.amenities && Array.isArray(hotel.amenities) && hotel.amenities.length) { %>
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin-bottom:16px; border:1px solid #E5E7EB; border-radius:8px;">
+                <tr>
+                  <td style="padding:12px 20px; border-bottom:1px solid #E5E7EB; background-color:#F9FAFB;">
+                    <p style="margin:0; font-size:11px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:#6B7280;">Udogodnienia</p>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding:14px 20px;">
+                    <% hotel.amenities.forEach(function(amenity, i) { %>
+                    <span style="display:inline-block; margin:3px 4px 3px 0; padding:4px 12px; background-color:#F3F4F6; border:1px solid #E5E7EB; border-radius:20px; font-size:13px; color:#374151;"><%= amenity %></span>
+                    <% }); %>
+                  </td>
+                </tr>
+              </table>
+              <% } %>
+
+              <!-- Remaining payment -->
+              <% if (typeof payment !== 'undefined' && payment && payment.remainingAmount != null && payment.remainingAmount !== '0,00 zł' && payment.remainingAmount !== '0 zł') { %>
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin-bottom:16px; background-color:#FFFBEB; border:1px solid #FDE68A; border-radius:8px;">
+                <tr>
+                  <td style="padding:16px 20px;">
+                    <p style="margin:0 0 4px 0; font-size:11px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:#92400E;">Do zapłaty przy zameldowaniu</p>
+                    <p style="margin:0; font-size:20px; font-weight:700; color:#D97706;"><%= payment.remainingAmount %></p>
+                  </td>
+                </tr>
+              </table>
+              <% } %>
+
+              <!-- Contact -->
+              <% if (typeof hotel !== 'undefined' && hotel && hotel.phone) { %>
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin-bottom:32px; background-color:#F9FAFB; border:1px solid #E5E7EB; border-radius:8px;">
+                <tr>
+                  <td style="padding:16px 20px;">
+                    <p style="margin:0 0 6px 0; font-size:13px; font-weight:700; color:#374151;">Pytania lub opóźnienie?</p>
+                    <p style="margin:0; font-size:13px; color:#4B5563;">
+                      Zadzwoń do nas: <a href="tel:<%= hotel.phone %>" style="color:#2D6A4F; font-weight:700; text-decoration:none;"><%= hotel.phone %></a>
+                    </p>
+                  </td>
+                </tr>
+              </table>
+              <% } %>
+
+              <p style="margin:0 0 6px 0; font-size:15px; line-height:1.7; color:#4B5563;">
+                Do zobaczenia jutro!
+              </p>
+              <p style="margin:16px 0 0 0; font-size:14px; color:#4B5563;">
+                Serdecznie,<br />
+                <strong style="color:#111827;">Zespół <%= typeof hotel !== 'undefined' && hotel && hotel.name ? hotel.name : 'Pokoje Borowa' %></strong>
+              </p>
+            </td>
+          </tr>
+
+          <!-- FOOTER -->
+          <tr>
+            <td style="background-color:#F9FAFB; border-top:1px solid #E5E7EB; padding:24px 32px; text-align:center;">
+              <p style="margin:0 0 4px 0; font-size:13px; font-weight:600; color:#374151;"><%= typeof hotel !== 'undefined' && hotel && hotel.name ? hotel.name : 'Pokoje Borowa' %></p>
+              <% if (typeof hotel !== 'undefined' && hotel && hotel.address) { %>
+              <p style="margin:0 0 2px 0; font-size:12px; color:#9CA3AF;"><%= hotel.address %></p>
+              <% } %>
+              <% if (typeof hotel !== 'undefined' && hotel && hotel.phone) { %>
+              <p style="margin:0; font-size:12px; color:#9CA3AF;"><%= hotel.phone %></p>
+              <% } %>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>

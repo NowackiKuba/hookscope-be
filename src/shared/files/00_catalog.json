@@ -1,0 +1,304 @@
+{
+  "title": "Katalog 40 szablonów dokumentów prawnych dla polskiego rynku",
+  "version": "1.0",
+  "date": "2025",
+  "total_templates": 40,
+  "categories": {
+    "employment_contracts": [
+      {
+        "filename": "1.1_employment_contract_indefinite.md",
+        "id": "employment_contract_indefinite",
+        "name": "Umowa o pracę - czas nieokreślony",
+        "description": "Standardowa umowa o pracę na czas nieokreślony zgodna z art. 29 Kodeksu Pracy",
+        "variables_count": 15
+      },
+      {
+        "filename": "1.2_employment_contract_fixed.md",
+        "id": "employment_contract_fixed",
+        "name": "Umowa o pracę - czas określony",
+        "description": "Umowa o pracę na czas określony zgodna z art. 29 i 25¹ Kodeksu Pracy",
+        "variables_count": 17
+      },
+      {
+        "filename": "1.3_employment_contract_trial.md",
+        "id": "employment_contract_trial",
+        "name": "Umowa o pracę - okres próbny",
+        "description": "Umowa o pracę na okres próbny (max 3 miesiące) zgodna z art. 25 § 2 Kodeksu Pracy",
+        "variables_count": 16
+      },
+      {
+        "filename": "1.4_employment_contract_part_time.md",
+        "id": "employment_contract_part_time",
+        "name": "Umowa o pracę - część etatu",
+        "description": "Umowa o pracę w niepełnym wymiarze czasu pracy",
+        "variables_count": 16
+      },
+      {
+        "filename": "1.5_employment_contract_remote.md",
+        "id": "employment_contract_remote",
+        "name": "Umowa o pracę - praca zdalna",
+        "description": "Umowa o pracę z możliwością pracy zdalnej zgodna z art. 67¹⁸ Kodeksu Pracy",
+        "variables_count": 17
+      }
+    ],
+    "civil_contracts": [
+      {
+        "filename": "2.1_contract_work_standard.md",
+        "id": "contract_work_standard",
+        "name": "Umowa zlecenie - standardowa",
+        "description": "Standardowa umowa zlecenie zgodna z art. 734 Kodeksu Cywilnego",
+        "variables_count": 10
+      },
+      {
+        "filename": "2.2_contract_specific_work.md",
+        "id": "contract_specific_work",
+        "name": "Umowa o dzieło",
+        "description": "Umowa o dzieło zgodna z art. 627 Kodeksu Cywilnego",
+        "variables_count": 11
+      },
+      {
+        "filename": "2.3_contract_work_long_term.md",
+        "id": "contract_work_long_term",
+        "name": "Umowa zlecenie - długoterminowa",
+        "description": "Długoterminowa umowa zlecenie z możliwością wypowiedzenia",
+        "variables_count": 6
+      },
+      {
+        "filename": "2.4_b2b_cooperation.md",
+        "id": "b2b_cooperation",
+        "name": "Umowa B2B - współpraca firm",
+        "description": "Umowa współpracy pomiędzy dwoma przedsiębiorstwami",
+        "variables_count": 7
+      },
+      {
+        "filename": "2.5_it_services_agreement.md",
+        "id": "it_services_agreement",
+        "name": "Umowa o świadczenie usług IT",
+        "description": "Umowa na usługi informatyczne z ochroną własności intelektualnej",
+        "variables_count": 6
+      }
+    ],
+    "amendments": [
+      {
+        "filename": "3.1_amendment_salary.md",
+        "id": "amendment_salary",
+        "name": "Aneks - zmiana wynagrodzenia",
+        "description": "Aneks zmieniający wynagrodzenie pracownika",
+        "variables_count": 6
+      },
+      {
+        "filename": "3.2_amendment_position.md",
+        "id": "amendment_position",
+        "name": "Aneks - zmiana stanowiska",
+        "description": "Aneks zmieniający stanowisko pracy",
+        "variables_count": 7
+      },
+      {
+        "filename": "3.3_amendment_work_time.md",
+        "id": "amendment_work_time",
+        "name": "Aneks - zmiana wymiaru czasu pracy",
+        "description": "Aneks zmieniający wymiar etatu",
+        "variables_count": 7
+      },
+      {
+        "filename": "3.4_amendment_workplace.md",
+        "id": "amendment_workplace",
+        "name": "Aneks - zmiana miejsca pracy",
+        "description": "Aneks zmieniający miejsce wykonywania pracy",
+        "variables_count": 6
+      },
+      {
+        "filename": "3.5_amendment_unpaid_leave.md",
+        "id": "amendment_unpaid_leave",
+        "name": "Aneks - urlop bezpłatny",
+        "description": "Aneks udzielający urlopu bezpłatnego",
+        "variables_count": 7
+      }
+    ],
+    "terminations": [
+      {
+        "filename": "4.1_termination_by_employer_with_reason.md",
+        "id": "termination_by_employer_with_reason",
+        "name": "Wypowiedzenie przez pracodawcę - ze wskazaniem przyczyny",
+        "description": "Wypowiedzenie przez pracodawcę - ze wskazaniem przyczyny",
+        "variables_count": 6
+      },
+      {
+        "filename": "4.2_termination_by_employer_no_reason.md",
+        "id": "termination_by_employer_no_reason",
+        "name": "Wypowiedzenie przez pracodawcę - bez wskazania przyczyny",
+        "description": "Wypowiedzenie przez pracodawcę - bez wskazania przyczyny",
+        "variables_count": 5
+      },
+      {
+        "filename": "4.3_termination_by_employee.md",
+        "id": "termination_by_employee",
+        "name": "Wypowiedzenie przez pracownika",
+        "description": "Wypowiedzenie przez pracownika",
+        "variables_count": 6
+      },
+      {
+        "filename": "4.4_termination_mutual_agreement.md",
+        "id": "termination_mutual_agreement",
+        "name": "Rozwiązanie umowy za porozumieniem stron",
+        "description": "Rozwiązanie umowy za porozumieniem stron",
+        "variables_count": 5
+      },
+      {
+        "filename": "4.5_termination_without_notice_employer.md",
+        "id": "termination_without_notice_employer",
+        "name": "Rozwiązanie umowy bez wypowiedzenia (przez pracodawcę)",
+        "description": "Rozwiązanie umowy bez wypowiedzenia (przez pracodawcę)",
+        "variables_count": 6
+      }
+    ],
+    "work_certificates": [
+      {
+        "filename": "5.1_work_certificate_standard.md",
+        "id": "work_certificate_standard",
+        "name": "Świadectwo pracy - standardowe",
+        "description": "Świadectwo pracy - standardowe",
+        "variables_count": 10
+      },
+      {
+        "filename": "5.2_work_certificate_with_vacation.md",
+        "id": "work_certificate_with_vacation",
+        "name": "Świadectwo pracy - z informacją o urlopie",
+        "description": "Świadectwo pracy - z informacją o urlopie",
+        "variables_count": 12
+      },
+      {
+        "filename": "5.3_work_certificate_multiple_periods.md",
+        "id": "work_certificate_multiple_periods",
+        "name": "Świadectwo pracy - wielokrotne zatrudnienie",
+        "description": "Świadectwo pracy - wielokrotne zatrudnienie",
+        "variables_count": 10
+      },
+      {
+        "filename": "5.4_work_certificate_on_demand.md",
+        "id": "work_certificate_on_demand",
+        "name": "Świadectwo pracy - na żądanie pracownika",
+        "description": "Świadectwo pracy - na żądanie pracownika",
+        "variables_count": 11
+      },
+      {
+        "filename": "5.5_work_certificate_retirement.md",
+        "id": "work_certificate_retirement",
+        "name": "Świadectwo pracy - dla emeryta",
+        "description": "Świadectwo pracy - dla emeryta",
+        "variables_count": 12
+      }
+    ],
+    "regulations": [
+      {
+        "filename": "6.1_work_regulations.md",
+        "id": "work_regulations",
+        "name": "Regulamin pracy",
+        "description": "Regulamin pracy zgodny z wymogami prawa pracy",
+        "variables_count": 8
+      },
+      {
+        "filename": "6.2_remuneration_regulations.md",
+        "id": "remuneration_regulations",
+        "name": "Regulamin wynagradzania",
+        "description": "Regulamin wynagradzania zgodny z wymogami prawa pracy",
+        "variables_count": 6
+      },
+      {
+        "filename": "6.3_remote_work_regulations.md",
+        "id": "remote_work_regulations",
+        "name": "Regulamin pracy zdalnej",
+        "description": "Regulamin pracy zdalnej zgodny z wymogami prawa pracy",
+        "variables_count": 7
+      },
+      {
+        "filename": "6.4_gdpr_employees_regulations.md",
+        "id": "gdpr_employees_regulations",
+        "name": "Regulamin RODO (pracownicy)",
+        "description": "Regulamin RODO (pracownicy) zgodny z wymogami prawa pracy",
+        "variables_count": 6
+      },
+      {
+        "filename": "6.5_company_car_regulations.md",
+        "id": "company_car_regulations",
+        "name": "Regulamin korzystania z samochodu służbowego",
+        "description": "Regulamin korzystania z samochodu służbowego zgodny z wymogami prawa pracy",
+        "variables_count": 7
+      }
+    ],
+    "declarations": [
+      {
+        "filename": "7.1_nda_agreement.md",
+        "id": "nda_agreement",
+        "name": "Oświadczenie o poufności (NDA)",
+        "description": "Oświadczenie o poufności (NDA)",
+        "variables_count": 7
+      },
+      {
+        "filename": "7.2_non_compete_declaration.md",
+        "id": "non_compete_declaration",
+        "name": "Oświadczenie o zakazie konkurencji",
+        "description": "Oświadczenie o zakazie konkurencji",
+        "variables_count": 6
+      },
+      {
+        "filename": "7.3_gdpr_consent.md",
+        "id": "gdpr_consent",
+        "name": "Zgoda na przetwarzanie danych osobowych (RODO)",
+        "description": "Zgoda na przetwarzanie danych osobowych (RODO)",
+        "variables_count": 8
+      },
+      {
+        "filename": "7.4_conflict_of_interest_declaration.md",
+        "id": "conflict_of_interest_declaration",
+        "name": "Oświadczenie o braku konfliktu interesów",
+        "description": "Oświadczenie o braku konfliktu interesów",
+        "variables_count": 4
+      },
+      {
+        "filename": "7.5_overtime_consent.md",
+        "id": "overtime_consent",
+        "name": "Zgoda na wykonywanie pracy w godzinach nadliczbowych",
+        "description": "Zgoda na wykonywanie pracy w godzinach nadliczbowych",
+        "variables_count": 5
+      }
+    ],
+    "other": [
+      {
+        "filename": "8.1_business_trip_order.md",
+        "id": "business_trip_order",
+        "name": "Polecenie wyjazdu służbowego",
+        "description": "Polecenie wyjazdu służbowego",
+        "variables_count": 9
+      },
+      {
+        "filename": "8.2_vacation_request.md",
+        "id": "vacation_request",
+        "name": "Wniosek o urlop",
+        "description": "Wniosek o urlop",
+        "variables_count": 7
+      },
+      {
+        "filename": "8.3_training_cost_commitment.md",
+        "id": "training_cost_commitment",
+        "name": "Zobowiązanie do zwrotu kosztów szkolenia",
+        "description": "Zobowiązanie do zwrotu kosztów szkolenia",
+        "variables_count": 6
+      },
+      {
+        "filename": "8.4_equipment_handover_confirmation.md",
+        "id": "equipment_handover_confirmation",
+        "name": "Potwierdzenie odbioru dokumentów/sprzętu",
+        "description": "Potwierdzenie odbioru dokumentów/sprzętu",
+        "variables_count": 4
+      },
+      {
+        "filename": "8.5_explanation_request.md",
+        "id": "explanation_request",
+        "name": "Wezwanie do złożenia wyjaśnień",
+        "description": "Wezwanie do złożenia wyjaśnień",
+        "variables_count": 6
+      }
+    ]
+  }
+}

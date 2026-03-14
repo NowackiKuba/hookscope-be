@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      target: development
+    container_name: hookscope-app-dev
+    restart: unless-stopped
+    depends_on:
+      - postgres
+    ports:
+      - '0.0.0.0:8080:8080'
+    env_file:
+      - .env
+    volumes:
+      - .:/app
+      - /app/node_modules
+    entrypoint:
+      [
+        'sh',
+        '-c',
+        'chmod +x ./docker/dev/entrypoint && ./docker/dev/entrypoint',
+      ]
+
+  postgres:
+    image: postgres:13
+    container_name: hookscope-postgres-dev
+    restart: unless-stopped
+    ports:
+      - '0.0.0.0:5432:5432'
+    environment:
+      POSTGRES_USER: 'user'
+      POSTGRES_PASSWORD: 'password'
+      POSTGRES_DB: 'app'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
