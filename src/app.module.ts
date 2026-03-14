@@ -4,30 +4,26 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { WinstonModule } from 'nest-winston';
 import { config as ormConfig } from './orm/database.config';
-// import { baseLoggerConfig } from './shared/utils/logger';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { baseLoggerConfig } from './shared/utils/logger';
-// import { CompanyProfilesModule } from './company-profiles/company-profiles.module';
-// import { ReviewsModule } from './reviews/reviews.module';
-// import { SystemPromptsModule } from './system-prompts/system-prompts.module';
-// import { ResponsesModule } from './responses/responses.module';
-// import { StatsModule } from './stats/stats.module';
-// import { BillingModule } from './billing/billing.module';
-// import { GeoModule } from './geo/geo.module';
-// import { CreditsModule } from './credits/credits.module';
 import { MailerModule } from './mailer/mailer.module';
+import { EndpointModule } from './endpoint/endpoint.module';
+import { RequestModule } from './request/request.module';
+import { RetryModule } from './retry/retry.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     ScheduleModule.forRoot(),
     MailerModule,
-    // CreditsModule,
-    WinstonModule.forRoot(baseLoggerConfig('borowa-be')),
+    WinstonModule.forRoot(baseLoggerConfig('hookscope-be')),
     MikroOrmModule.forRoot(ormConfig),
     AuthModule,
+    EndpointModule,
+    RequestModule,
+    RetryModule,
   ],
   controllers: [AppController],
   providers: [AppService],

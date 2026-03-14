@@ -6,6 +6,8 @@ const AppConfigSchema = z.object({
   ENV: z.enum(['development', 'production']).default('production'),
   PORT: z.coerce.number().default(8080),
   ORIGIN: z.string().default('http://localhost:3000'),
+  /** Base URL of the API (e.g. for webhook URLs). Defaults to http://localhost:PORT */
+  APP_URL: z.string().default('http://localhost:8080'),
 });
 
 //

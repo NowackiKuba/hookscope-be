@@ -20,6 +20,9 @@
     "paths": {
       "@auth/*": ["src/auth/*"],
       "@users/*": ["src/users/*"],
+      "@endpoint/*": ["src/endpoint/*"],
+      "@request/*": ["src/request/*"],
+      "@retry/*": ["src/retry/*"],
       "@shared/*": ["src/shared/*"],
       "@config/*": ["src/config/*"],
       "@orm/*": ["src/orm/*"],

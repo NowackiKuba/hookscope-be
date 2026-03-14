@@ -1,0 +1,466 @@
+---
+title: Hookscope API – Frontend Integration Guide
+description: Complete API reference with TypeScript types for auth, endpoints, requests, and webhooks.
+---
+
+# Hookscope API – Frontend Integration Guide
+
+Base URL: **`/api`** (e.g. `http://localhost:8080/api`)
+
+- **Auth:** `Authorization: Bearer <accessToken>` on protected routes.
+- **Content-Type:** `application/json` for request bodies.
+
+---
+
+## 1. TypeScript types
+
+Copy these into your frontend (e.g. `src/api/types.ts`).
+
+```typescript
+// ============ Config ============
+
+export const API_BASE = '/api'; // or full origin: 'http://localhost:8080/api'
+
+// ============ Error (4xx / 5xx) ============
+
+export interface ApiErrorResponse {
+  error: {
+    statusCode: number;
+    message: string;
+    error: string;
+    code: string;
+    metadata?: Record<string, unknown>;
+    timestamp: string;
+    path: string;
+  };
+}
+
+// Common error codes: ENDPOINT_NOT_FOUND, REQUEST_NOT_FOUND, UNAUTHORIZED, etc.
+
+// ============ Auth ============
+
+export interface LoginBody {
+  email: string;
+  password: string;
+}
+
+export interface LoginResponse {
+  accessToken: string;
+  userId: string;
+  email: string;
+  onboardingCompleted: boolean;
+}
+
+export interface RegisterBody {
+  firstName: string;
+  lastName: string;
+  email: string;
+  password: string;
+}
+
+export interface RegisterResponse {
+  userId: string;
+}
+
+export interface ForgotPasswordBody {
+  email: string;
+}
+
+export interface ForgotPasswordResponse {
+  message: string;
+}
+
+export interface ResetPasswordBody {
+  token: string;
+  newPassword: string;
+}
+
+export interface ResetPasswordResponse {
+  message: string;
+}
+
+export interface UserProfile {
+  id: string;
+  firstName: string;
+  lastName: string;
+  username: string;
+  email: string;
+  avatarUrl: string | null;
+  role: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface UpdatePasswordBody {
+  oldPassword: string;
+  newPassword: string;
+  confirmPassword: string;
+}
+
+// ============ Endpoints (webhook targets) ============
+
+export interface Endpoint {
+  id: string;
+  userId: string;
+  name: string;
+  description: string;
+  token: string;
+  isActive: boolean;
+  targetUrl: string | null;
+  requestCount: number;
+  lastRequestAt: string | null;
+  webhookUrl: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateEndpointBody {
+  name: string;
+}
+
+// ============ Requests (incoming webhook calls) ============
+
+export interface RequestItem {
+  id: string;
+  endpointId: string;
+  method: string;
+  headers: Record<string, string>;
+  body: unknown;
+  query: Record<string, string>;
+  ip: string | null;
+  contentType: string | null;
+  size: number;
+  overlimit: boolean;
+  forwardStatus: number | null;
+  forwardedAt: string | null;
+  forwardError: string | null;
+  receivedAt: string;
+}
+
+export interface RequestsListParams {
+  endpointId: string;
+  limit?: number;
+  offset?: number;
+}
+
+export interface RequestsListResponse {
+  data: RequestItem[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
+// ============ Webhook response (POST /api/hooks/:token) ============
+
+export interface WebhookResponse {
+  received: true;
+}
+```
+
+---
+
+## 2. Auth
+
+### POST `/api/auth/login` (public)
+
+**Body:** `LoginBody`  
+**Response 200:** `LoginResponse`
+
+```typescript
+const res = await fetch(`${API_BASE}/auth/login`, {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ email, password }),
+});
+const data: LoginResponse = await res.json();
+```
+
+---
+
+### POST `/api/auth/register` (public)
+
+**Body:** `RegisterBody`  
+**Response 200:** `RegisterResponse`
+
+```typescript
+const res = await fetch(`${API_BASE}/auth/register`, {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ firstName, lastName, email, password }),
+});
+const data: RegisterResponse = await res.json();
+```
+
+---
+
+### POST `/api/auth/forgot-password` (public)
+
+**Body:** `ForgotPasswordBody`  
+**Response 200:** `ForgotPasswordResponse`
+
+---
+
+### POST `/api/auth/reset-password` (public)
+
+**Body:** `ResetPasswordBody`  
+**Response 200:** `ResetPasswordResponse`
+
+---
+
+### GET `/api/auth/me` (JWT)
+
+**Response 200:** `UserProfile`
+
+```typescript
+const res = await fetch(`${API_BASE}/auth/me`, {
+  headers: { Authorization: `Bearer ${accessToken}` },
+});
+const profile: UserProfile = await res.json();
+```
+
+---
+
+### PATCH `/api/auth/me/password` (JWT)
+
+**Body:** `UpdatePasswordBody`  
+**Response 200:** no body
+
+---
+
+## 3. Endpoints
+
+Endpoints are webhook targets. Each has a `token`; the public webhook URL is `webhookUrl` (e.g. `https://your-app.com/api/hooks/<token>`).
+
+### GET `/api/endpoints` (JWT)
+
+**Response 200:** `Endpoint[]`
+
+```typescript
+const res = await fetch(`${API_BASE}/endpoints`, {
+  headers: { Authorization: `Bearer ${accessToken}` },
+});
+const endpoints: Endpoint[] = await res.json();
+```
+
+---
+
+### POST `/api/endpoints` (JWT)
+
+**Body:** `CreateEndpointBody`  
+**Response 200:** `Endpoint`
+
+```typescript
+const res = await fetch(`${API_BASE}/endpoints`, {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    Authorization: `Bearer ${accessToken}`,
+  },
+  body: JSON.stringify({ name: 'My webhook' }),
+});
+const endpoint: Endpoint = await res.json();
+// endpoint.webhookUrl is the URL to give to third parties
+```
+
+---
+
+### GET `/api/endpoints/:id` (JWT)
+
+**Params:** `id` – endpoint UUID  
+**Response 200:** `Endpoint`  
+**404:** endpoint not found or not owned by user
+
+```typescript
+const res = await fetch(`${API_BASE}/endpoints/${id}`, {
+  headers: { Authorization: `Bearer ${accessToken}` },
+});
+const endpoint: Endpoint = await res.json();
+```
+
+---
+
+### DELETE `/api/endpoints/:id` (JWT)
+
+**Params:** `id` – endpoint UUID  
+**Response 204:** no content  
+**404:** endpoint not found or not owned by user
+
+```typescript
+await fetch(`${API_BASE}/endpoints/${id}`, {
+  method: 'DELETE',
+  headers: { Authorization: `Bearer ${accessToken}` },
+});
+```
+
+---
+
+## 4. Requests
+
+Requests are stored incoming webhook calls for an endpoint.
+
+### GET `/api/requests` (JWT)
+
+**Query:** `endpointId` (required), `limit` (optional, default 20, max 100), `offset` (optional, default 0)  
+**Response 200:** `RequestsListResponse`
+
+```typescript
+const params = new URLSearchParams({
+  endpointId,
+  limit: String(limit ?? 20),
+  offset: String(offset ?? 0),
+});
+const res = await fetch(`${API_BASE}/requests?${params}`, {
+  headers: { Authorization: `Bearer ${accessToken}` },
+});
+const list: RequestsListResponse = await res.json();
+// list.data, list.total, list.limit, list.offset
+```
+
+---
+
+### GET `/api/requests/:id` (JWT)
+
+**Params:** `id` – request UUID  
+**Response 200:** `RequestItem`  
+**404:** request not found or endpoint not owned by user
+
+```typescript
+const res = await fetch(`${API_BASE}/requests/${id}`, {
+  headers: { Authorization: `Bearer ${accessToken}` },
+});
+const request: RequestItem = await res.json();
+```
+
+---
+
+### DELETE `/api/requests/:id` (JWT)
+
+**Params:** `id` – request UUID  
+**Response 204:** no content  
+**404:** request not found or endpoint not owned by user
+
+```typescript
+await fetch(`${API_BASE}/requests/${id}`, {
+  method: 'DELETE',
+  headers: { Authorization: `Bearer ${accessToken}` },
+});
+```
+
+---
+
+## 5. Webhooks (public)
+
+Third parties send HTTP requests to your webhook URL. No auth.
+
+### POST `/api/hooks/:token` (public)
+
+- **URL:** Use `endpoint.webhookUrl` from `GET /api/endpoints` or `POST /api/endpoints`.
+- **Auth:** None.
+- **Body:** Any (JSON, form, etc.). Stored as the request body.
+- **Response 200:** Always `WebhookResponse` (`{ "received": true }`), even on server errors (so senders don’t retry).
+
+From the frontend you only need to **show** `webhookUrl` to users; you don’t call this route from your app. Example for documentation:
+
+```text
+POST https://your-api.com/api/hooks/<endpoint.token>
+Content-Type: application/json (or any)
+
+{ "event": "order.created", "id": "123" }
+
+→ 200 { "received": true }
+```
+
+---
+
+## 6. Error handling
+
+On 4xx/5xx the body is `ApiErrorResponse`:
+
+```typescript
+interface ApiErrorResponse {
+  error: {
+    statusCode: number;
+    message: string;
+    error: string;
+    code: string;
+    metadata?: Record<string, unknown>;
+    timestamp: string;
+    path: string;
+  };
+}
+```
+
+Example:
+
+```typescript
+const res = await fetch(`${API_BASE}/endpoints/${id}`, {
+  headers: { Authorization: `Bearer ${accessToken}` },
+});
+
+if (!res.ok) {
+  const err: ApiErrorResponse = await res.json();
+  console.error(err.error.code, err.error.message);
+  // code might be: ENDPOINT_NOT_FOUND, REQUEST_NOT_FOUND, UNAUTHORIZED, etc.
+  throw new Error(err.error.message);
+}
+
+const endpoint: Endpoint = await res.json();
+```
+
+---
+
+## 7. Quick reference
+
+| Method | Path | Auth | Request body | Response |
+|--------|------|------|--------------|----------|
+| POST | `/api/auth/login` | no | `LoginBody` | `LoginResponse` |
+| POST | `/api/auth/register` | no | `RegisterBody` | `RegisterResponse` |
+| POST | `/api/auth/forgot-password` | no | `ForgotPasswordBody` | `ForgotPasswordResponse` |
+| POST | `/api/auth/reset-password` | no | `ResetPasswordBody` | `ResetPasswordResponse` |
+| GET | `/api/auth/me` | JWT | — | `UserProfile` |
+| PATCH | `/api/auth/me/password` | JWT | `UpdatePasswordBody` | — |
+| GET | `/api/endpoints` | JWT | — | `Endpoint[]` |
+| POST | `/api/endpoints` | JWT | `CreateEndpointBody` | `Endpoint` |
+| GET | `/api/endpoints/:id` | JWT | — | `Endpoint` |
+| DELETE | `/api/endpoints/:id` | JWT | — | 204 |
+| GET | `/api/requests?endpointId=&limit=&offset=` | JWT | — | `RequestsListResponse` |
+| GET | `/api/requests/:id` | JWT | — | `RequestItem` |
+| DELETE | `/api/requests/:id` | JWT | — | 204 |
+| POST | `/api/hooks/:token` | no | any | `WebhookResponse` |
+
+---
+
+## 8. Optional: typed fetch helper
+
+```typescript
+async function api<T>(
+  path: string,
+  options?: RequestInit & { body?: object }
+): Promise<T> {
+  const { body, ...init } = options ?? {};
+  const headers: HeadersInit = {
+    ...(init.headers as Record<string, string>),
+    ...(body && { 'Content-Type': 'application/json' }),
+  };
+  const res = await fetch(`${API_BASE}${path}`, {
+    ...init,
+    headers,
+    body: body ? JSON.stringify(body) : init.body,
+  });
+  if (!res.ok) {
+    const err: ApiErrorResponse = await res.json().catch(() => ({} as ApiErrorResponse));
+    throw new Error(err?.error?.message ?? res.statusText);
+  }
+  if (res.status === 204) return undefined as T;
+  return res.json() as Promise<T>;
+}
+
+// Usage (with token from login):
+const token = '…';
+const auth = () => ({ Authorization: `Bearer ${token}` });
+
+const endpoints = await api<Endpoint[]>('/endpoints', { headers: auth() });
+const created = await api<Endpoint>('/endpoints', { method: 'POST', headers: auth(), body: { name: 'Test' } });
+const list = await api<RequestsListResponse>(`/requests?endpointId=${id}&limit=20&offset=0`, { headers: auth() });
+```

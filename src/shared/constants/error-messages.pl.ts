@@ -49,6 +49,9 @@ export const ERROR_MESSAGES_PL: Record<string, string> = {
   SESSION_EXPIRED: 'Sesja wygasła. Zaloguj się ponownie.',
   INSUFFICIENT_TOKENS: 'Niewystarczająca liczba tokenów do wykonania tej operacji.',
 
+  ENDPOINT_NOT_FOUND: 'Nie znaleziono endpointu.',
+  REQUEST_NOT_FOUND: 'Nie znaleziono żądania.',
+
   // Ogólne HTTP (używane przez HttpExceptionFilter)
   VALIDATION_ERROR: 'Sprawdź poprawność wypełnionych pól i spróbuj ponownie.',
   UNAUTHORIZED: 'Zaloguj się, aby kontynuować.',

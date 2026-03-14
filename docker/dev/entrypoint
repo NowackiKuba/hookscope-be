@@ -1,0 +1,19 @@
+#!/usr/bin/env sh
+
+# docker compose by default will sync non-existing node_modules directory on first run
+if [ ! -d "node_modules" ] || [ -z "$(ls -A node_modules 2>/dev/null)" ]; then
+    echo "node_modules directory is missing or empty, recreating..."
+    pnpm install --frozen-lockfile # install dependencies
+fi
+
+# Keep mailer EJS templates in sync with dist (Nest watch may not copy assets in dev)
+sync_mailer_templates() {
+  if [ -d "src/mailer/templates" ] && [ -d "dist/src/mailer" ]; then
+    mkdir -p dist/src/mailer/templates
+    cp -r src/mailer/templates/* dist/src/mailer/templates/ 2>/dev/null || true
+  fi
+}
+# Sync once at startup, then in background every 3s so templates appear after first build
+(sync_mailer_templates; while true; do sleep 3; sync_mailer_templates; done) &
+
+pnpm run start:dev # start app in dev mode
