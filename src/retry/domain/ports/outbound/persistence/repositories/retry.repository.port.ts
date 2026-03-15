@@ -1,8 +1,7 @@
-import type { Retry, RetryStatus } from './retry.entity';
+import { Retry } from '@retry/domain/aggregates/retry';
+import { RetryStatus } from '@retry/domain/enums/retry-status.enum';
 
-export const RETRY_REPOSITORY = Symbol('RETRY_REPOSITORY');
-
-export interface RetryRepository {
+export interface RetryRepositoryPort {
   save(retry: Retry): Promise<void>;
   findById(id: string): Promise<Retry | null>;
   findPending(limit: number): Promise<Retry[]>;
@@ -10,7 +9,7 @@ export interface RetryRepository {
   updateAttempt(
     id: string,
     result: {
-      status: 'pending' | 'success' | 'failed';
+      status: RetryStatus.PENDING | RetryStatus.SUCCESS | RetryStatus.FAILED;
       attemptCount: number;
       lastAttemptAt: Date;
       nextAttemptAt: Date | null;

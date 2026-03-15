@@ -1,5 +1,6 @@
 import { Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core';
 import { RequestEntity } from '@request/adapters/outbound/persistence/entities/request.entity';
+import { RetryStatus } from '@retry/domain/enums/retry-status.enum';
 
 @Entity({ tableName: 'retries' })
 export class RetryEntity {
@@ -12,8 +13,8 @@ export class RetryEntity {
   @Property({ type: 'text', fieldName: 'target_url' })
   targetUrl!: string;
 
-  @Property({ type: 'text', default: 'pending' })
-  status: 'pending' | 'success' | 'failed' | 'cancelled' = 'pending';
+  @Property({ type: 'text', default: RetryStatus.PENDING })
+  status: RetryStatus = RetryStatus.PENDING;
 
   @Property({ type: 'int', default: 0, fieldName: 'attempt_count' })
   attemptCount: number = 0;

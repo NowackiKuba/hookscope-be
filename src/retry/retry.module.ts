@@ -1,14 +1,16 @@
 import { Module } from '@nestjs/common';
-import { RETRY_REPOSITORY } from '@retry/domain/retry.repository';
-import { RetryRepositoryImpl } from '@retry/infrastructure/persistence/retry.repository.impl';
+import { Token } from '@retry/constants';
+import { RetryMapper } from '@retry/adapters/outbound/persistence/mappers/retry.mapper';
+import { RetryRepository } from '@retry/adapters/outbound/persistence/repositories/retry.repository';
 
 @Module({
   providers: [
+    RetryMapper,
     {
-      provide: RETRY_REPOSITORY,
-      useClass: RetryRepositoryImpl,
+      provide: Token.RetryRepository,
+      useClass: RetryRepository,
     },
   ],
-  exports: [RETRY_REPOSITORY],
+  exports: [Token.RetryRepository, RetryMapper],
 })
 export class RetryModule {}

@@ -8,7 +8,7 @@ import { UserEntity } from '../users/adapters/outbound/persistence/entities/user
 import { EmailOutboxEntity } from '@mailer/adapters/outbound/persistence/entities/email-outbox.entity';
 import { EndpointEntity } from '@endpoint/adapters/outbound/persistence/entities/endpoint.entity';
 import { RequestEntity } from '@request/adapters/outbound/persistence/entities/request.entity';
-import { RetryEntity } from '@retry/infrastructure/persistence/retry.orm-entity';
+import { RetryEntity } from '@retry/adapters/outbound/persistence/entities/retry.entity';
 import { Migration20260314171016 } from './migrations/Migration20260314171016';
 import { Migration20260314180000 } from './migrations/Migration20260314180000';
 import { Migration20260314200000 } from './migrations/Migration20260314200000';
