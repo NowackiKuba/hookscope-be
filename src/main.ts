@@ -1,6 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { ConfigService as NestConfigService } from '@nestjs/config';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+import { IoAdapter } from '@nestjs/platform-socket.io';
 import { LoggerProvider } from './shared/constants';
 import { Logger } from 'winston';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
@@ -29,6 +30,7 @@ async function bootstrap() {
   const port = configService.get('PORT', { infer: true });
 
   app.setGlobalPrefix(GLOBAL_PREFIX);
+  app.useWebSocketAdapter(new IoAdapter(app));
   app.useLogger(app.get(WINSTON_MODULE_NEST_PROVIDER));
 
   app.enableCors({

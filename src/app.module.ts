@@ -12,6 +12,7 @@ import { MailerModule } from './mailer/mailer.module';
 import { EndpointModule } from './endpoint/endpoint.module';
 import { RequestModule } from './request/request.module';
 import { RetryModule } from './retry/retry.module';
+import { SocketsModule } from './sockets/sockets.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { RetryModule } from './retry/retry.module';
     EndpointModule,
     RequestModule,
     RetryModule,
+    SocketsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -10,6 +10,7 @@ export type EndpointEntityProps = {
   token: string;
   isActive?: boolean;
   targetUrl?: string | null;
+  webhookUrl: string;
   secretKey?: string | null;
   requestCount?: number;
   lastRequestAt?: Date | null;
@@ -35,13 +36,20 @@ export class EndpointEntity extends BaseEntity implements EndpointEntityProps {
   @Property({ type: 'text', nullable: true, fieldName: 'target_url' })
   targetUrl: string | null = null;
 
+  @Property({ type: 'text', nullable: true, fieldName: 'webhook_url' })
+  webhookUrl: string;
+
   @Property({ type: 'text', nullable: true, fieldName: 'secret_key' })
   secretKey: string | null = null;
 
   @Property({ type: 'int', default: 0, fieldName: 'request_count' })
   requestCount: number = 0;
 
-  @Property({ type: 'timestamptz', nullable: true, fieldName: 'last_request_at' })
+  @Property({
+    type: 'timestamptz',
+    nullable: true,
+    fieldName: 'last_request_at',
+  })
   lastRequestAt: Date | null = null;
 
   constructor(props: EndpointEntityProps) {
@@ -53,6 +61,7 @@ export class EndpointEntity extends BaseEntity implements EndpointEntityProps {
     this.token = props.token;
     this.isActive = props.isActive ?? true;
     this.targetUrl = props.targetUrl ?? null;
+    this.webhookUrl = props.webhookUrl;
     this.secretKey = props.secretKey ?? null;
     this.requestCount = props.requestCount ?? 0;
     this.lastRequestAt = props.lastRequestAt ?? null;

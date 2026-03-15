@@ -12,6 +12,7 @@ import { RetryEntity } from '@retry/infrastructure/persistence/retry.orm-entity'
 import { Migration20260314171016 } from './migrations/Migration20260314171016';
 import { Migration20260314180000 } from './migrations/Migration20260314180000';
 import { Migration20260314200000 } from './migrations/Migration20260314200000';
+import { Migration20260315154906 } from './migrations/Migration20260315154906';
 
 // Create Winston logger instance for MikroORM
 // This is used in static config before NestJS DI is available
@@ -57,7 +58,14 @@ export const config = defineConfig({
   debug: false,
 
   highlighter: new SqlHighlighter(),
-  entities: [BaseEntity, UserEntity, EmailOutboxEntity, EndpointEntity, RequestEntity, RetryEntity],
+  entities: [
+    BaseEntity,
+    UserEntity,
+    EmailOutboxEntity,
+    EndpointEntity,
+    RequestEntity,
+    RetryEntity,
+  ],
   extensions: [SeedManager, Migrator],
   //
 
@@ -74,6 +82,7 @@ export const config = defineConfig({
       { name: Migration20260314171016.name, class: Migration20260314171016 },
       { name: Migration20260314180000.name, class: Migration20260314180000 },
       { name: Migration20260314200000.name, class: Migration20260314200000 },
+      { name: Migration20260315154906.name, class: Migration20260315154906 },
     ],
   },
 });

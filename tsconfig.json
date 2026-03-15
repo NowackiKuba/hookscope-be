@@ -27,6 +27,7 @@
       "@config/*": ["src/config/*"],
       "@orm/*": ["src/orm/*"],
       "@mailer/*": ["src/mailer/*"],
+      "@sockets/*": ["src/sockets/*"],
       "src/*": ["src/*"]
     }
   }

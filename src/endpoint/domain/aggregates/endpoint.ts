@@ -8,6 +8,7 @@ export type EndpointProps = {
   description?: string;
   token: string;
   isActive?: boolean;
+  webhookUrl: string;
   targetUrl?: string | null;
   secretKey?: string | null;
   requestCount?: number;
@@ -24,6 +25,7 @@ export type EndpointJSON = {
   token: string;
   isActive: boolean;
   targetUrl: string | null;
+  webhookUrl: string;
   secretKey: string | null;
   requestCount: number;
   lastRequestAt: Date | null;
@@ -39,6 +41,7 @@ export class Endpoint {
   private _token: string;
   private _isActive: boolean;
   private _targetUrl: string | null;
+  private _webhookUrl: string;
   private _secretKey: string | null;
   private _requestCount: number;
   private _lastRequestAt: Date | null;
@@ -53,6 +56,7 @@ export class Endpoint {
     this._token = props.token;
     this._isActive = props.isActive ?? true;
     this._targetUrl = props.targetUrl ?? null;
+    this._webhookUrl = props.webhookUrl;
     this._secretKey = props.secretKey ?? null;
     this._requestCount = props.requestCount ?? 0;
     this._lastRequestAt = props.lastRequestAt ?? null;
@@ -66,6 +70,7 @@ export class Endpoint {
     description?: string;
     isActive?: boolean;
     targetUrl?: string | null;
+    webhookUrl: string;
     secretKey?: string | null;
   }): Endpoint {
     const token = randomBytes(16).toString('hex');
@@ -75,6 +80,7 @@ export class Endpoint {
       description: props.description ?? '',
       isActive: props.isActive ?? true,
       targetUrl: props.targetUrl ?? null,
+      webhookUrl: props.webhookUrl + token,
       secretKey: props.secretKey ?? null,
       token,
     });
@@ -105,6 +111,9 @@ export class Endpoint {
   get targetUrl(): string | null {
     return this._targetUrl;
   }
+  get webhookUrl(): string {
+    return this._webhookUrl;
+  }
   get secretKey(): string | null {
     return this._secretKey;
   }
@@ -130,6 +139,7 @@ export class Endpoint {
       token: this._token,
       isActive: this._isActive,
       targetUrl: this._targetUrl,
+      webhookUrl: this._webhookUrl,
       secretKey: this._secretKey,
       requestCount: this._requestCount,
       lastRequestAt: this._lastRequestAt,

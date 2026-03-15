@@ -429,6 +429,8 @@ const endpoint: Endpoint = await res.json();
 | DELETE | `/api/requests/:id` | JWT | — | 204 |
 | POST | `/api/hooks/:token` | no | any | `WebhookResponse` |
 
+*Real-time requests: see [Socket integration](socket-frontend-integration.mdc).*
+
 ---
 
 ## 8. Optional: typed fetch helper

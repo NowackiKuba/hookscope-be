@@ -16,7 +16,8 @@ export class CreateEndpointHandler implements ICommandHandler<CreateEndpointComm
   ) {}
 
   async execute(command: CreateEndpointCommand): Promise<string> {
-    const { userId, name, description, isActive, targetUrl, secretKey } = command.payload;
+    const { userId, name, description, isActive, targetUrl, secretKey } =
+      command.payload;
     const endpoint = Endpoint.create({
       userId,
       name,
@@ -24,6 +25,7 @@ export class CreateEndpointHandler implements ICommandHandler<CreateEndpointComm
       isActive,
       targetUrl,
       secretKey,
+      webhookUrl: `https://api.hookscope.dev/hooks/`,
     });
     const saved = await this.endpointRepository.save(endpoint);
     this.eventBus.publish(new EndpointCreatedEvent(saved.id, saved.userId));

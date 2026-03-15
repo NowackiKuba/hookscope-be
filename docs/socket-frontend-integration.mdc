@@ -1,0 +1,178 @@
+---
+title: Hookscope WebSocket – Frontend Integration
+description: Real-time incoming webhook requests via Socket.IO. Subscribe by endpoint ID, receive request.received events.
+---
+
+# Hookscope WebSocket – Frontend Integration
+
+Use **Socket.IO** to receive incoming webhook requests in real time for a given endpoint (e.g. on the endpoint detail page). No auth on the socket; the client subscribes by **endpoint ID** (UUID from `GET /api/endpoints`).
+
+---
+
+## 1. Install
+
+```bash
+npm install socket.io-client
+# or
+pnpm add socket.io-client
+```
+
+---
+
+## 2. TypeScript types
+
+Copy into your frontend (e.g. `src/api/socket-types.ts` or next to your API types).
+
+```typescript
+/** Payload on socket event "request.received" (dates are ISO strings over the wire) */
+export interface RequestReceivedPayload {
+  id: string;
+  endpointId: string;
+  method: string;
+  headers: Record<string, string>;
+  body: unknown;
+  query: Record<string, string>;
+  ip: string | null;
+  contentType: string | null;
+  size: number;
+  overlimit: boolean;
+  forwardStatus: number | null;
+  forwardedAt: string | null;
+  forwardError: string | null;
+  receivedAt: string;
+}
+
+/** Send with socket.emit('subscribe', payload) to receive requests for an endpoint */
+export interface SubscribePayload {
+  endpointId: string;
+}
+```
+
+---
+
+## 3. Connection URL (important in dev)
+
+The socket must connect to the **API server**, not the frontend dev server. In development, the frontend often runs on a different port (e.g. Vite on `http://localhost:5173`) and the API on `http://localhost:8080`. Using `window.location.origin` would connect to 5173, where there is no Socket.IO server.
+
+**Use your API base URL’s origin** (e.g. from `VITE_API_URL`), in both browser and SSR:
+
+```typescript
+function getSocketUrl(): string {
+  const apiUrl = import.meta.env.VITE_API_URL ?? 'http://localhost:8080/api';
+  try {
+    return new URL(apiUrl).origin;  // e.g. http://localhost:8080
+  } catch {
+    return 'http://localhost:8080';
+  }
+}
+
+const SOCKET_URL = getSocketUrl();
+
+import { io } from 'socket.io-client';
+
+const socket = io(SOCKET_URL, {
+  path: '/socket.io',
+  transports: ['websocket', 'polling'],
+});
+```
+
+In production, if the frontend is served from the same host as the API, you can use `window.location.origin` when `VITE_API_URL` is not set.
+
+---
+
+## 4. Subscribe to an endpoint
+
+After connecting, send a **`subscribe`** event with the endpoint ID. The server adds the socket to that endpoint’s room; all webhook requests for that endpoint are emitted to you.
+
+```typescript
+import type { SubscribePayload, RequestReceivedPayload } from './api-types';
+
+const endpointId = '…'; // from GET /api/endpoints (e.g. endpoint.id)
+
+socket.emit('subscribe', { endpointId } satisfies SubscribePayload);
+```
+
+You can subscribe to multiple endpoints by calling `emit('subscribe', { endpointId })` for each ID.
+
+---
+
+## 5. Listen for incoming requests
+
+Listen for the **`request.received`** event. The payload is the full request (same shape as one item in `GET /api/requests`).
+
+```typescript
+socket.on('request.received', (payload: RequestReceivedPayload) => {
+  console.log('New request:', payload.id, payload.method, payload.receivedAt);
+  // e.g. update UI, append to list, show notification
+});
+```
+
+---
+
+## 6. Full example (React-style)
+
+```typescript
+import { io, Socket } from 'socket.io-client';
+import type { RequestReceivedPayload, SubscribePayload } from './socket-types';
+
+function getSocketUrl(): string {
+  const apiUrl = import.meta.env.VITE_API_URL ?? 'http://localhost:8080/api';
+  try {
+    return new URL(apiUrl).origin;
+  } catch {
+    return 'http://localhost:8080';
+  }
+}
+
+const SOCKET_URL = getSocketUrl();
+
+let socket: Socket | null = null;
+
+export function connectSocket(): Socket {
+  if (socket?.connected) return socket;
+  socket = io(SOCKET_URL, { path: '/socket.io', transports: ['websocket', 'polling'] });
+  return socket;
+}
+
+export function subscribeToEndpoint(
+  endpointId: string,
+  onRequest: (payload: RequestReceivedPayload) => void
+): () => void {
+  const s = connectSocket();
+  s.emit('subscribe', { endpointId } satisfies SubscribePayload);
+  s.on('request.received', onRequest);
+  return () => {
+    s.off('request.received', onRequest);
+  };
+}
+
+// Usage in a component (e.g. endpoint detail page):
+// useEffect(() => {
+//   const unsubscribe = subscribeToEndpoint(endpoint.id, (request) => {
+//     setRequests((prev) => [request, ...prev]);
+//   });
+//   return unsubscribe;
+// }, [endpoint.id]);
+```
+
+---
+
+## 7. Quick reference
+
+| Action        | Event / direction | Payload / notes                           |
+|---------------|-------------------|-------------------------------------------|
+| Connect       | —                 | `io(WS_URL)` same origin as API           |
+| Subscribe     | Client → Server   | `socket.emit('subscribe', { endpointId })` |
+| New request   | Server → Client   | `socket.on('request.received', payload)`  |
+| Payload type  | —                 | `RequestReceivedPayload`                  |
+
+---
+
+## 8. Troubleshooting
+
+- **Socket never connects / no `request.received`**  
+  In dev, the client must connect to the API origin (e.g. `http://localhost:8080`), not the frontend origin (e.g. `http://localhost:5173`). Set `VITE_API_URL` to your API base (e.g. `http://localhost:8080/api`) and derive the socket URL from it: `new URL(import.meta.env.VITE_API_URL).origin`.
+
+- **Backend:** Nest must use the Socket.IO adapter. In `main.ts`:  
+  `app.useWebSocketAdapter(new IoAdapter(app));`  
+  (with `IoAdapter` from `@nestjs/platform-socket.io`).

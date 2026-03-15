@@ -431,6 +431,22 @@
           "comment": null,
           "enumItems": [],
           "mappedType": "datetime"
+        },
+        "webhook_url": {
+          "name": "webhook_url",
+          "type": "text",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "enumItems": [],
+          "mappedType": "text"
         }
       },
       "name": "endpoints",
@@ -458,21 +474,7 @@
         }
       ],
       "checks": [],
-      "foreignKeys": {
-        "endpoints_user_id_foreign": {
-          "columnNames": [
-            "user_id"
-          ],
-          "constraintName": "endpoints_user_id_foreign",
-          "localTableName": "public.endpoints",
-          "referencedTableName": "public.users",
-          "referencedColumnNames": [
-            "id"
-          ],
-          "updateRule": "cascade",
-          "deleteRule": "cascade"
-        }
-      },
+      "foreignKeys": {},
       "nativeEnums": {},
       "comment": null
     },
@@ -537,7 +539,7 @@
           "length": null,
           "precision": null,
           "scale": null,
-          "default": "'{}'",
+          "default": null,
           "comment": null,
           "enumItems": [],
           "mappedType": "json"
@@ -569,7 +571,7 @@
           "length": null,
           "precision": null,
           "scale": null,
-          "default": "'{}'",
+          "default": null,
           "comment": null,
           "enumItems": [],
           "mappedType": "json"
@@ -649,7 +651,7 @@
           "length": 6,
           "precision": null,
           "scale": null,
-          "default": "now()",
+          "default": null,
           "comment": null,
           "enumItems": [],
           "mappedType": "datetime"
@@ -915,7 +917,7 @@
           "length": 6,
           "precision": null,
           "scale": null,
-          "default": "now()",
+          "default": null,
           "comment": null,
           "enumItems": [],
           "mappedType": "datetime"
@@ -931,7 +933,7 @@
           "length": 6,
           "precision": null,
           "scale": null,
-          "default": "now()",
+          "default": null,
           "comment": null,
           "enumItems": [],
           "mappedType": "datetime"
