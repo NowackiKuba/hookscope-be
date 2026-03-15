@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -22,6 +23,7 @@ import { GetEndpointByIdQuery } from '@endpoint/application/queries/get-endpoint
 import { ConfigService } from '@nestjs/config';
 import type { Config } from '@config/config.schema';
 import type { EndpointResponseDto } from '../dto/endpoint-response.dto';
+import { CreateEndpointDto, createEndpointSchema } from '../dto/create-endpoint';
 import type { Endpoint } from '@endpoint/domain/aggregates/endpoint';
 
 function toResponseDto(endpoint: Endpoint, appUrl: string): EndpointResponseDto {
@@ -30,12 +32,12 @@ function toResponseDto(endpoint: Endpoint, appUrl: string): EndpointResponseDto 
     id: json.id,
     userId: json.userId,
     name: json.name,
-    description: '',
+    description: json.description,
     token: json.token,
-    isActive: true,
-    targetUrl: null,
-    requestCount: 0,
-    lastRequestAt: null,
+    isActive: json.isActive,
+    targetUrl: json.targetUrl,
+    requestCount: json.requestCount,
+    lastRequestAt: json.lastRequestAt?.toISOString() ?? null,
     webhookUrl: `${appUrl}/hooks/${json.token}`,
     createdAt: json.createdAt.toISOString(),
     updatedAt: json.updatedAt.toISOString(),
@@ -63,11 +65,23 @@ export class EndpointsController {
 
   @Post()
   async create(
-    @Body() body: { name: string },
+    @Body() body: CreateEndpointDto,
     @CurrentUser() user: AuthenticatedUser,
   ): Promise<EndpointResponseDto> {
+    const parsed = createEndpointSchema.safeParse(body);
+    if (!parsed.success) {
+      throw new BadRequestException(parsed.error.flatten());
+    }
+    const { name, description, isActive, targetUrl, secretKey } = parsed.data;
     const endpointId = await this.commandBus.execute(
-      new CreateEndpointCommand({ userId: user.userId, name: body.name }),
+      new CreateEndpointCommand({
+        userId: user.userId,
+        name,
+        description,
+        isActive,
+        targetUrl,
+        secretKey,
+      }),
     );
     const endpoint = await this.queryBus.execute(
       new GetEndpointByIdQuery({ userId: user.userId, endpointId }),

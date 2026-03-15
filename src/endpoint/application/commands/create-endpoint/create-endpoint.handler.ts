@@ -16,8 +16,15 @@ export class CreateEndpointHandler implements ICommandHandler<CreateEndpointComm
   ) {}
 
   async execute(command: CreateEndpointCommand): Promise<string> {
-    const { userId, name } = command.payload;
-    const endpoint = Endpoint.create({ userId, name });
+    const { userId, name, description, isActive, targetUrl, secretKey } = command.payload;
+    const endpoint = Endpoint.create({
+      userId,
+      name,
+      description,
+      isActive,
+      targetUrl,
+      secretKey,
+    });
     const saved = await this.endpointRepository.save(endpoint);
     this.eventBus.publish(new EndpointCreatedEvent(saved.id, saved.userId));
     return saved.id;

@@ -9,7 +9,13 @@ export class EndpointMapper {
       id: entity.id,
       userId: entity.userId,
       name: entity.name,
+      description: entity.description,
       token: entity.token,
+      isActive: entity.isActive,
+      targetUrl: entity.targetUrl,
+      secretKey: entity.secretKey,
+      requestCount: entity.requestCount,
+      lastRequestAt: entity.lastRequestAt,
       createdAt: entity.createdAt,
       updatedAt: entity.updatedAt,
     });
@@ -21,7 +27,13 @@ export class EndpointMapper {
       id: json.id,
       userId: json.userId,
       name: json.name,
+      description: json.description,
       token: json.token,
+      isActive: json.isActive,
+      targetUrl: json.targetUrl,
+      secretKey: json.secretKey,
+      requestCount: json.requestCount,
+      lastRequestAt: json.lastRequestAt,
     });
   }
 }
