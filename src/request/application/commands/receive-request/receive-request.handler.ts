@@ -20,8 +20,17 @@ export class ReceiveRequestHandler implements ICommandHandler<ReceiveRequestComm
   ) {}
 
   async execute(command: ReceiveRequestCommand): Promise<string> {
-    const { endpointId, method, headers, body, query, ip, contentType, size, overlimit } =
-      command.payload;
+    const {
+      endpointId,
+      method,
+      headers,
+      body,
+      query,
+      ip,
+      contentType,
+      size,
+      overlimit,
+    } = command.payload;
 
     const request = overlimit
       ? Request.createOverlimit(endpointId)
@@ -42,6 +51,7 @@ export class ReceiveRequestHandler implements ICommandHandler<ReceiveRequestComm
     this.eventBus.publish(
       new RequestReceivedEvent(saved.id, saved.endpointId, saved.overlimit),
     );
+
     return saved.id;
   }
 }

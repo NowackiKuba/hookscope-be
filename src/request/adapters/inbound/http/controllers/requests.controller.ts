@@ -20,6 +20,8 @@ import { GetRequestByIdQuery } from '@request/application/queries/get-request-by
 import type { RequestResponseDto } from '../dto/request-response.dto';
 import type { GetRequestsResult } from '@request/application/queries/get-requests/get-requests.handler';
 import type { Request } from '@request/domain/aggregates/request';
+import { GetRequestsByUserIdDto } from '../dto/get-requests-by-user-id';
+import { GetRequestsByUserIdQuery } from '@request/application/queries/get-requests-by-user-id/get-requests-by-user-id.query';
 
 function toResponseDto(
   item: GetRequestsResult['data'][number],
@@ -57,17 +59,22 @@ export class RequestsController {
     @Query('endpointId') endpointId: string,
     @Query('limit') limit?: string,
     @Query('offset') offset?: string,
-  ): Promise<{ data: RequestResponseDto[]; total: number; limit: number; offset: number }> {
+  ): Promise<{
+    data: RequestResponseDto[];
+    total: number;
+    limit: number;
+    offset: number;
+  }> {
     const limitNum = Math.min(Number(limit) || 20, 100);
     const offsetNum = Number(offset) || 0;
-    const result = await this.queryBus.execute(
+    const result = (await this.queryBus.execute(
       new GetRequestsQuery({
         userId: user.userId,
         endpointId,
         limit: limitNum,
         offset: offsetNum,
       }),
-    ) as GetRequestsResult;
+    )) as GetRequestsResult;
     return {
       data: result.data.map(toResponseDto),
       total: result.total,
@@ -76,14 +83,24 @@ export class RequestsController {
     };
   }
 
+  @Get('/me')
+  async getByUserID(
+    @Query() query: GetRequestsByUserIdDto,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return await this.queryBus.execute(
+      new GetRequestsByUserIdQuery({ ...query, userId: user.userId }),
+    );
+  }
+
   @Get(':id')
   async getById(
     @Param('id') id: string,
     @CurrentUser() user: AuthenticatedUser,
   ): Promise<RequestResponseDto> {
-    const request = await this.queryBus.execute(
+    const request = (await this.queryBus.execute(
       new GetRequestByIdQuery({ userId: user.userId, requestId: id }),
-    ) as Request;
+    )) as Request;
     const json = request.toJSON();
     return toResponseDto({
       id: json.id,

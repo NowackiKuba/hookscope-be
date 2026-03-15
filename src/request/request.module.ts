@@ -13,9 +13,14 @@ import { RequestMapper } from '@request/adapters/outbound/persistence/mappers/re
 import { RequestsController } from '@request/adapters/inbound/http/controllers/requests.controller';
 import { HooksController } from '@request/adapters/inbound/http/controllers/hooks.controller';
 import { DomainExceptionFilter } from '@request/adapters/inbound/http/filters/domain-exception.filter';
+import { GetRequestsByUserIdHandler } from './application/queries/get-requests-by-user-id/get-requests-by-user-id.handler';
 
 const CommandHandlers = [ReceiveRequestHandler, DeleteRequestHandler];
-const QueryHandlers = [GetRequestsHandler, GetRequestByIdHandler];
+const QueryHandlers = [
+  GetRequestsHandler,
+  GetRequestByIdHandler,
+  GetRequestsByUserIdHandler,
+];
 
 @Module({
   imports: [CqrsModule, AuthModule, EndpointModule],

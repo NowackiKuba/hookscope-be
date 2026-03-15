@@ -1,10 +1,11 @@
-import { Entity, Property } from '@mikro-orm/core';
+import { Entity, ManyToOne, Property } from '@mikro-orm/core';
 import { BaseEntity } from '@orm/entities/base.entity';
 import { generateUUID } from '@shared/utils/generate-uuid';
+import { UserEntity } from '@users/adapters/outbound/persistence/entities/user.entity';
 
 export type EndpointEntityProps = {
   id?: string;
-  userId: string;
+  user: UserEntity;
   name: string;
   description?: string;
   token: string;
@@ -18,8 +19,8 @@ export type EndpointEntityProps = {
 
 @Entity({ tableName: 'endpoints' })
 export class EndpointEntity extends BaseEntity implements EndpointEntityProps {
-  @Property({ type: 'uuid', fieldName: 'user_id' })
-  userId!: string;
+  @ManyToOne(() => UserEntity)
+  user: UserEntity;
 
   @Property({ type: 'text' })
   name!: string;
@@ -55,7 +56,7 @@ export class EndpointEntity extends BaseEntity implements EndpointEntityProps {
   constructor(props: EndpointEntityProps) {
     super();
     this.id = props.id ?? generateUUID();
-    this.userId = props.userId;
+    this.user = props.user;
     this.name = props.name;
     this.description = props.description ?? '';
     this.token = props.token;

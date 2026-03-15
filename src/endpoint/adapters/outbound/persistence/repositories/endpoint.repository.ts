@@ -1,5 +1,6 @@
 import { EntityManager } from '@mikro-orm/postgresql';
 import { RequestContext } from '@mikro-orm/core';
+import type { FilterQuery } from '@mikro-orm/core';
 import { Injectable } from '@nestjs/common';
 import { EndpointEntity } from '@endpoint/adapters/outbound/persistence/entities/endpoint.entity';
 import { EndpointMapper } from '@endpoint/adapters/outbound/persistence/mappers/endpoint.mapper';
@@ -54,7 +55,11 @@ export class EndpointRepository implements EndpointRepositoryPort {
 
   async findAllByUserId(userId: string): Promise<Endpoint[]> {
     const em = this.getEm();
-    const entities = await em.find(EndpointEntity, { userId }, { orderBy: { createdAt: 'desc' } });
+    const entities = await em.find(
+      EndpointEntity,
+      { user: userId } as FilterQuery<EndpointEntity>,
+      { orderBy: { createdAt: 'desc' } },
+    );
     return entities.map((e) => this.mapper.toDomain(e));
   }
 

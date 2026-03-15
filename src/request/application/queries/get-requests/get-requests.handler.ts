@@ -64,15 +64,15 @@ export class GetRequestsHandler implements IQueryHandler<GetRequestsQuery> {
     if (!endpoint || endpoint.userId !== userId) {
       throw new EndpointNotFoundException(endpointId);
     }
-    const [data, total] = await Promise.all([
-      this.requestRepository.findByEndpointId(endpointId, limit, offset),
-      this.requestRepository.countByEndpointId(endpointId),
-    ]);
+    const page = await this.requestRepository.findByEndpointId(
+      { limit, offset, orderBy: 'desc', orderByField: 'receivedAt' },
+      endpointId,
+    );
     return {
-      data: data.map(requestToItem),
-      total,
-      limit,
-      offset,
+      data: page.data.map(requestToItem),
+      total: page.page.totalCount ?? page.data.length,
+      limit: page.page.limit ?? limit,
+      offset: page.page.offset ?? offset,
     };
   }
 }
