@@ -10,6 +10,12 @@ export type RequestFilters = BaseFilters & {
   endpointId?: string;
 };
 
+export type ForwardResult = {
+  forwardStatus: number;
+  forwardedAt: Date;
+  forwardError: string | null;
+};
+
 export interface RequestRepositoryPort {
   save(request: Request): Promise<Request>;
   findById(id: string): Promise<Request | null>;
@@ -22,4 +28,5 @@ export interface RequestRepositoryPort {
   countThisMonth(endpointId: string): Promise<number>;
   deleteOlderThan(endpointId: string, before: Date): Promise<number>;
   delete(id: string): Promise<void>;
+  updateForwardResult(id: string, result: ForwardResult): Promise<void>;
 }

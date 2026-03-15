@@ -76,7 +76,9 @@ export class Request {
     });
   }
 
-  static reconstitute(props: RequestProps & { id: string; receivedAt?: Date }): Request {
+  static reconstitute(
+    props: RequestProps & { id: string; receivedAt?: Date },
+  ): Request {
     return new Request(props);
   }
 
@@ -121,6 +123,12 @@ export class Request {
   }
   get receivedAt(): Date {
     return this._receivedAt;
+  }
+
+  onForward(status: number, error?: string) {
+    this._forwardStatus = status;
+    this._forwardedAt = new Date();
+    this._forwardError = error;
   }
 
   toJSON(): RequestJSON {

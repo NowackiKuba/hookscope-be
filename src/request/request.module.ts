@@ -14,6 +14,8 @@ import { RequestsController } from '@request/adapters/inbound/http/controllers/r
 import { HooksController } from '@request/adapters/inbound/http/controllers/hooks.controller';
 import { DomainExceptionFilter } from '@request/adapters/inbound/http/filters/domain-exception.filter';
 import { GetRequestsByUserIdHandler } from './application/queries/get-requests-by-user-id/get-requests-by-user-id.handler';
+import { HttpClientProvider } from '@shared/constants';
+import { HttpClient } from '@shared/adapters/outbound/http.client';
 
 const CommandHandlers = [ReceiveRequestHandler, DeleteRequestHandler];
 const QueryHandlers = [
@@ -33,6 +35,10 @@ const QueryHandlers = [
     {
       provide: Token.RequestRepository,
       useClass: RequestRepository,
+    },
+    {
+      provide: HttpClientProvider,
+      useClass: HttpClient,
     },
   ],
   exports: [CqrsModule, Token.RequestRepository],

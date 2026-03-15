@@ -5,6 +5,7 @@ import { Injectable } from '@nestjs/common';
 import { RequestEntity } from '@request/adapters/outbound/persistence/entities/request.entity';
 import { RequestMapper } from '@request/adapters/outbound/persistence/mappers/request.mapper';
 import type {
+  ForwardResult,
   RequestFilters,
   RequestRepositoryPort,
 } from '@request/domain/ports/outbound/persistence/repositories/request.repository.port';
@@ -103,6 +104,16 @@ export class RequestRepository implements RequestRepositoryPort {
   async delete(id: string): Promise<void> {
     const em = this.getEm();
     await em.nativeDelete(RequestEntity, { id });
+    await em.flush();
+  }
+
+  async updateForwardResult(id: string, result: ForwardResult): Promise<void> {
+    const em = this.getEm();
+    const entity = await em.findOne(RequestEntity, { id });
+    if (!entity) return;
+    entity.forwardStatus = result.forwardStatus;
+    entity.forwardedAt = result.forwardedAt;
+    entity.forwardError = result.forwardError;
     await em.flush();
   }
 
