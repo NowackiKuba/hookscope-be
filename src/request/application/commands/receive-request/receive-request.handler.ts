@@ -7,9 +7,10 @@ import { Token as RequestToken } from '@request/constants';
 import type { EndpointRepositoryPort } from '@endpoint/domain/ports/outbound/persistence/repositories/endpoint.repository.port';
 import { Token as EndpointToken } from '@endpoint/constants';
 import { RequestReceivedEvent } from '@request/domain/events/request-received.event';
-import { HttpClientProvider, LoggerProvider } from '@shared/constants';
-import { HttpClientPort } from '@shared/domain/ports/outbound/http.client.port';
 import { RequestForwardedEvent } from '@request/domain/events/request-forwarded.event';
+import { ForwardFailedEvent } from '@request/domain/events/forward-failed.event';
+import { HttpService, LoggerProvider } from '@shared/constants';
+import { HttpServicePort } from '@shared/domain/ports/outbound/http.service.port';
 import { ReceiveRequestCommand } from './receive-request.command';
 
 @CommandHandler(ReceiveRequestCommand)
@@ -19,8 +20,8 @@ export class ReceiveRequestHandler implements ICommandHandler<ReceiveRequestComm
     private readonly requestRepository: RequestRepositoryPort,
     @Inject(EndpointToken.EndpointRepository)
     private readonly endpointRepository: EndpointRepositoryPort,
-    @Inject(HttpClientProvider)
-    private readonly httpClient: HttpClientPort,
+    @Inject(HttpService)
+    private readonly httpService: HttpServicePort,
     @Inject(LoggerProvider)
     private readonly logger: Logger,
     private readonly eventBus: EventBus,
@@ -61,7 +62,8 @@ export class ReceiveRequestHandler implements ICommandHandler<ReceiveRequestComm
 
     const saved = await this.requestRepository.save(request);
     await this.endpointRepository.incrementRequestCount(endpointId, new Date());
-    this.logger.info('REQUEST RECEIVED EVENT', {
+
+    this.logger.info('REQUEST RECEIVED', {
       requestId: saved.id,
       endpointId: saved.endpointId,
       overlimit: saved.overlimit,
@@ -70,63 +72,35 @@ export class ReceiveRequestHandler implements ICommandHandler<ReceiveRequestComm
       new RequestReceivedEvent(saved.id, saved.endpointId, saved.overlimit),
     );
 
-    const targetUrl = endpoint.targetUrl;
-    this.logger.info('FORWARD TARGET URL', { targetUrl, requestId: saved.id });
+    const targetUrl = endpoint?.targetUrl;
     if (targetUrl) {
-      const headersToForward = { ...saved.headers };
-
-      // usuń nagłówki które nie powinny być forwardowane
-      delete headersToForward['host'];
-      delete headersToForward['content-length'];
-      delete headersToForward['transfer-encoding'];
-      delete headersToForward['connection'];
+      this.logger.info('FORWARDING REQUEST', {
+        requestId: saved.id,
+        targetUrl,
+      });
       try {
-        const m = method.toLowerCase();
-        let response;
-        if (m === 'post') {
-          response = await this.httpClient.post(
-            targetUrl,
-            saved.body ?? undefined,
-            headersToForward,
-          );
-        } else if (m === 'delete') {
-          response = await this.httpClient.delete(targetUrl, headersToForward);
-        } else if (m === 'put') {
-          response = await this.httpClient.put(
-            targetUrl,
-            saved.body ?? undefined,
-            headersToForward,
-          );
-        } else if (m === 'patch') {
-          response = await this.httpClient.patch(
-            targetUrl,
-            saved.body ?? undefined,
-            headersToForward,
-          );
-        } else {
-          response = null;
-        }
-
+        const response = await this.httpService.send(saved, targetUrl);
         if (response) {
-          const errorMsg = response.status >= 400 ? response.body : undefined;
-          saved.onForward(response.status, errorMsg);
+          const forwardError = response.status >= 400 ? response.body : null;
+          saved.onForward(response.status, forwardError ?? undefined);
           await this.requestRepository.updateForwardResult(saved.id, {
             forwardStatus: response.status,
             forwardedAt: new Date(),
-            forwardError: errorMsg ?? null,
+            forwardError,
           });
-          this.logger.info('REQUEST FORWARDED SUCCESS', {
+          this.logger.info('REQUEST FORWARDED', {
             requestId: saved.id,
             endpointId: saved.endpointId,
             status: response.status,
-            error: errorMsg ?? null,
+            error: forwardError,
           });
           this.eventBus.publish(
             new RequestForwardedEvent(
               saved.id,
               saved.endpointId,
               response.status,
-              errorMsg ?? null,
+              targetUrl,
+              forwardError,
             ),
           );
         }
@@ -138,13 +112,19 @@ export class ReceiveRequestHandler implements ICommandHandler<ReceiveRequestComm
           forwardedAt: new Date(),
           forwardError: message,
         });
-        this.logger.error('REQUEST FORWARDED ERROR', {
+        this.logger.error('REQUEST FORWARD ERROR', {
           requestId: saved.id,
           endpointId: saved.endpointId,
           error: message,
         });
         this.eventBus.publish(
-          new RequestForwardedEvent(saved.id, saved.endpointId, 0, message),
+          new RequestForwardedEvent(
+            saved.id,
+            saved.endpointId,
+            0,
+            targetUrl,
+            message,
+          ),
         );
       }
     }

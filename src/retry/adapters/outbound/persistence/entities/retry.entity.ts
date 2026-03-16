@@ -1,13 +1,35 @@
-import { Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core';
+import {
+  Entity,
+  ManyToOne,
+  OneToOne,
+  PrimaryKey,
+  Property,
+} from '@mikro-orm/core';
+import { BaseEntity } from '@orm/entities/base.entity';
 import { RequestEntity } from '@request/adapters/outbound/persistence/entities/request.entity';
 import { RetryStatus } from '@retry/domain/enums/retry-status.enum';
+import { generateUUID } from '@shared/utils/generate-uuid';
+
+export type RetryEntityProps = {
+  id?: string;
+  request: RequestEntity;
+  targetUrl: string;
+  status: RetryStatus;
+  attemptCount?: number;
+  lastAttemptAt?: Date;
+  nextAttemptAt?: Date;
+  responseStatus: number;
+  responseBody?: string;
+  customBody?: unknown;
+  customHeaders?: Record<string, string>;
+};
 
 @Entity({ tableName: 'retries' })
-export class RetryEntity {
-  @PrimaryKey({ type: 'uuid', defaultRaw: 'gen_random_uuid()' })
-  id!: string;
-
-  @ManyToOne(() => RequestEntity, { fieldName: 'request_id', deleteRule: 'cascade' })
+export class RetryEntity extends BaseEntity implements RetryEntityProps {
+  @OneToOne(() => RequestEntity, {
+    fieldName: 'request_id',
+    deleteRule: 'cascade',
+  })
   request!: RequestEntity;
 
   @Property({ type: 'text', fieldName: 'target_url' })
@@ -19,10 +41,18 @@ export class RetryEntity {
   @Property({ type: 'int', default: 0, fieldName: 'attempt_count' })
   attemptCount: number = 0;
 
-  @Property({ type: 'timestamptz', nullable: true, fieldName: 'last_attempt_at' })
+  @Property({
+    type: 'timestamptz',
+    nullable: true,
+    fieldName: 'last_attempt_at',
+  })
   lastAttemptAt: Date | null = null;
 
-  @Property({ type: 'timestamptz', nullable: true, fieldName: 'next_attempt_at' })
+  @Property({
+    type: 'timestamptz',
+    nullable: true,
+    fieldName: 'next_attempt_at',
+  })
   nextAttemptAt: Date | null = null;
 
   @Property({ type: 'int', nullable: true, fieldName: 'response_status' })
@@ -31,9 +61,23 @@ export class RetryEntity {
   @Property({ type: 'text', nullable: true, fieldName: 'response_body' })
   responseBody: string | null = null;
 
-  @Property({ type: 'timestamptz', fieldName: 'created_at', onCreate: () => new Date() })
-  createdAt!: Date;
+  @Property({ type: 'jsonb', nullable: true })
+  customBody?: unknown;
+  @Property({ type: 'jsonb', nullable: true })
+  customHeaders?: Record<string, string>;
 
-  @Property({ type: 'timestamptz', fieldName: 'updated_at', onUpdate: () => new Date() })
-  updatedAt!: Date;
+  constructor(props: RetryEntityProps) {
+    super();
+    this.id = props.id ?? generateUUID();
+    this.request = props.request;
+    this.targetUrl = props.targetUrl;
+    this.status = props.status;
+    this.attemptCount = props.attemptCount;
+    this.lastAttemptAt = props.lastAttemptAt;
+    this.nextAttemptAt = props.nextAttemptAt;
+    this.responseStatus = props.responseStatus;
+    this.responseBody = props.responseBody;
+    this.customBody = props.customBody;
+    this.customHeaders = props.customHeaders;
+  }
 }

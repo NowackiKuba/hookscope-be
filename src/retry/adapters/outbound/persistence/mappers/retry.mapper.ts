@@ -6,6 +6,7 @@ import { EntityManager } from '@mikro-orm/postgresql';
 
 @Injectable()
 export class RetryMapper {
+  constructor(private readonly em: EntityManager) {}
   toDomain(entity: RetryEntity): Retry {
     const requestId = entity.request?.id;
     if (!requestId) {
@@ -26,20 +27,11 @@ export class RetryMapper {
     });
   }
 
-  toPersistence(domain: Retry, em: EntityManager): RetryEntity {
-    const requestRef = em.getReference(RequestEntity, domain.requestId);
-    const entity = new RetryEntity();
-    entity.id = domain.id;
-    entity.request = requestRef;
-    entity.targetUrl = domain.targetUrl;
-    entity.status = domain.status;
-    entity.attemptCount = domain.attemptCount;
-    entity.lastAttemptAt = domain.lastAttemptAt;
-    entity.nextAttemptAt = domain.nextAttemptAt;
-    entity.responseStatus = domain.responseStatus;
-    entity.responseBody = domain.responseBody;
-    entity.createdAt = domain.createdAt;
-    entity.updatedAt = domain.updatedAt;
-    return entity;
+  toEntity(domain: Retry): RetryEntity {
+    const domainJSON = domain.toJSON();
+    return new RetryEntity({
+      ...domainJSON,
+      request: this.em.getReference(RequestEntity, domainJSON.requestId),
+    });
   }
 }

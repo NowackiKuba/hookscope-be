@@ -5,7 +5,7 @@ export interface RetryRepositoryPort {
   save(retry: Retry): Promise<void>;
   findById(id: string): Promise<Retry | null>;
   findPending(limit: number): Promise<Retry[]>;
-  findByRequestId(requestId: string): Promise<Retry[]>;
+  findByRequestId(requestId: string): Promise<Retry>;
   updateAttempt(
     id: string,
     result: {

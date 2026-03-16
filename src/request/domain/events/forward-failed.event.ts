@@ -1,9 +1,8 @@
-export class RequestForwardedEvent {
+export class ForwardFailedEvent {
   constructor(
     public readonly requestId: string,
     public readonly endpointId: string,
-    public readonly forwardStatus: number,
     public readonly targetUrl: string,
-    public readonly forwardError: string | null,
+    public readonly error: string,
   ) {}
 }

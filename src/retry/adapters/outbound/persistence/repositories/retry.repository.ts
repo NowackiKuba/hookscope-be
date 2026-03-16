@@ -6,6 +6,7 @@ import { RetryMapper } from '@retry/adapters/outbound/persistence/mappers/retry.
 import type { RetryRepositoryPort } from '@retry/domain/ports/outbound/persistence/repositories/retry.repository.port';
 import { Retry } from '@retry/domain/aggregates/retry';
 import { RetryStatus } from '@retry/domain/enums/retry-status.enum';
+import { isThursday } from 'date-fns';
 
 function getEm(fallback: EntityManager): EntityManager {
   const ctx = RequestContext.getEntityManager();
@@ -25,13 +26,17 @@ export class RetryRepository implements RetryRepositoryPort {
 
   async save(retry: Retry): Promise<void> {
     const em = this.getEm();
-    const entity = this.mapper.toPersistence(retry, em);
+    const entity = this.mapper.toEntity(retry);
     await em.persistAndFlush(entity);
   }
 
   async findById(id: string): Promise<Retry | null> {
     const em = this.getEm();
-    const entity = await em.findOne(RetryEntity, { id }, { populate: ['request'] });
+    const entity = await em.findOne(
+      RetryEntity,
+      { id },
+      { populate: ['request'] },
+    );
     return entity ? this.mapper.toDomain(entity) : null;
   }
 
@@ -46,14 +51,14 @@ export class RetryRepository implements RetryRepositoryPort {
     return list.map((entity) => this.mapper.toDomain(entity));
   }
 
-  async findByRequestId(requestId: string): Promise<Retry[]> {
+  async findByRequestId(requestId: string): Promise<Retry> {
     const em = this.getEm();
-    const list = await em.find(
+    const retry = await em.findOne(
       RetryEntity,
-      { request: requestId },
+      { request: { id: requestId } },
       { populate: ['request'] },
     );
-    return list.map((entity) => this.mapper.toDomain(entity));
+    return this.mapper.toDomain(retry);
   }
 
   async updateAttempt(
