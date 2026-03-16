@@ -56,4 +56,14 @@ export class HooksGateway
   emitRequest(endpointId: string, payload: RequestJSON): void {
     this.server.to(ROOM_PREFIX + endpointId).emit('request.received', payload);
   }
+
+  emitForwardUpdate(endpointId: string, payload: {
+    requestId: string;
+    forwardStatus: number;
+    forwardError: string | null;
+  }): void {
+    this.server
+      .to(ROOM_PREFIX + endpointId)
+      .emit('forward.updated', payload);
+  }
 }

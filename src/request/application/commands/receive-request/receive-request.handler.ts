@@ -1,7 +1,6 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { EventBus } from '@nestjs/cqrs';
 import { Inject } from '@nestjs/common';
-import { ReceiveRequestCommand } from './receive-request.command';
 import { Request } from '@request/domain/aggregates/request';
 import type { RequestRepositoryPort } from '@request/domain/ports/outbound/persistence/repositories/request.repository.port';
 import { Token as RequestToken } from '@request/constants';
@@ -10,6 +9,8 @@ import { Token as EndpointToken } from '@endpoint/constants';
 import { RequestReceivedEvent } from '@request/domain/events/request-received.event';
 import { HttpClientProvider } from '@shared/constants';
 import { HttpClientPort } from '@shared/domain/ports/outbound/http.client.port';
+import { RequestForwardedEvent } from '@request/domain/events/request-forwarded.event';
+import { ReceiveRequestCommand } from './receive-request.command';
 
 @CommandHandler(ReceiveRequestCommand)
 export class ReceiveRequestHandler implements ICommandHandler<ReceiveRequestCommand> {
@@ -107,6 +108,14 @@ export class ReceiveRequestHandler implements ICommandHandler<ReceiveRequestComm
             forwardedAt: new Date(),
             forwardError: errorMsg ?? null,
           });
+          this.eventBus.publish(
+            new RequestForwardedEvent(
+              saved.id,
+              saved.endpointId,
+              response.status,
+              errorMsg ?? null,
+            ),
+          );
         }
       } catch (err) {
         const message = err instanceof Error ? err.message : String(err);
@@ -116,6 +125,9 @@ export class ReceiveRequestHandler implements ICommandHandler<ReceiveRequestComm
           forwardedAt: new Date(),
           forwardError: message,
         });
+        this.eventBus.publish(
+          new RequestForwardedEvent(saved.id, saved.endpointId, 0, message),
+        );
       }
     }
 
