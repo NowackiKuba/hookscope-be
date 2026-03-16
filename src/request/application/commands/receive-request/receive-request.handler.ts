@@ -63,7 +63,15 @@ export class ReceiveRequestHandler implements ICommandHandler<ReceiveRequestComm
     );
 
     const targetUrl = endpoint.targetUrl;
+    console.log('TARGET URL: ', targetUrl);
     if (targetUrl) {
+      const headersToForward = { ...saved.headers };
+
+      // usuń nagłówki które nie powinny być forwardowane
+      delete headersToForward['host'];
+      delete headersToForward['content-length'];
+      delete headersToForward['transfer-encoding'];
+      delete headersToForward['connection'];
       try {
         const m = method.toLowerCase();
         let response;
@@ -71,29 +79,28 @@ export class ReceiveRequestHandler implements ICommandHandler<ReceiveRequestComm
           response = await this.httpClient.post(
             targetUrl,
             saved.body ?? undefined,
-            saved.headers,
+            headersToForward,
           );
         } else if (m === 'delete') {
-          response = await this.httpClient.delete(targetUrl, saved.headers);
+          response = await this.httpClient.delete(targetUrl, headersToForward);
         } else if (m === 'put') {
           response = await this.httpClient.put(
             targetUrl,
             saved.body ?? undefined,
-            saved.headers,
+            headersToForward,
           );
         } else if (m === 'patch') {
           response = await this.httpClient.patch(
             targetUrl,
             saved.body ?? undefined,
-            saved.headers,
+            headersToForward,
           );
         } else {
           response = null;
         }
 
         if (response) {
-          const errorMsg =
-            response.status >= 400 ? response.body : undefined;
+          const errorMsg = response.status >= 400 ? response.body : undefined;
           saved.onForward(response.status, errorMsg);
           await this.requestRepository.updateForwardResult(saved.id, {
             forwardStatus: response.status,
@@ -102,8 +109,7 @@ export class ReceiveRequestHandler implements ICommandHandler<ReceiveRequestComm
           });
         }
       } catch (err) {
-        const message =
-          err instanceof Error ? err.message : String(err);
+        const message = err instanceof Error ? err.message : String(err);
         saved.onForward(0, message);
         await this.requestRepository.updateForwardResult(saved.id, {
           forwardStatus: 0,
