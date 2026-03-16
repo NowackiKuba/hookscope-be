@@ -1,13 +1,13 @@
-import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { EventBus } from '@nestjs/cqrs';
+import { CommandHandler, EventBus, ICommandHandler } from '@nestjs/cqrs';
 import { Inject } from '@nestjs/common';
+import type { Logger } from 'winston';
 import { Request } from '@request/domain/aggregates/request';
 import type { RequestRepositoryPort } from '@request/domain/ports/outbound/persistence/repositories/request.repository.port';
 import { Token as RequestToken } from '@request/constants';
 import type { EndpointRepositoryPort } from '@endpoint/domain/ports/outbound/persistence/repositories/endpoint.repository.port';
 import { Token as EndpointToken } from '@endpoint/constants';
 import { RequestReceivedEvent } from '@request/domain/events/request-received.event';
-import { HttpClientProvider } from '@shared/constants';
+import { HttpClientProvider, LoggerProvider } from '@shared/constants';
 import { HttpClientPort } from '@shared/domain/ports/outbound/http.client.port';
 import { RequestForwardedEvent } from '@request/domain/events/request-forwarded.event';
 import { ReceiveRequestCommand } from './receive-request.command';
@@ -21,6 +21,8 @@ export class ReceiveRequestHandler implements ICommandHandler<ReceiveRequestComm
     private readonly endpointRepository: EndpointRepositoryPort,
     @Inject(HttpClientProvider)
     private readonly httpClient: HttpClientPort,
+    @Inject(LoggerProvider)
+    private readonly logger: Logger,
     private readonly eventBus: EventBus,
   ) {}
 
@@ -59,12 +61,17 @@ export class ReceiveRequestHandler implements ICommandHandler<ReceiveRequestComm
 
     const saved = await this.requestRepository.save(request);
     await this.endpointRepository.incrementRequestCount(endpointId, new Date());
+    this.logger.log('REQUEST RECEIVED EVENT', {
+      requestId: saved.id,
+      endpointId: saved.endpointId,
+      overlimit: saved.overlimit,
+    });
     this.eventBus.publish(
       new RequestReceivedEvent(saved.id, saved.endpointId, saved.overlimit),
     );
 
     const targetUrl = endpoint.targetUrl;
-    console.log('TARGET URL: ', targetUrl);
+    this.logger.log('FORWARD TARGET URL', { targetUrl, requestId: saved.id });
     if (targetUrl) {
       const headersToForward = { ...saved.headers };
 
@@ -108,6 +115,12 @@ export class ReceiveRequestHandler implements ICommandHandler<ReceiveRequestComm
             forwardedAt: new Date(),
             forwardError: errorMsg ?? null,
           });
+          this.logger.log('REQUEST FORWARDED SUCCESS', {
+            requestId: saved.id,
+            endpointId: saved.endpointId,
+            status: response.status,
+            error: errorMsg ?? null,
+          });
           this.eventBus.publish(
             new RequestForwardedEvent(
               saved.id,
@@ -124,6 +137,11 @@ export class ReceiveRequestHandler implements ICommandHandler<ReceiveRequestComm
           forwardStatus: 0,
           forwardedAt: new Date(),
           forwardError: message,
+        });
+        this.logger.error('REQUEST FORWARDED ERROR', {
+          requestId: saved.id,
+          endpointId: saved.endpointId,
+          error: message,
         });
         this.eventBus.publish(
           new RequestForwardedEvent(saved.id, saved.endpointId, 0, message),

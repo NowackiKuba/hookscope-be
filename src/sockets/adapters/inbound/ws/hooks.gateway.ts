@@ -62,6 +62,10 @@ export class HooksGateway
     forwardStatus: number;
     forwardError: string | null;
   }): void {
+    this.logger.log('EMIT FORWARD UPDATED', {
+      endpointId,
+      payload,
+    });
     this.server
       .to(ROOM_PREFIX + endpointId)
       .emit('forward.updated', payload);
