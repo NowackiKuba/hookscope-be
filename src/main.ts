@@ -34,7 +34,11 @@ async function bootstrap() {
   app.useLogger(app.get(WINSTON_MODULE_NEST_PROVIDER));
 
   app.enableCors({
-    origin: [origin, 'http://127.0.0.1:5500'],
+    origin: [
+      origin,
+      'http://127.0.0.1:5500',
+      'fe-dev-production-85d0.up.railway.app',
+    ],
     credentials: true,
   });
 
