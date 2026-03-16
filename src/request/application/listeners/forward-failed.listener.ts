@@ -32,6 +32,8 @@ export class ForwardFailedListener implements IEventHandler<ForwardFailedEvent> 
       nextAttemptAt: addMilliseconds(new Date(), delay),
     });
 
+    console.log('ADD TO QUEUE');
+
     await this.retryRepository.save(retry);
     await this.retryQueue.scheduleRetry(retry.id, delay);
   }

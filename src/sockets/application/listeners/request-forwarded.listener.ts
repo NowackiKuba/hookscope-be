@@ -27,6 +27,7 @@ export class RequestForwardedListener implements IEventHandler<RequestForwardedE
     });
 
     if (event.forwardStatus === 0 || event.forwardStatus >= 400) {
+      this.logger.info('FORWARD FAILED');
       await this.eventBus.publish(
         new ForwardFailedEvent(
           event.requestId,
