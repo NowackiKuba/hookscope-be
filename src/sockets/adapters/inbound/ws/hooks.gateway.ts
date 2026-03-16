@@ -47,7 +47,7 @@ export class HooksGateway
       typeof payload === 'object' && payload && 'endpointId' in payload
         ? String(payload.endpointId)
         : String(payload);
-    this.logger.log('SUBSCRIBE WITH ENDPOINT ID: ', endpointId);
+    this.logger.info('SUBSCRIBE WITH ENDPOINT ID', { endpointId });
     if (endpointId) {
       client.join(ROOM_PREFIX + endpointId);
     }
@@ -62,7 +62,7 @@ export class HooksGateway
     forwardStatus: number;
     forwardError: string | null;
   }): void {
-    this.logger.log('EMIT FORWARD UPDATED', {
+    this.logger.info('EMIT FORWARD UPDATED', {
       endpointId,
       payload,
     });

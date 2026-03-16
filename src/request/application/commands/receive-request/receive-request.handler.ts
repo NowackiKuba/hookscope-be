@@ -61,7 +61,7 @@ export class ReceiveRequestHandler implements ICommandHandler<ReceiveRequestComm
 
     const saved = await this.requestRepository.save(request);
     await this.endpointRepository.incrementRequestCount(endpointId, new Date());
-    this.logger.log('REQUEST RECEIVED EVENT', {
+    this.logger.info('REQUEST RECEIVED EVENT', {
       requestId: saved.id,
       endpointId: saved.endpointId,
       overlimit: saved.overlimit,
@@ -71,7 +71,7 @@ export class ReceiveRequestHandler implements ICommandHandler<ReceiveRequestComm
     );
 
     const targetUrl = endpoint.targetUrl;
-    this.logger.log('FORWARD TARGET URL', { targetUrl, requestId: saved.id });
+    this.logger.info('FORWARD TARGET URL', { targetUrl, requestId: saved.id });
     if (targetUrl) {
       const headersToForward = { ...saved.headers };
 
@@ -115,7 +115,7 @@ export class ReceiveRequestHandler implements ICommandHandler<ReceiveRequestComm
             forwardedAt: new Date(),
             forwardError: errorMsg ?? null,
           });
-          this.logger.log('REQUEST FORWARDED SUCCESS', {
+          this.logger.info('REQUEST FORWARDED SUCCESS', {
             requestId: saved.id,
             endpointId: saved.endpointId,
             status: response.status,

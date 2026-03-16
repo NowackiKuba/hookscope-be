@@ -18,7 +18,7 @@ export class RequestForwardedListener implements IEventHandler<RequestForwardedE
   ) {}
 
   async handle(event: RequestForwardedEvent): Promise<void> {
-    this.logger.log('REQUEST FORWARDED EVENT', {
+    this.logger.info('REQUEST FORWARDED EVENT', {
       requestId: event.requestId,
       endpointId: event.endpointId,
       forwardStatus: event.forwardStatus,
