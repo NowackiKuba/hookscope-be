@@ -15,7 +15,12 @@ import { LoggerProvider } from '@shared/constants';
 
 const ROOM_PREFIX = 'endpoint:';
 
-@WebSocketGateway({ cors: true })
+@WebSocketGateway({
+  cors: {
+    origin: '*',
+    credentials: true,
+  },
+})
 export class HooksGateway
   implements
     OnGatewayInit,
@@ -71,11 +76,14 @@ export class HooksGateway
     this.server.to(ROOM_PREFIX + endpointId).emit('request.received', payload);
   }
 
-  emitForwardUpdate(endpointId: string, payload: {
-    requestId: string;
-    forwardStatus: number;
-    forwardError: string | null;
-  }): void {
+  emitForwardUpdate(
+    endpointId: string,
+    payload: {
+      requestId: string;
+      forwardStatus: number;
+      forwardError: string | null;
+    },
+  ): void {
     const room = ROOM_PREFIX + endpointId;
     const socketsInRoom = this.server.sockets.adapter.rooms.get(room);
     this.logger.info('EMIT FORWARD UPDATED ROOM STATE', {

@@ -1,14 +1,12 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import * as nodemailer from 'nodemailer';
+import { Resend } from 'resend';
 import * as ejs from 'ejs';
 import * as path from 'path';
 import * as fs from 'fs';
 import type { Config } from '../config/config.schema';
-import type { Transporter } from 'nodemailer';
 
 function resolveTemplatesDir(dirname: string): string {
-  // Nest copies assets to dist/src/mailer/templates (outDir: dist/src)
   const candidates = [
     path.join(dirname, 'templates'),
     path.join(process.cwd(), 'dist', 'src', 'mailer', 'templates'),
@@ -39,7 +37,7 @@ export interface SendMailOptions {
 @Injectable()
 export class MailerService {
   private readonly logger = new Logger(MailerService.name);
-  private transporter: Transporter | null = null;
+  private resend: Resend | null = null;
   private readonly templatesDir: string;
   private readonly from: string;
 
@@ -47,36 +45,20 @@ export class MailerService {
     this.templatesDir = resolveTemplatesDir(__dirname);
     this.from =
       this.configService.get('MAIL_FROM', { infer: true }) ??
-      'noreply@lawpilot.com';
-    this.initTransport();
-  }
-
-  private initTransport(): void {
-    const host = this.configService.get('MAIL_HOST', { infer: true });
-    const user = this.configService.get('MAIL_USER', { infer: true });
-    const pass = this.configService.get('MAIL_PASSWORD', { infer: true });
-
-    if (!host?.trim() || !user?.trim() || !pass?.trim()) {
+      'noreply@hookscope.com';
+    const apiKey = this.configService.get('RESEND_API_KEY', { infer: true });
+    if (apiKey?.trim()) {
+      this.resend = new Resend(apiKey);
+    } else {
       this.logger.warn(
-        'Mailer: MAIL_HOST, MAIL_USER, or MAIL_PASSWORD not set – emails will not be sent',
+        'Mailer: RESEND_API_KEY not set – emails will not be sent',
       );
-      return;
     }
-
-    const port = this.configService.get('MAIL_PORT', { infer: true }) ?? 587;
-    const secure = this.configService.get('MAIL_SECURE', { infer: true });
-
-    this.transporter = nodemailer.createTransport({
-      host,
-      port,
-      secure: secure ?? false,
-      auth: { user, pass },
-    });
   }
 
-  /** Returns true if SMTP is configured and mail can be sent */
+  /** Returns true if Resend is configured and mail can be sent */
   isConfigured(): boolean {
-    return this.transporter !== null;
+    return this.resend !== null;
   }
 
   /**
@@ -92,13 +74,13 @@ export class MailerService {
   }
 
   /**
-   * Send an email using an EJS template or raw HTML.
-   * @throws when SMTP is not configured (so outbox marks as failed and can retry later)
+   * Send an email using an EJS template or raw HTML via Resend.
+   * @throws when Resend is not configured (so outbox marks as failed and can retry later)
    */
   async sendMail(options: SendMailOptions): Promise<void> {
-    if (!this.transporter) {
+    if (!this.resend) {
       const msg =
-        'Mailer not configured (set MAIL_HOST, MAIL_USER, MAIL_PASSWORD) – email not sent';
+        'Mailer not configured (set RESEND_API_KEY) – email not sent';
       this.logger.warn(`${msg}: to=${options.to}, subject=${options.subject}`);
       throw new Error(msg);
     }
@@ -111,22 +93,20 @@ export class MailerService {
       );
     }
 
-    const mailOptions: nodemailer.SendMailOptions = {
+    const { error } = await this.resend.emails.send({
       from: this.from,
       to: options.to,
       subject: options.subject,
+      html: html ?? undefined,
       text: options.text,
-      html,
-    };
+    });
 
-    try {
-      await this.transporter.sendMail(mailOptions);
-      this.logger.debug(`Email sent to ${options.to}: ${options.subject}`);
-    } catch (err) {
+    if (error) {
       this.logger.error(
-        `Failed to send email to ${options.to}: ${(err as Error).message}`,
+        `Failed to send email to ${options.to}: ${error.message}`,
       );
-      throw err;
+      throw new Error(error.message);
     }
+    this.logger.debug(`Email sent to ${options.to}: ${options.subject}`);
   }
 }

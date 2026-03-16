@@ -13,6 +13,7 @@ import { EndpointModule } from './endpoint/endpoint.module';
 import { RequestModule } from './request/request.module';
 import { RetryModule } from './retry/retry.module';
 import { SocketsModule } from './sockets/sockets.module';
+import { WaitlistModule } from './waitlist/waitlist.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { SocketsModule } from './sockets/sockets.module';
     RequestModule,
     RetryModule,
     SocketsModule,
+    WaitlistModule,
   ],
   controllers: [AppController],
   providers: [AppService],

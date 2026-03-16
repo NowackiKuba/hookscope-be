@@ -52,6 +52,9 @@ export const ERROR_MESSAGES_PL: Record<string, string> = {
   ENDPOINT_NOT_FOUND: 'Nie znaleziono endpointu.',
   REQUEST_NOT_FOUND: 'Nie znaleziono żądania.',
 
+  WAITLIST_ALREADY_EXISTS: 'Ten adres e-mail jest już zapisany na listę oczekujących.',
+  WAITLIST_VALIDATION: 'Nieprawidłowe dane. Sprawdź adres e-mail i spróbuj ponownie.',
+
   // Ogólne HTTP (używane przez HttpExceptionFilter)
   VALIDATION_ERROR: 'Sprawdź poprawność wypełnionych pól i spróbuj ponownie.',
   UNAUTHORIZED: 'Zaloguj się, aby kontynuować.',

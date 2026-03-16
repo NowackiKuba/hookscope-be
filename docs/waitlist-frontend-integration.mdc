@@ -1,0 +1,110 @@
+---
+title: Hookscope Waitlist – Frontend Integration
+description: Public waitlist signup endpoint, request/response types, and error handling.
+---
+
+## Hookscope Waitlist – Frontend Integration
+
+Base URL: **`/api`** (e.g. `http://localhost:8080/api`)
+
+- **Auth**: none (public)
+- **Content-Type**: `application/json`
+
+---
+
+## 1. TypeScript types
+
+Copy these into your frontend (e.g. `src/api/waitlist.ts`).
+
+```typescript
+export const API_BASE = '/api'; // or full origin: 'http://localhost:8080/api'
+
+export interface ApiErrorResponse {
+  error: {
+    statusCode: number;
+    message: string;
+    error: string;
+    code: string;
+    metadata?: Record<string, unknown>;
+    timestamp: string;
+    path: string;
+  };
+}
+
+export interface CreateWaitlistEntryBody {
+  email: string;
+  source?: string; // optional, max 200 chars (e.g. 'landing_page', 'pricing', 'referral')
+}
+
+export interface CreateWaitlistEntryResponse {
+  id: string;
+}
+```
+
+---
+
+## 2. Create waitlist entry
+
+### POST `/api/waitlist`
+
+**Body:** `CreateWaitlistEntryBody`  
+**Response 200:** `CreateWaitlistEntryResponse`
+
+```typescript
+export async function createWaitlistEntry(
+  body: CreateWaitlistEntryBody,
+): Promise<CreateWaitlistEntryResponse> {
+  const res = await fetch(`${API_BASE}/waitlist`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+
+  if (!res.ok) {
+    const err: ApiErrorResponse = await res.json().catch(() => ({} as ApiErrorResponse));
+    throw new Error(err?.error?.message ?? res.statusText);
+  }
+
+  return res.json() as Promise<CreateWaitlistEntryResponse>;
+}
+```
+
+Example usage:
+
+```typescript
+await createWaitlistEntry({
+  email: 'user@example.com',
+  source: 'landing_page',
+});
+```
+
+---
+
+## 3. Error handling
+
+Errors are returned as:
+
+```typescript
+type ErrorEnvelope = ApiErrorResponse;
+```
+
+Common cases:
+
+- **400 Bad Request** (invalid body)  
+  - `error.code`: `VALIDATION_ERROR`  
+  - `error.metadata?.errors`: Zod details
+- **409 Conflict** (email already on waitlist)  
+  - `error.code`: `WAITLIST_ALREADY_EXISTS`
+
+Example:
+
+```typescript
+try {
+  await createWaitlistEntry({ email, source: 'landing_page' });
+  // show success toast
+} catch (e) {
+  const msg = e instanceof Error ? e.message : 'Something went wrong';
+  // show msg in UI
+}
+```
+

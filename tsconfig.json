@@ -28,6 +28,7 @@
       "@orm/*": ["src/orm/*"],
       "@mailer/*": ["src/mailer/*"],
       "@sockets/*": ["src/sockets/*"],
+      "@waitlist/*": ["src/waitlist/*"],
       "src/*": ["src/*"]
     }
   }

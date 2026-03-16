@@ -60,17 +60,10 @@ const InvoicesConfigSchema = z.object({
     .transform((v) => v === 'true'),
 });
 
-// Mailer (SMTP) configuration – optional; mailer will no-op if not configured
+// Mailer (Resend) configuration – optional; mailer will no-op if not configured
 const MailerConfigSchema = z.object({
-  MAIL_HOST: z.string().optional().default(''),
-  MAIL_PORT: z.coerce.number().optional().default(587),
-  MAIL_SECURE: z
-    .string()
-    .optional()
-    .transform((v) => v === 'true'),
-  MAIL_USER: z.string().optional().default(''),
-  MAIL_PASSWORD: z.string().optional().default(''),
-  MAIL_FROM: z.string().optional().default('noreply@lawpilot.com'),
+  RESEND_API_KEY: z.string().optional().default(''),
+  MAIL_FROM: z.string().optional().default('noreply@hookscope.com'),
 });
 
 // Stripe configuration (optional; required for billing and webhooks)
