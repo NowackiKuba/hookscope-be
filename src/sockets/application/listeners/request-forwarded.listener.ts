@@ -9,9 +9,7 @@ import { RequestForwardedEvent } from '@request/domain/events/request-forwarded.
 
 @EventsHandler(RequestForwardedEvent)
 @Injectable()
-export class RequestForwardedListener
-  implements IEventHandler<RequestForwardedEvent>
-{
+export class RequestForwardedListener implements IEventHandler<RequestForwardedEvent> {
   constructor(
     @Inject(LoggerProvider)
     private readonly logger: Logger,
@@ -20,6 +18,7 @@ export class RequestForwardedListener
   ) {}
 
   async handle(event: RequestForwardedEvent): Promise<void> {
+    this.logger.log('REQUEST FORWARDED EVENT: ', event.endpointId);
     this.socketsService.emitForwardUpdate(event.endpointId, {
       requestId: event.requestId,
       forwardStatus: event.forwardStatus,
@@ -27,4 +26,3 @@ export class RequestForwardedListener
     });
   }
 }
-
