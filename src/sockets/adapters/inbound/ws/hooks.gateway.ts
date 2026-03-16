@@ -34,11 +34,16 @@ export class HooksGateway
   }
 
   handleConnection(client: Socket): void {
-    // Client must send 'subscribe' with endpointId to join room
+    this.logger.info('WS CLIENT CONNECTED', {
+      socketId: client.id,
+      rooms: Array.from(client.rooms.values()),
+    });
   }
 
   handleDisconnect(client: Socket): void {
-    // Socket.io removes client from all rooms automatically
+    this.logger.info('WS CLIENT DISCONNECTED', {
+      socketId: client.id,
+    });
   }
 
   @SubscribeMessage('subscribe')
@@ -47,9 +52,18 @@ export class HooksGateway
       typeof payload === 'object' && payload && 'endpointId' in payload
         ? String(payload.endpointId)
         : String(payload);
-    this.logger.info('SUBSCRIBE WITH ENDPOINT ID', { endpointId });
+    this.logger.info('SUBSCRIBE WITH ENDPOINT ID', {
+      endpointId,
+      socketId: client.id,
+    });
     if (endpointId) {
-      client.join(ROOM_PREFIX + endpointId);
+      const room = ROOM_PREFIX + endpointId;
+      client.join(room);
+      this.logger.info('CLIENT JOINED ROOM', {
+        socketId: client.id,
+        room,
+        rooms: Array.from(client.rooms.values()),
+      });
     }
   }
 
@@ -62,12 +76,17 @@ export class HooksGateway
     forwardStatus: number;
     forwardError: string | null;
   }): void {
+    const room = ROOM_PREFIX + endpointId;
+    const socketsInRoom = this.server.sockets.adapter.rooms.get(room);
+    this.logger.info('EMIT FORWARD UPDATED ROOM STATE', {
+      endpointId,
+      room,
+      socketsInRoomCount: socketsInRoom ? socketsInRoom.size : 0,
+    });
     this.logger.info('EMIT FORWARD UPDATED', {
       endpointId,
       payload,
     });
-    this.server
-      .to(ROOM_PREFIX + endpointId)
-      .emit('forward.updated', payload);
+    this.server.to(room).emit('forward.updated', payload);
   }
 }
