@@ -4,7 +4,7 @@ import type {
   HttpClientPort,
   HttpResponse,
 } from '@shared/domain/ports/outbound/http.client.port';
-import https from 'https';
+import { Agent } from 'https';
 
 function toResponse(axiosRes: {
   status: number;
@@ -33,7 +33,7 @@ export class HttpClient implements HttpClientPort {
   private readonly client: AxiosInstance;
 
   constructor() {
-    const agent = new https.Agent({ rejectUnauthorized: false });
+    const agent = new Agent({ rejectUnauthorized: false });
     this.client = axios.create({ httpsAgent: agent });
   }
 
