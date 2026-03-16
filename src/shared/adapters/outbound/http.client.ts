@@ -4,8 +4,13 @@ import type {
   HttpClientPort,
   HttpResponse,
 } from '@shared/domain/ports/outbound/http.client.port';
+import https from 'https';
 
-function toResponse(axiosRes: { status: number; data: unknown; headers: Record<string, unknown> }): HttpResponse {
+function toResponse(axiosRes: {
+  status: number;
+  data: unknown;
+  headers: Record<string, unknown>;
+}): HttpResponse {
   const headers: Record<string, string> = {};
   for (const [key, value] of Object.entries(axiosRes.headers)) {
     if (value != null) {
@@ -28,10 +33,14 @@ export class HttpClient implements HttpClientPort {
   private readonly client: AxiosInstance;
 
   constructor() {
-    this.client = axios.create();
+    const agent = new https.Agent({ rejectUnauthorized: false });
+    this.client = axios.create({ httpsAgent: agent });
   }
 
-  async get(url: string, headers?: Record<string, string>): Promise<HttpResponse> {
+  async get(
+    url: string,
+    headers?: Record<string, string>,
+  ): Promise<HttpResponse> {
     const res = await this.client.get(url, { headers, responseType: 'json' });
     return toResponse(res);
   }
