@@ -14,6 +14,8 @@ import { RequestModule } from './request/request.module';
 import { RetryModule } from './retry/retry.module';
 import { SocketsModule } from './sockets/sockets.module';
 import { WaitlistModule } from './waitlist/waitlist.module';
+import { BullModule } from '@nestjs/bullmq';
+import { ConfigService as NestConfigService } from '@nestjs/config';
 
 @Module({
   imports: [
@@ -22,6 +24,32 @@ import { WaitlistModule } from './waitlist/waitlist.module';
     MailerModule,
     WinstonModule.forRoot(baseLoggerConfig('hookscope-be')),
     MikroOrmModule.forRoot(ormConfig),
+    BullModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: (configService: NestConfigService) => {
+        const host = configService.get<string>('REDIS_HOST') || 'localhost';
+        const port = configService.get<number>('REDIS_PORT') || 6379;
+        const password = configService.get<string>('REDIS_PASSWORD');
+
+        const connection: {
+          host: string;
+          port: number;
+          password?: string;
+        } = {
+          host,
+          port: Number(port),
+        };
+
+        if (password) {
+          connection.password = password;
+        }
+
+        return {
+          connection,
+        };
+      },
+      inject: [NestConfigService],
+    }),
     AuthModule,
     EndpointModule,
     RequestModule,

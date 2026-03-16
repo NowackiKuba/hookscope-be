@@ -9,6 +9,7 @@ services:
     restart: unless-stopped
     depends_on:
       - postgres
+      - redis
     ports:
       - '0.0.0.0:8080:8080'
     env_file:
@@ -36,5 +37,19 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
+  redis:
+    image: redis:7-alpine
+    container_name: hookscope-redis-dev
+    restart: unless-stopped
+    ports:
+      - '6379:6379'
+    volumes:
+      - redis_data:/data
+    command: redis-server --save 20 1 --loglevel warning --user user --requirepass eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81
+    environment:
+      REDIS_USER: ${REDIS_USER}
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+
 volumes:
   postgres_data:
+  redis_data:
