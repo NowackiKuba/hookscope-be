@@ -1,10 +1,4 @@
-import {
-  Entity,
-  ManyToOne,
-  OneToOne,
-  PrimaryKey,
-  Property,
-} from '@mikro-orm/core';
+import { Entity, OneToOne, Property } from '@mikro-orm/core';
 import { BaseEntity } from '@orm/entities/base.entity';
 import { RequestEntity } from '@request/adapters/outbound/persistence/entities/request.entity';
 import { RetryStatus } from '@retry/domain/enums/retry-status.enum';
@@ -18,8 +12,8 @@ export type RetryEntityProps = {
   attemptCount?: number;
   lastAttemptAt?: Date;
   nextAttemptAt?: Date;
-  responseStatus: number;
-  responseBody?: string;
+  responseStatus?: number | null;
+  responseBody?: string | null;
   customBody?: unknown;
   customHeaders?: Record<string, string>;
 };
@@ -75,7 +69,7 @@ export class RetryEntity extends BaseEntity implements RetryEntityProps {
     this.attemptCount = props.attemptCount;
     this.lastAttemptAt = props.lastAttemptAt;
     this.nextAttemptAt = props.nextAttemptAt;
-    this.responseStatus = props.responseStatus;
+    this.responseStatus = props.responseStatus ?? null;
     this.responseBody = props.responseBody;
     this.customBody = props.customBody;
     this.customHeaders = props.customHeaders;

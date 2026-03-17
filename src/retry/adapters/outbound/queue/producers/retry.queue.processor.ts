@@ -1,19 +1,49 @@
 import { Processor, WorkerHost } from '@nestjs/bullmq';
 import { Inject } from '@nestjs/common';
+import { MikroORM } from '@mikro-orm/core';
 import { RETRY_DELAY_MAP, Token } from '@retry/constants';
 import { Token as RequestToken } from '@request/constants';
 import { RetryStatus } from '@retry/domain/enums/retry-status.enum';
 import { RetryRepositoryPort } from '@retry/domain/ports/repositories/retry.repository.port';
-import { HttpService } from '@shared/constants';
+import { HttpService, LoggerProvider } from '@shared/constants';
+import { withForkedContext } from '@shared/utils/request-context';
 import { Job } from 'bullmq';
 import { RequestRepositoryPort } from '@request/domain/ports/outbound/persistence/repositories/request.repository.port';
 import { HttpServicePort } from '@shared/domain/ports/outbound/http.service.port';
 import { addMilliseconds } from 'date-fns';
 import { RetryQueuePort } from '@retry/domain/ports/outbound/queue/retry.queue.port';
+import type { Logger } from 'winston';
+
+function safeErrorMeta(error: unknown): {
+  name?: string;
+  message: string;
+  code?: unknown;
+  detail?: unknown;
+  stack?: string;
+} {
+  if (error instanceof Error) {
+    const anyErr = error as any;
+    const message =
+      typeof error.message === 'string'
+        ? error.message.split('\n')[0] // avoid logging giant SQL / HTML blobs
+        : String(error);
+    return {
+      name: typeof anyErr?.name === 'string' ? anyErr.name : error.name,
+      message,
+      code: anyErr?.code,
+      detail: anyErr?.detail ?? anyErr?.cause?.detail,
+      stack: error.stack,
+    };
+  }
+  return { message: String(error) };
+}
 
 @Processor('retry')
 export class RetryQueueProcessor extends WorkerHost {
   constructor(
+    @Inject(LoggerProvider)
+    private readonly logger: Logger,
+    private readonly orm: MikroORM,
     @Inject(HttpService)
     private readonly httpService: HttpServicePort,
     @Inject(Token.RetryRepository)
@@ -29,38 +59,138 @@ export class RetryQueueProcessor extends WorkerHost {
     job: Job<{ retryId: string }, any, string>,
     token?: string,
   ): Promise<any> {
-    const retry = await this.retryRepository.findById(job.data.retryId);
+    try {
+      await withForkedContext(this.orm, async () => {
+        this.logger.info('RETRY JOB START', {
+          jobId: job.id,
+          jobName: job.name,
+          retryId: job.data?.retryId,
+          data: job.data,
+          token,
+        });
 
-    if (!retry) {
-      // TODO
-    }
+        const retryId = job.data?.retryId;
+        if (!retryId) {
+          this.logger.warn('RETRY JOB MISSING RETRY ID', {
+            jobId: job.id,
+            jobName: job.name,
+            data: job.data,
+            token,
+          });
+          return;
+        }
 
-    const request = await this.requestRepository.findById(retry.requestId);
+        const retry = await this.retryRepository.findById(retryId);
 
-    if (retry.status !== RetryStatus.PENDING) {
-      // TODO
-    }
+        if (!retry) {
+          this.logger.warn('RETRY NOT FOUND', { retryId });
+          return;
+        }
 
-    const response = await this.httpService.send(request, retry.targetUrl);
+        const request = await this.requestRepository.findById(retry.requestId);
 
-    if (response.status >= 400) {
-      retry.onFail({
-        body: response.body,
-        next: addMilliseconds(
-          new Date(),
-          RETRY_DELAY_MAP.get(retry.attemptCount + 1),
-        ),
-        status: response.status,
+        if (!request) {
+          this.logger.warn('REQUEST NOT FOUND FOR RETRY', {
+            retryId: retry.id,
+            requestId: retry.requestId,
+          });
+          return;
+        }
+
+        if (retry.status !== RetryStatus.PENDING) {
+          this.logger.info('SKIP RETRY (NOT PENDING)', {
+            retryId: retry.id,
+            requestId: retry.requestId,
+            status: retry.status,
+            attemptCount: retry.attemptCount,
+          });
+          return;
+        }
+
+        this.logger.info('RETRY SENDING REQUEST', {
+          retryId: retry.id,
+          requestId: retry.requestId,
+          attemptCount: retry.attemptCount,
+          targetUrl: retry.targetUrl,
+        });
+
+        const overrides =
+          retry.customBody !== undefined || retry.customHeaders !== undefined
+            ? {
+                body: retry.customBody,
+                headers: retry.customHeaders,
+              }
+            : undefined;
+        const response = await this.httpService.send(
+          request,
+          retry.targetUrl,
+          overrides,
+        );
+
+        this.logger.info('RETRY RESPONSE RECEIVED', {
+          retryId: retry.id,
+          requestId: retry.requestId,
+          attemptCount: retry.attemptCount,
+          status: response.status,
+        });
+
+        if (response.status >= 400) {
+          const nextAttemptCount = retry.attemptCount + 1;
+          const nextDelayMs = RETRY_DELAY_MAP.get(nextAttemptCount);
+
+          retry.onFail({
+            body: response.body,
+            next: addMilliseconds(new Date(), nextDelayMs),
+            status: response.status,
+          });
+
+          if (nextDelayMs) {
+            await this.queue.scheduleRetry(retry.id, nextDelayMs);
+            this.logger.info('RETRY RESCHEDULED', {
+              retryId: retry.id,
+              requestId: retry.requestId,
+              attemptCount: retry.attemptCount,
+              nextDelayMs,
+            });
+          } else {
+            this.logger.warn('RETRY NOT RESCHEDULED (NO DELAY CONFIGURED)', {
+              retryId: retry.id,
+              requestId: retry.requestId,
+              attemptCount: retry.attemptCount,
+            });
+          }
+        } else {
+          retry.onSuccess({ body: response.body, status: response.status });
+          this.logger.info('RETRY SUCCEEDED', {
+            retryId: retry.id,
+            requestId: retry.requestId,
+            attemptCount: retry.attemptCount,
+            status: response.status,
+          });
+        }
+
+        await this.retryRepository.save(retry);
+        this.logger.info('RETRY SAVED', {
+          retryId: retry.id,
+          requestId: retry.requestId,
+          status: retry.status,
+          attemptCount: retry.attemptCount,
+        });
       });
-
-      await this.queue.scheduleRetry(
-        retry.id,
-        RETRY_DELAY_MAP.get(retry.attemptCount + 1),
-      );
-    } else {
-      retry.onSuccess({ body: response.body, status: response.status });
+    } catch (error) {
+      const meta = safeErrorMeta(error);
+      this.logger.error('RETRY JOB FAILED', {
+        jobId: job.id,
+        jobName: job.name,
+        data: job.data,
+        token,
+        errorName: meta.name,
+        error: meta.message,
+        code: meta.code,
+        detail: meta.detail,
+        stack: meta.stack,
+      });
+      throw error;
     }
-
-    await this.retryRepository.save(retry);
   }
 }

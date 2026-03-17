@@ -1,10 +1,12 @@
 import { randomUUID } from 'crypto';
 import { RetryStatus } from '../enums/retry-status.enum';
 import { generateUUID } from '@shared/utils/generate-uuid';
+import { Request } from '@request/domain/aggregates/request';
 
 export type RetryProps = {
   id?: string;
   requestId: string;
+  request?: Request;
   targetUrl: string;
   status: RetryStatus;
   attemptCount?: number;
@@ -21,6 +23,7 @@ export type RetryProps = {
 export type RetryJSON = {
   id: string;
   requestId: string;
+  request?: Request;
   targetUrl: string;
   status: RetryStatus;
   attemptCount: number;
@@ -37,6 +40,7 @@ export type RetryJSON = {
 export class Retry {
   private _id: string;
   private _requestId: string;
+  private _request?: Request;
   private _targetUrl: string;
   private _status: RetryStatus;
   private _attemptCount: number;
@@ -54,6 +58,7 @@ export class Retry {
     this._requestId = props.requestId;
     this._targetUrl = props.targetUrl;
     this._status = props.status;
+    this._request = props.request;
     this._attemptCount = props.attemptCount;
     this._lastAttemptAt = props.lastAttemptAt;
     this._nextAttemptAt = props.nextAttemptAt;
@@ -70,37 +75,40 @@ export class Retry {
   }
 
   get id(): string {
-    return this.props.id;
+    return this._id;
   }
   get requestId(): string {
-    return this.props.requestId;
+    return this._requestId;
+  }
+  get request(): Request {
+    return this._request;
   }
   get targetUrl(): string {
-    return this.props.targetUrl;
+    return this._targetUrl;
   }
   get status(): RetryStatus {
-    return this.props.status;
+    return this._status;
   }
   get attemptCount(): number {
-    return this.props.attemptCount;
+    return this._attemptCount;
   }
   get lastAttemptAt(): Date | null {
-    return this.props.lastAttemptAt;
+    return this._lastAttemptAt;
   }
   get nextAttemptAt(): Date | null {
-    return this.props.nextAttemptAt;
+    return this._nextAttemptAt;
   }
   get responseStatus(): number | null {
-    return this.props.responseStatus;
+    return this._responseStatus;
   }
   get responseBody(): string | null {
-    return this.props.responseBody;
+    return this._responseBody;
   }
   get createdAt(): Date {
-    return this.props.createdAt;
+    return this._createdAt;
   }
   get updatedAt(): Date {
-    return this.props.updatedAt;
+    return this._updatedAt;
   }
 
   get customBody(): unknown {
@@ -129,10 +137,20 @@ export class Retry {
     this._nextAttemptAt = null;
   }
 
+  /**
+   * Update optional body and headers to use when running this retry manually.
+   * Overrides the original request body/headers when set.
+   */
+  updatePayload(body?: unknown, headers?: Record<string, string>): void {
+    if (body !== undefined) this._customBody = body;
+    if (headers !== undefined) this._customHeaders = headers;
+  }
+
   toJSON(): RetryJSON {
     return {
       id: this._id,
       requestId: this._requestId,
+      request: this._request,
       targetUrl: this._targetUrl,
       status: this._status,
       attemptCount: this._attemptCount,

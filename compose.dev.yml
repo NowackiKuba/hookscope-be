@@ -45,7 +45,11 @@ services:
       - '6379:6379'
     volumes:
       - redis_data:/data
-    command: redis-server --save 20 1 --loglevel warning --user user --requirepass eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81
+    command: >
+      redis-server
+      --save 20 1
+      --loglevel warning
+      --user user on >eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81 allcommands allkeys
     environment:
       REDIS_USER: ${REDIS_USER}
       REDIS_PASSWORD: ${REDIS_PASSWORD}
