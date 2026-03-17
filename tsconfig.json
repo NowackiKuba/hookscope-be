@@ -31,6 +31,7 @@
       "@mailer/*": ["src/mailer/*"],
       "@sockets/*": ["src/sockets/*"],
       "@waitlist/*": ["src/waitlist/*"],
+      "@cli-token/*": ["src/cli-token/*"],
       "src/*": ["src/*"]
     }
   }

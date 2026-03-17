@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
+import { BullModule } from '@nestjs/bullmq';
 import { AuthModule } from '@auth/auth.module';
 import { EndpointModule } from '@endpoint/endpoint.module';
 import { BillingModule } from '@billing/billing.module';
@@ -21,8 +22,16 @@ import {
 } from '@shared/constants';
 import { HttpClient } from '@shared/adapters/outbound/http.client';
 import { HttpService } from '@shared/adapters/outbound/http.service';
+import { CleanupOldRequestsScheduler } from '@request/adapters/inbound/cron/cleanup-old-requests.scheduler';
+import { RequestCleanupQueueProducer } from '@request/adapters/outbound/queue/producers/request-cleanup.queue.producer';
+import { RequestCleanupQueueProcessor } from '@request/adapters/outbound/queue/processors/request-cleanup.queue.processor';
+import { RunRequestCleanupHandler } from '@request/application/commands/run-request-cleanup/run-request-cleanup.handler';
 
-const CommandHandlers = [ReceiveRequestHandler, DeleteRequestHandler];
+const CommandHandlers = [
+  ReceiveRequestHandler,
+  DeleteRequestHandler,
+  RunRequestCleanupHandler,
+];
 const QueryHandlers = [
   GetRequestsHandler,
   GetRequestByIdHandler,
@@ -30,16 +39,30 @@ const QueryHandlers = [
 ];
 
 @Module({
-  imports: [CqrsModule, AuthModule, EndpointModule, BillingModule],
+  imports: [
+    CqrsModule,
+    AuthModule,
+    EndpointModule,
+    BillingModule,
+    BullModule.registerQueue({
+      name: 'request-cleanup',
+    }),
+  ],
   controllers: [RequestsController, HooksController],
   providers: [
     ...CommandHandlers,
     ...QueryHandlers,
     RequestMapper,
     DomainExceptionFilter,
+    CleanupOldRequestsScheduler,
+    RequestCleanupQueueProcessor,
     {
       provide: Token.RequestRepository,
       useClass: RequestRepository,
+    },
+    {
+      provide: Token.RequestCleanupQueue,
+      useClass: RequestCleanupQueueProducer,
     },
     {
       provide: HttpClientProvider,
@@ -50,6 +73,6 @@ const QueryHandlers = [
       useClass: HttpService,
     },
   ],
-  exports: [CqrsModule, Token.RequestRepository],
+  exports: [CqrsModule, Token.RequestRepository, Token.RequestCleanupQueue],
 })
 export class RequestModule {}

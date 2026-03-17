@@ -6,7 +6,7 @@ import { BullModule } from '@nestjs/bullmq';
 import { CqrsModule } from '@nestjs/cqrs';
 import { ForwardFailedListener } from '@request/application/listeners/forward-failed.listener';
 import { RetryQueueProducer } from '@retry/adapters/outbound/queue/producers/retry.queue.producer';
-import { RetryQueueProcessor } from '@retry/adapters/outbound/queue/producers/retry.queue.processor';
+import { RetryQueueProcessor } from '@retry/adapters/outbound/queue/processors/retry.queue.processor';
 import {
   HttpClientProvider,
   HttpService as HttpServiceProvider,
