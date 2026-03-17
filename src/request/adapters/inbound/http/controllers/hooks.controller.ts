@@ -5,6 +5,16 @@ import { JwtAuthGuard } from '@auth/infrastructure/guards/jwt-auth.guard';
 import { GetEndpointByTokenQuery } from '@endpoint/application/queries/get-endpoint-by-token/get-endpoint-by-token.query';
 import { ReceiveRequestCommand } from '@request/application/commands/receive-request/receive-request.command';
 import type { Request as ExpressRequest } from 'express';
+import { Token as BillingToken } from '@billing/constants';
+import type { SubscriptionRepositoryPort } from '@billing/domain/ports/outbound/persistence/repositories/subscription.repository.port';
+import type { PacketRepositoryPort } from '@billing/domain/ports/outbound/persistence/repositories/packet.repository.port';
+import {
+  packetToLimits,
+  subscriptionPeriod,
+} from '@billing/application/utils/packet-limits';
+import { Token as RequestToken } from '@request/constants';
+import type { RequestRepositoryPort } from '@request/domain/ports/outbound/persistence/repositories/request.repository.port';
+import { Inject } from '@nestjs/common';
 
 function headersToRecord(headers: ExpressRequest['headers']): Record<string, string> {
   const out: Record<string, string> = {};
@@ -32,6 +42,12 @@ export class HooksController {
   constructor(
     private readonly commandBus: CommandBus,
     private readonly queryBus: QueryBus,
+    @Inject(BillingToken.SubscriptionRepository)
+    private readonly subscriptions: SubscriptionRepositoryPort,
+    @Inject(BillingToken.PacketRepository)
+    private readonly packets: PacketRepositoryPort,
+    @Inject(RequestToken.RequestRepository)
+    private readonly requests: RequestRepositoryPort,
   ) {}
 
   @Public()
@@ -46,6 +62,22 @@ export class HooksController {
       );
       if (!endpoint) {
         return { received: true };
+      }
+
+      const userId = endpoint.userId;
+      const subscription = await this.subscriptions.findByUserId(userId);
+      const packet = subscription
+        ? await this.packets.findById(subscription.toJSON().packetId)
+        : await this.packets.findByCode('free');
+
+      let overlimit = false;
+      if (packet) {
+        const limits = packetToLimits(packet);
+        if (limits.requestsPerMonth != null) {
+          const { start, end } = subscriptionPeriod({ packet, subscription });
+          const used = await this.requests.countByUserIdInPeriod(userId, start, end);
+          overlimit = used >= limits.requestsPerMonth;
+        }
       }
 
       const contentType =
@@ -72,7 +104,7 @@ export class HooksController {
           ip: req.ip ?? req.socket?.remoteAddress ?? null,
           contentType,
           size: Number.isNaN(size) ? 0 : size,
-          overlimit: false,
+          overlimit,
         }),
       );
     } catch {

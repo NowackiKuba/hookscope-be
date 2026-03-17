@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
 import { AuthModule } from '@auth/auth.module';
 import { EndpointModule } from '@endpoint/endpoint.module';
+import { BillingModule } from '@billing/billing.module';
 import { ReceiveRequestHandler } from '@request/application/commands/receive-request/receive-request.handler';
 import { DeleteRequestHandler } from '@request/application/commands/delete-request/delete-request.handler';
 import { GetRequestsHandler } from '@request/application/queries/get-requests/get-requests.handler';
@@ -29,7 +30,7 @@ const QueryHandlers = [
 ];
 
 @Module({
-  imports: [CqrsModule, AuthModule, EndpointModule],
+  imports: [CqrsModule, AuthModule, EndpointModule, BillingModule],
   controllers: [RequestsController, HooksController],
   providers: [
     ...CommandHandlers,

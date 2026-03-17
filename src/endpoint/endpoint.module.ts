@@ -13,6 +13,8 @@ import { EndpointRepository } from '@endpoint/adapters/outbound/persistence/repo
 import { EndpointMapper } from '@endpoint/adapters/outbound/persistence/mappers/endpoint.mapper';
 import { EndpointsController } from '@endpoint/adapters/inbound/http/controllers/endpoints.controller';
 import { DomainExceptionFilter } from '@endpoint/adapters/inbound/http/filters/domain-exception.filter';
+import { BillingModule } from '@billing/billing.module';
+import { SubscriptionLimitsGuard } from '@endpoint/adapters/inbound/http/guards/subscription-limits.guard';
 
 const CommandHandlers = [CreateEndpointHandler, DeleteEndpointHandler];
 const QueryHandlers = [
@@ -22,13 +24,14 @@ const QueryHandlers = [
 ];
 
 @Module({
-  imports: [CqrsModule, ConfigModule, AuthModule],
+  imports: [CqrsModule, ConfigModule, AuthModule, BillingModule],
   controllers: [EndpointsController],
   providers: [
     ...CommandHandlers,
     ...QueryHandlers,
     EndpointMapper,
     DomainExceptionFilter,
+    SubscriptionLimitsGuard,
     {
       provide: Token.EndpointRepository,
       useClass: EndpointRepository,

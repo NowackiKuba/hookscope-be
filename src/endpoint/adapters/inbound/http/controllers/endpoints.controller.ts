@@ -25,6 +25,7 @@ import type { Config } from '@config/config.schema';
 import type { EndpointResponseDto } from '../dto/endpoint-response.dto';
 import { CreateEndpointDto, createEndpointSchema } from '../dto/create-endpoint';
 import type { Endpoint } from '@endpoint/domain/aggregates/endpoint';
+import { SubscriptionLimitsGuard } from '../guards/subscription-limits.guard';
 
 function toResponseDto(endpoint: Endpoint, appUrl: string): EndpointResponseDto {
   const json = endpoint.toJSON();
@@ -64,6 +65,7 @@ export class EndpointsController {
   }
 
   @Post()
+  @UseGuards(SubscriptionLimitsGuard)
   async create(
     @Body() body: CreateEndpointDto,
     @CurrentUser() user: AuthenticatedUser,
