@@ -20,6 +20,8 @@ import { DomainExceptionFilter } from '@retry/adapters/inbound/http/filters/doma
 import { GetRetriesHandler } from '@retry/application/queries/get-retries/get-retries.handler';
 import { GetRetryByIdHandler } from '@retry/application/queries/get-retry-by-id/get-retry-by-id.handler';
 import { RunRetryManuallyHandler } from '@retry/application/commands/run-retry-manually/run-retry-manually.handler';
+import { UpdateRetryPayloadHandler } from '@retry/application/commands/update-retry-payload/update-retry-payload.handler';
+
 import { RequestMapper } from '@request/adapters/outbound/persistence/mappers/request.mapper';
 
 @Module({
@@ -40,6 +42,7 @@ import { RequestMapper } from '@request/adapters/outbound/persistence/mappers/re
     GetRetriesHandler,
     GetRetryByIdHandler,
     RunRetryManuallyHandler,
+    UpdateRetryPayloadHandler,
     DomainExceptionFilter,
     {
       provide: Token.RetryRepository,

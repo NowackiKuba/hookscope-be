@@ -5,6 +5,7 @@ export interface EndpointRepositoryPort {
   findById(id: string): Promise<Endpoint | null>;
   findByToken(token: string): Promise<Endpoint | null>;
   findAllByUserId(userId: string): Promise<Endpoint[]>;
+  countByUserId(userId: string): Promise<number>;
   incrementRequestCount(id: string, lastRequestAt: Date): Promise<void>;
   delete(id: string): Promise<void>;
 }

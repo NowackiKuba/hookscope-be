@@ -20,6 +20,8 @@
     "paths": {
       "@auth/*": ["src/auth/*"],
       "@users/*": ["src/users/*"],
+      "@billing/*": ["src/billing/*"],
+      "@usage/*": ["src/usage/*"],
       "@endpoint/*": ["src/endpoint/*"],
       "@request/*": ["src/request/*"],
       "@retry/*": ["src/retry/*"],

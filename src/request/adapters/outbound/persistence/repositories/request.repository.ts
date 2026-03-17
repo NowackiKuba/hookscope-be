@@ -81,6 +81,18 @@ export class RequestRepository implements RequestRepositoryPort {
     } as FilterQuery<RequestEntity>);
   }
 
+  async countByUserIdInPeriod(
+    userId: string,
+    start: Date,
+    end: Date,
+  ): Promise<number> {
+    const em = this.getEm();
+    return em.count(RequestEntity, {
+      endpoint: { user: { id: userId } },
+      receivedAt: { $gte: start, $lt: end },
+    } as FilterQuery<RequestEntity>);
+  }
+
   async countThisMonth(endpointId: string): Promise<number> {
     const em = this.getEm();
     const now = new Date();

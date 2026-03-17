@@ -14,6 +14,8 @@ import { RequestModule } from './request/request.module';
 import { RetryModule } from './retry/retry.module';
 import { SocketsModule } from './sockets/sockets.module';
 import { WaitlistModule } from './waitlist/waitlist.module';
+import { BillingModule } from './billing/billing.module';
+import { UsageModule } from './usage/usage.module';
 import { BullModule } from '@nestjs/bullmq';
 import { ConfigService as NestConfigService } from '@nestjs/config';
 
@@ -56,6 +58,8 @@ import { ConfigService as NestConfigService } from '@nestjs/config';
     RetryModule,
     SocketsModule,
     WaitlistModule,
+    BillingModule,
+    UsageModule,
   ],
   controllers: [AppController],
   providers: [AppService],

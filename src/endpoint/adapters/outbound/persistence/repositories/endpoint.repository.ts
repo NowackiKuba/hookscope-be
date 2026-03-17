@@ -63,6 +63,14 @@ export class EndpointRepository implements EndpointRepositoryPort {
     return entities.map((e) => this.mapper.toDomain(e));
   }
 
+  async countByUserId(userId: string): Promise<number> {
+    const em = this.getEm();
+    return em.count(
+      EndpointEntity,
+      { user: userId } as FilterQuery<EndpointEntity>,
+    );
+  }
+
   async incrementRequestCount(id: string, lastRequestAt: Date): Promise<void> {
     const em = this.getEm();
     const entity = await em.findOne(EndpointEntity, { id });

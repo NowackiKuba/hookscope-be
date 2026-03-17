@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Get,
+  Patch,
   Param,
   Post,
   Query,
@@ -16,6 +17,7 @@ import { DomainExceptionFilter } from '../filters/domain-exception.filter';
 import { GetRetriesQueue } from '@retry/application/queries/get-retries/get-retries.queue';
 import { GetRetryByIdQuery } from '@retry/application/queries/get-retry-by-id/get-retry-by-id.query';
 import { RunRetryManuallyCommand } from '@retry/application/commands/run-retry-manually/run-retry-manually.command';
+import { UpdateRetryPayloadCommand } from '@retry/application/commands/update-retry-payload/update-retry-payload.command';
 import type { GetRetriesInput } from '../dto/get-retries';
 import type { RunRetryManuallyInput } from '../dto/run-retry-manually';
 import {
@@ -68,5 +70,17 @@ export class RetriesController {
     return this.commandBus.execute(
       new RunRetryManuallyCommand(id, user.userId, body.body, body.headers),
     );
+  }
+
+  @Patch(':id')
+  async updatePayload(
+    @Param('id') id: string,
+    @Body() body: { body?: unknown; headers?: Record<string, string> },
+    @CurrentUser() user: AuthenticatedUser,
+  ): Promise<RetryResponseDto> {
+    const retry = (await this.commandBus.execute(
+      new UpdateRetryPayloadCommand(id, user.userId, body.body, body.headers),
+    )) as Retry;
+    return toRetryResponseDto(retry);
   }
 }

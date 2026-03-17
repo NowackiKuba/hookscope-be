@@ -10,6 +10,8 @@ import { EndpointEntity } from '@endpoint/adapters/outbound/persistence/entities
 import { RequestEntity } from '@request/adapters/outbound/persistence/entities/request.entity';
 import { RetryEntity } from '@retry/adapters/outbound/persistence/entities/retry.entity';
 import { WaitlistEntity } from '@waitlist/adapters/outbound/persistence/entities/waitlist.entity';
+import { PacketEntity } from '@billing/adapters/outbound/persistence/entities/packet.entity';
+import { SubscriptionEntity } from '@billing/adapters/outbound/persistence/entities/subscription.entity';
 import { Migration20260314171016 } from './migrations/Migration20260314171016';
 import { Migration20260314180000 } from './migrations/Migration20260314180000';
 import { Migration20260314200000 } from './migrations/Migration20260314200000';
@@ -17,6 +19,7 @@ import { Migration20260315154906 } from './migrations/Migration20260315154906';
 import { Migration20260316000000 } from './migrations/Migration20260316000000';
 import { Migration20260316160135 } from './migrations/Migration20260316160135';
 import { Migration20260317093627 } from './migrations/Migration20260317093627';
+import { Migration20260317123000 } from './migrations/Migration20260317123000';
 
 // Create Winston logger instance for MikroORM
 // This is used in static config before NestJS DI is available
@@ -70,6 +73,8 @@ export const config = defineConfig({
     RequestEntity,
     RetryEntity,
     WaitlistEntity,
+    PacketEntity,
+    SubscriptionEntity,
   ],
   extensions: [SeedManager, Migrator],
   //
@@ -91,6 +96,7 @@ export const config = defineConfig({
       { name: Migration20260316000000.name, class: Migration20260316000000 },
       { name: Migration20260316160135.name, class: Migration20260316160135 },
       { name: Migration20260317093627.name, class: Migration20260317093627 },
+      { name: Migration20260317123000.name, class: Migration20260317123000 },
     ],
   },
 });
