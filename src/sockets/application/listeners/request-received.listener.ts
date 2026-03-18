@@ -36,6 +36,10 @@ export class RequestReceivedListener implements IEventHandler<RequestReceivedEve
 
     const payload = request.toJSON();
     this.socketsService.emitRequest(event.endpointId, payload);
-    this.cliSocketsService.emitRequest(event.endpointId, payload);
+    this.cliSocketsService.emitRequest(
+      event.endpointId,
+      payload,
+      event.targetUrl,
+    );
   }
 }

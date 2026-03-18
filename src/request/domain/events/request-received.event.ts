@@ -3,5 +3,6 @@ export class RequestReceivedEvent {
     public readonly requestId: string,
     public readonly endpointId: string,
     public readonly overlimit: boolean,
+    public readonly targetUrl: string | null,
   ) {}
 }

@@ -69,7 +69,12 @@ export class ReceiveRequestHandler implements ICommandHandler<ReceiveRequestComm
       overlimit: saved.overlimit,
     });
     this.eventBus.publish(
-      new RequestReceivedEvent(saved.id, saved.endpointId, saved.overlimit),
+      new RequestReceivedEvent(
+        saved.id,
+        saved.endpointId,
+        saved.overlimit,
+        endpoint?.targetUrl ?? null,
+      ),
     );
 
     const targetUrl = endpoint?.targetUrl;

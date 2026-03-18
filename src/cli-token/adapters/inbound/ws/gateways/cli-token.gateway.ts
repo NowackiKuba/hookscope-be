@@ -38,8 +38,14 @@ export class CliGateway implements CliSocketsServicePort {
   ) {}
   @WebSocketServer() server!: Server;
 
-  emitRequest(endpointId: string, payload: RequestJSON): void {
-    this.server.to('cli:endpoint:' + endpointId).emit('request.received', payload);
+  emitRequest(
+    endpointId: string,
+    payload: RequestJSON,
+    targetUrl: string | null,
+  ): void {
+    this.server
+      .to('cli:endpoint:' + endpointId)
+      .emit('request.received', { ...payload, targetUrl });
   }
 
   @SubscribeMessage('auth')
