@@ -31,12 +31,6 @@ export class CreateUserHandler implements ICommandHandler<CreateUserCommand> {
     });
     const created = await this.userRepository.create(user);
 
-    await this.commandBus.execute(
-      new CreateCLITokenCommand({
-        id: generateUUID(),
-        userId: created.id.value,
-      }),
-    );
     return created.id.value;
   }
 

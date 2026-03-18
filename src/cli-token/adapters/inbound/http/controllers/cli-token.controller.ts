@@ -48,16 +48,14 @@ export class CLITokenController {
   }
 
   @Post()
-  async create(
-    @CurrentUser() user: AuthenticatedUser,
-  ): Promise<{ token: string }> {
+  async create(@CurrentUser() user: AuthenticatedUser): Promise<string> {
     const rawToken = (await this.commandBus.execute(
       new CreateCLITokenCommand({
         id: generateUUID(),
         userId: user.userId,
       }),
     )) as string;
-    return { token: rawToken };
+    return rawToken;
   }
 
   @Post('rotate')
