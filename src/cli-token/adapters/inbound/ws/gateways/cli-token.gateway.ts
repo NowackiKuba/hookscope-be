@@ -1,5 +1,5 @@
 import { Token } from '@cli-token/constants';
-import { Token as AuthToken } from '@auth/constants';
+import { Token as AuthToken, DEFAULT_SALT } from '@auth/constants';
 import { CLITokenRepositoryPort } from '@cli-token/domain/ports/outbound/persistence/repositories/cli-token.repository.port';
 import { CLITokenHash } from '@cli-token/domain/value-objects/cli-token-hash.vo';
 import { MikroORM } from '@mikro-orm/core';
@@ -70,8 +70,12 @@ export class CliGateway {
           return;
         }
 
+        this.logger.info('RAW TOKEN: ', raw);
+        const rawHashed = await this.hashService.hash(raw, DEFAULT_SALT);
+        this.logger.info('RAW HSAHED TOKEN: ', rawHashed);
+
         const cliToken = await this.cliTokenRepository.findByTokenHash(
-          CLITokenHash.create(raw),
+          CLITokenHash.create(rawHashed),
         );
 
         if (!cliToken) {
@@ -116,7 +120,10 @@ export class CliGateway {
       });
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
-      this.logger.error('CLI AUTH FAILED', { socketId: client.id, error: message });
+      this.logger.error('CLI AUTH FAILED', {
+        socketId: client.id,
+        error: message,
+      });
       client.emit('auth.error', { message: 'internal error' });
       client.disconnect();
     }
