@@ -16,6 +16,7 @@ import { SocketsModule } from './sockets/sockets.module';
 import { WaitlistModule } from './waitlist/waitlist.module';
 import { BillingModule } from './billing/billing.module';
 import { UsageModule } from './usage/usage.module';
+import { CliTokenModule } from './cli-token/cli-token.module';
 import { BullModule } from '@nestjs/bullmq';
 import { ConfigService as NestConfigService } from '@nestjs/config';
 
@@ -60,6 +61,7 @@ import { ConfigService as NestConfigService } from '@nestjs/config';
     WaitlistModule,
     BillingModule,
     UsageModule,
+    CliTokenModule,
   ],
   controllers: [AppController],
   providers: [AppService],

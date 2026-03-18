@@ -9,6 +9,7 @@ import { randomBytes } from 'crypto';
 import { CLIToken } from '@cli-token/domain/aggregates/cli-token';
 import { LoggerProvider } from '@shared/constants';
 import type { Logger } from 'winston';
+import { CLITokenAlreadyExistsException } from '@cli-token/domain/exceptions/cli-token-already-exists.exception';
 
 @CommandHandler(CreateCLITokenCommand)
 export class CreateCLITokenHandler implements ICommandHandler<CreateCLITokenCommand> {
@@ -33,7 +34,7 @@ export class CreateCLITokenHandler implements ICommandHandler<CreateCLITokenComm
           userId,
           existingId: existing.id.value,
         });
-        throw new Error('CLI token already exists for user');
+        throw new CLITokenAlreadyExistsException(userId);
       }
 
       const code = randomBytes(32).toString('hex');

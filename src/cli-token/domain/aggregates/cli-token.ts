@@ -62,6 +62,11 @@ export class CLIToken {
     this._lastUsedAt = new Date();
   }
 
+  rotate(tokenHash: string, prefix: string): void {
+    this._tokenHash = CLITokenHash.create(tokenHash);
+    this._prefix = CLITokenPrefix.create(prefix);
+  }
+
   toJSON(): CLITokenJSON {
     return {
       id: this._id.value,

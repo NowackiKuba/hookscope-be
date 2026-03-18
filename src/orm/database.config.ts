@@ -12,6 +12,7 @@ import { RetryEntity } from '@retry/adapters/outbound/persistence/entities/retry
 import { WaitlistEntity } from '@waitlist/adapters/outbound/persistence/entities/waitlist.entity';
 import { PacketEntity } from '@billing/adapters/outbound/persistence/entities/packet.entity';
 import { SubscriptionEntity } from '@billing/adapters/outbound/persistence/entities/subscription.entity';
+import { CLITokenEntity } from '@cli-token/adapters/outbound/persistence/entities/cli-token.entity';
 import { Migration20260314171016 } from './migrations/Migration20260314171016';
 import { Migration20260314180000 } from './migrations/Migration20260314180000';
 import { Migration20260314200000 } from './migrations/Migration20260314200000';
@@ -75,6 +76,7 @@ export const config = defineConfig({
     WaitlistEntity,
     PacketEntity,
     SubscriptionEntity,
+    CLITokenEntity,
   ],
   extensions: [SeedManager, Migrator],
   //

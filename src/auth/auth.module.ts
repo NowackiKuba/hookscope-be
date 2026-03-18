@@ -91,6 +91,7 @@ const QueryHandlers = [GetUserHandler];
     ApiKeyGuard,
     ApiKeyOrAuthWithAdminGuard,
     Token.AuthenticationService,
+    Token.HashProvider,
   ],
 })
 export class AuthModule {}

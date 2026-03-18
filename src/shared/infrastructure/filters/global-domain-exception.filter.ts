@@ -12,6 +12,7 @@ import { BaseExceptionToHttpMapper } from '../http/exception-to-http.mapper.base
 // Import module exception mappers (add more as modules are implemented)
 import { ExceptionToHttpMapper as UsersExceptionToHttpMapper } from '../../../users/adapters/inbound/http/mappers/exception-to-http.mapper';
 import { ExceptionToHttpMapper as RetryExceptionToHttpMapper } from '../../../retry/adapters/inbound/http/mappers/exception-to-http.mapper';
+import { ExceptionToHttpMapper as CliTokenExceptionToHttpMapper } from '../../../cli-token/adapters/inbound/http/mappers/exception-to-http.mapper';
 
 type ExceptionMapperType = {
   map: (exception: DomainException, path?: string) => HttpExceptionResponse;
@@ -30,6 +31,7 @@ export class GlobalDomainExceptionFilter {
   private readonly mappers: ExceptionMapperType[] = [
     UsersExceptionToHttpMapper,
     RetryExceptionToHttpMapper,
+    CliTokenExceptionToHttpMapper,
   ];
 
   constructor(
