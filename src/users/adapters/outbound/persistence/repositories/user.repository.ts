@@ -48,7 +48,8 @@ export class UserRepository implements UserRepositoryPort {
     entity.role = updated.role;
     entity.isActive = updated.isActive;
     entity.resetPasswordToken = updated.resetPasswordToken ?? null;
-    entity.resetPasswordTokenExpiresAt = updated.resetPasswordTokenExpiresAt ?? null;
+    entity.resetPasswordTokenExpiresAt =
+      updated.resetPasswordTokenExpiresAt ?? null;
     entity.createdBy = updated.createdBy ?? null;
     entity.createdById = updated.createdById ?? null;
     entity.updatedAt = new Date();
@@ -89,9 +90,20 @@ export class UserRepository implements UserRepositoryPort {
     return count > 0;
   }
 
+  async getByUsername(username: string): Promise<User> {
+    const em = this.getEm();
+    const entity = await em.findOne(UserEntity, { username });
+    return entity ? this.mapper.toDomain(entity) : null;
+  }
+
   async getAll(filters: BaseFilters): Promise<Page<User>> {
     const em = this.getEm();
-    const { limit = 20, offset = 0, orderBy = 'asc', orderByField = 'createdAt' } = filters;
+    const {
+      limit = 20,
+      offset = 0,
+      orderBy = 'asc',
+      orderByField = 'createdAt',
+    } = filters;
     const [entities, totalCount] = await em.findAndCount(
       UserEntity,
       {},

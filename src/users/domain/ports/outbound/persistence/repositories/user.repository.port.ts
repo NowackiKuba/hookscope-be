@@ -9,6 +9,7 @@ export interface UserRepositoryPort {
   update(user: User): Promise<void>;
   delete(id: UserId): Promise<void>;
   getById(id: UserId): Promise<User | null>;
+  getByUsername(username: string): Promise<User | null>;
   getByEmail(email: Email): Promise<User | null>;
   getByResetPasswordToken(token: string): Promise<User | null>;
   existsByEmail(email: Email): Promise<boolean>;
