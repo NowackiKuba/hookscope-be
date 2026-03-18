@@ -70,9 +70,9 @@ export class CliGateway {
           return;
         }
 
-        this.logger.info('RAW TOKEN: ', raw);
+        this.logger.info(`RAW TOKEN: ${raw}`);
         const rawHashed = await this.hashService.hash(raw, DEFAULT_SALT);
-        this.logger.info('RAW HSAHED TOKEN: ', rawHashed);
+        this.logger.info(`RAW HSAHED TOKEN: ${rawHashed}`);
 
         const cliToken = await this.cliTokenRepository.findByTokenHash(
           CLITokenHash.create(rawHashed),
