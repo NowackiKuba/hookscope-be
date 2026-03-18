@@ -73,9 +73,12 @@ export class CliGateway {
 
         const prefix = token.substring(0, 12);
 
+        this.logger.info(`PREFIX: ${prefix}`);
         const cliToken = await this.cliTokenRepository.findByPrefix(
           CLITokenPrefix.create(prefix),
         );
+
+        this.logger.info(`TOKEN: ${cliToken}`);
 
         if (!cliToken) {
           this.logger.warn('CLI AUTH TOKEN NOT FOUND', { socketId: client.id });
