@@ -45,8 +45,8 @@ export class CliGateway {
 
     try {
       await withForkedContext(this.orm, async () => {
-        const token = payload?.token;
-        if (typeof token !== 'string' || token.trim().length === 0) {
+        const token = typeof payload?.token === 'string' ? payload.token.trim() : '';
+        if (token.length === 0) {
           this.logger.warn('CLI AUTH MISSING TOKEN', { socketId: client.id });
           client.emit('auth.error', { message: 'invalid token' });
           client.disconnect();
@@ -63,7 +63,7 @@ export class CliGateway {
           return;
         }
 
-        const raw = token.replace('cli_', '');
+        const raw = token.slice(4);
         if (raw.length === 0) {
           this.logger.warn('CLI AUTH EMPTY RAW TOKEN', { socketId: client.id });
           client.emit('auth.error', { message: 'invalid token' });
@@ -71,17 +71,20 @@ export class CliGateway {
           return;
         }
 
-        const prefix = token.substring(0, 12);
-
-        this.logger.info(`PREFIX: ${prefix}`);
+        const prefix = token.slice(0, 12);
+        this.logger.info('CLI AUTH LOOKUP BY PREFIX', {
+          socketId: client.id,
+          prefix,
+        });
         const cliToken = await this.cliTokenRepository.findByPrefix(
           CLITokenPrefix.create(prefix),
         );
 
-        this.logger.info(`TOKEN: ${cliToken}`);
-
         if (!cliToken) {
-          this.logger.warn('CLI AUTH TOKEN NOT FOUND', { socketId: client.id });
+          this.logger.warn('CLI AUTH TOKEN NOT FOUND', {
+            socketId: client.id,
+            prefix,
+          });
           client.emit('auth.error', { message: 'invalid token' });
           client.disconnect();
           return;
