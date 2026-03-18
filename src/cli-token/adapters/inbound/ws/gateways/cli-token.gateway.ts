@@ -18,6 +18,7 @@ import { GetEndpointsQuery } from '@endpoint/application/queries/get-endpoints/g
 import { GetEndpointByIdQuery } from '@endpoint/application/queries/get-endpoint-by-id/get-endpoint-by-id.query';
 import { Endpoint } from '@endpoint/domain/endpoint.entity';
 import { withForkedContext } from '@shared/utils/request-context';
+import { CLITokenPrefix } from '@cli-token/domain/value-objects/cli-token-prefix.vo';
 
 const ROOM_PREFIX = 'cli:endpoint:';
 
@@ -70,12 +71,10 @@ export class CliGateway {
           return;
         }
 
-        this.logger.info(`RAW TOKEN: ${raw}`);
-        const rawHashed = await this.hashService.hash(raw, DEFAULT_SALT);
-        this.logger.info(`RAW HSAHED TOKEN: ${rawHashed}`);
+        const prefix = token.substring(0, 12);
 
-        const cliToken = await this.cliTokenRepository.findByTokenHash(
-          CLITokenHash.create(rawHashed),
+        const cliToken = await this.cliTokenRepository.findByPrefix(
+          CLITokenPrefix.create(prefix),
         );
 
         if (!cliToken) {

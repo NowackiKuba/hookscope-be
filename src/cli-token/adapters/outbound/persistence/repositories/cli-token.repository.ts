@@ -6,6 +6,7 @@ import { EntityManager, EntityRepository } from '@mikro-orm/postgresql';
 import { Injectable } from '@nestjs/common';
 import { CLITokenEntity } from '../entities/cli-token.entity';
 import { CLITokenMapper } from '../mappers/cli-token.mapper';
+import { CLITokenPrefix } from '@cli-token/domain/value-objects/cli-token-prefix.vo';
 
 @Injectable()
 export class CLITokenRepository implements CLITokenRepositoryPort {
@@ -41,6 +42,14 @@ export class CLITokenRepository implements CLITokenRepositoryPort {
   async findById(id: CLITokenId): Promise<CLIToken | null> {
     const entity = await this.dbSource.findOne(
       { id: id.value },
+      { populate: ['user'] },
+    );
+    return entity ? this.mapper.toDomain(entity) : null;
+  }
+
+  async findByPrefix(prefix: CLITokenPrefix): Promise<CLIToken | null> {
+    const entity = await this.dbSource.findOne(
+      { prefix: prefix.value },
       { populate: ['user'] },
     );
     return entity ? this.mapper.toDomain(entity) : null;
