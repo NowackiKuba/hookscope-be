@@ -28,7 +28,7 @@ function toResponseDto(token: CLIToken): CLITokenResponseDto {
   };
 }
 
-@Controller('cli-token')
+@Controller('cli-tokens')
 @UseFilters(DomainExceptionFilter)
 @UseGuards(AuthGuard)
 export class CLITokenController {
@@ -38,7 +38,9 @@ export class CLITokenController {
   ) {}
 
   @Get()
-  async get(@CurrentUser() user: AuthenticatedUser): Promise<CLITokenResponseDto | null> {
+  async get(
+    @CurrentUser() user: AuthenticatedUser,
+  ): Promise<CLITokenResponseDto | null> {
     const token = (await this.queryBus.execute(
       new GetUserCLITokenQuery({ userId: user.userId }),
     )) as CLIToken | null;
@@ -67,9 +69,8 @@ export class CLITokenController {
       new GetUserCLITokenQuery({ userId: user.userId }),
     )) as CLIToken | null;
     if (!token) {
-      const { CLITokenNotFoundException } = await import(
-        '@cli-token/domain/exceptions/cli-token-not-found.exception'
-      );
+      const { CLITokenNotFoundException } =
+        await import('@cli-token/domain/exceptions/cli-token-not-found.exception');
       throw new CLITokenNotFoundException();
     }
     const rawToken = (await this.commandBus.execute(

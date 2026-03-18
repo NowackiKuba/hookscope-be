@@ -67,7 +67,8 @@ export class User {
     this._role = props.role ?? UserRole.USER;
     this._isActive = props.isActive ?? true;
     this._resetPasswordToken = props.resetPasswordToken ?? null;
-    this._resetPasswordTokenExpiresAt = props.resetPasswordTokenExpiresAt ?? null;
+    this._resetPasswordTokenExpiresAt =
+      props.resetPasswordTokenExpiresAt ?? null;
     this._createdBy = props.createdBy ?? null;
     this._createdById = props.createdById ?? null;
     this._createdAt = props.createdAt ?? new Date();
@@ -147,6 +148,36 @@ export class User {
     this._resetPasswordToken = null;
     this._resetPasswordTokenExpiresAt = null;
     this._updatedAt = new Date();
+  }
+
+  update(props: {
+    firstName?: string;
+    lastName?: string;
+    avatarUrl?: string;
+    username?: string;
+  }): void {
+    let updated = false;
+
+    if (typeof props.firstName === 'string') {
+      this._firstName = props.firstName;
+      updated = true;
+    }
+    if (typeof props.lastName === 'string') {
+      this._lastName = props.lastName;
+      updated = true;
+    }
+    if (typeof props.avatarUrl === 'string') {
+      this._avatarUrl = props.avatarUrl;
+      updated = true;
+    }
+    if (typeof props.username === 'string') {
+      this._username = props.username;
+      updated = true;
+    }
+
+    if (updated) {
+      this._updatedAt = new Date();
+    }
   }
 
   toJSON(): UserJSON {

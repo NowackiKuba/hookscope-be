@@ -1,12 +1,13 @@
 import { Module } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
 import { CreateUserHandler } from '@users/application/commands/create-user/create-user.handler';
+import { UpdateUserHandler } from '@users/application/commands/update-user/update-user.handler';
 import { GetUserHandler } from '@users/application/queries/get-user/get-user.handler';
 import { UserMapper } from '@users/adapters/outbound/persistence/mappers/user.mapper';
 import { UserRepository } from '@users/adapters/outbound/persistence/repositories/user.repository';
 import { Token } from '@users/constants';
 
-const CommandHandlers = [CreateUserHandler];
+const CommandHandlers = [CreateUserHandler, UpdateUserHandler];
 const QueryHandlers = [GetUserHandler];
 
 @Module({

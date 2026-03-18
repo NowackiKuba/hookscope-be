@@ -48,6 +48,7 @@ export const ERROR_MESSAGES_PL: Record<string, string> = {
   USER_NOT_FOUND: 'Nie znaleziono użytkownika.',
   SESSION_EXPIRED: 'Sesja wygasła. Zaloguj się ponownie.',
   INSUFFICIENT_TOKENS: 'Niewystarczająca liczba tokenów do wykonania tej operacji.',
+  USERNAME_ALREADY_EXISTS: 'Ta nazwa użytkownika jest już zajęta.',
 
   ENDPOINT_NOT_FOUND: 'Nie znaleziono endpointu.',
   REQUEST_NOT_FOUND: 'Nie znaleziono żądania.',
