@@ -19,11 +19,13 @@ import { GetEndpointByIdQuery } from '@endpoint/application/queries/get-endpoint
 import { Endpoint } from '@endpoint/domain/endpoint.entity';
 import { withForkedContext } from '@shared/utils/request-context';
 import { CLITokenPrefix } from '@cli-token/domain/value-objects/cli-token-prefix.vo';
+import type { RequestJSON } from '@request/domain/aggregates/request';
+import type { CliSocketsServicePort } from '@sockets/domain/ports/outbound/services/cli-sockets.service.port';
 
 const ROOM_PREFIX = 'cli:endpoint:';
 
 @WebSocketGateway({ namespace: '/cli', cors: true })
-export class CliGateway {
+export class CliGateway implements CliSocketsServicePort {
   constructor(
     @Inject(Token.CLIToken)
     private readonly cliTokenRepository: CLITokenRepositoryPort,
@@ -35,6 +37,10 @@ export class CliGateway {
     private readonly logger: Logger,
   ) {}
   @WebSocketServer() server!: Server;
+
+  emitRequest(endpointId: string, payload: RequestJSON): void {
+    this.server.to('cli:endpoint:' + endpointId).emit('request.received', payload);
+  }
 
   @SubscribeMessage('auth')
   async handleAuth(client: Socket, payload: { token: string }) {
