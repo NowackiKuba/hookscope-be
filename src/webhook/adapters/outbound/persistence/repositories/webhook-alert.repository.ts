@@ -7,7 +7,7 @@ import { Injectable } from '@nestjs/common';
 import {
   WebhookAlertFilters,
   WebhookAlertRepositoryPort,
-} from '@webhook/domain/ports/outbound/persistence/entities/webhook-alert.repository.port';
+} from '@webhook/domain/ports/outbound/persistence/repositories/webhook-alert.repository.port';
 import { WebhookAlertEntity } from '../entities/webhook-alert.entity';
 import { WebhookAlertMapper } from '../mappers/webhook-alert.mapper';
 import { WebhookAlert } from '@webhook/domain/aggreagates/webhook-alert';

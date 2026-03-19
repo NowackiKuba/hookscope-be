@@ -30,6 +30,8 @@ export class EndpointRepository implements EndpointRepositoryPort {
     if (existing) {
       existing.name = json.name;
       existing.token = json.token;
+      existing.schemas = json.schemas;
+      existing.lastSchemaAt = json.lastSchemaAt;
       existing.updatedAt = new Date();
       em.persist(existing);
       await em.flush();

@@ -1,4 +1,4 @@
-import { DomainException } from '@shared/domain/exceptions';
+import { DomainException } from '../../../shared/domain/exceptions';
 
 export class WebhookAlertNotFoundException extends DomainException {
   constructor(alertId?: string) {

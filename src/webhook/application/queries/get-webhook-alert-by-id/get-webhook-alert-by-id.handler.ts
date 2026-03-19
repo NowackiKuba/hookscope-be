@@ -3,14 +3,15 @@ import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { Token } from '@webhook/constants';
 import { WebhookAlert } from '@webhook/domain/aggreagates/webhook-alert';
 import { WebhookAlertNotFoundException } from '@webhook/domain/exceptions';
-import { WebhookAlertRepositoryPort } from '@webhook/domain/ports/outbound/persistence/entities/webhook-alert.repository.port';
+import { WebhookAlertRepositoryPort } from '@webhook/domain/ports/outbound/persistence/repositories/webhook-alert.repository.port';
 import { WebhookAlertId } from '@webhook/domain/value-objects/webhook-alert-id.vo';
 import { GetWebhookAlertByIdQuery } from './get-webhook-alert-by-id.query';
 
 @QueryHandler(GetWebhookAlertByIdQuery)
-export class GetWebhookAlertByIdHandler
-  implements IQueryHandler<GetWebhookAlertByIdQuery, WebhookAlert>
-{
+export class GetWebhookAlertByIdHandler implements IQueryHandler<
+  GetWebhookAlertByIdQuery,
+  WebhookAlert
+> {
   constructor(
     @Inject(Token.WebhookAlertRepository)
     private readonly webhookAlertRepository: WebhookAlertRepositoryPort,

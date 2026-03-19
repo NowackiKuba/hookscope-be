@@ -4,15 +4,16 @@ import { GetEndpointByIdQuery } from '@endpoint/application/queries/get-endpoint
 import { Page } from '@shared/utils/pagination';
 import { Token } from '@webhook/constants';
 import { WebhookAlert } from '@webhook/domain/aggreagates/webhook-alert';
-import { WebhookAlertRepositoryPort } from '@webhook/domain/ports/outbound/persistence/entities/webhook-alert.repository.port';
+import { WebhookAlertRepositoryPort } from '@webhook/domain/ports/outbound/persistence/repositories/webhook-alert.repository.port';
 import { WebhookAlertStatus } from '@webhook/domain/value-objects/webhook-status.vo';
 import { WebhookAlertType } from '@webhook/domain/value-objects/webhook-type.vo';
 import { GetWebhookAlertsQuery } from './get-webhook-alerts.query';
 
 @QueryHandler(GetWebhookAlertsQuery)
-export class GetWebhookAlertsHandler
-  implements IQueryHandler<GetWebhookAlertsQuery, Page<WebhookAlert>>
-{
+export class GetWebhookAlertsHandler implements IQueryHandler<
+  GetWebhookAlertsQuery,
+  Page<WebhookAlert>
+> {
   constructor(
     @Inject(Token.WebhookAlertRepository)
     private readonly webhookAlertRepository: WebhookAlertRepositoryPort,

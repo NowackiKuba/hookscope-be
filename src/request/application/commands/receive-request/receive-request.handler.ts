@@ -12,6 +12,7 @@ import { ForwardFailedEvent } from '@request/domain/events/forward-failed.event'
 import { HttpService, LoggerProvider } from '@shared/constants';
 import { HttpServicePort } from '@shared/domain/ports/outbound/http.service.port';
 import { ReceiveRequestCommand } from './receive-request.command';
+import { hashPayload } from '@shared/utils/hash-payload';
 
 @CommandHandler(ReceiveRequestCommand)
 export class ReceiveRequestHandler implements ICommandHandler<ReceiveRequestCommand> {
@@ -46,6 +47,8 @@ export class ReceiveRequestHandler implements ICommandHandler<ReceiveRequestComm
       // TODO
     }
 
+    const payloadHash = hashPayload(body);
+
     const request = overlimit
       ? Request.createOverlimit(endpointId)
       : Request.create({
@@ -53,6 +56,7 @@ export class ReceiveRequestHandler implements ICommandHandler<ReceiveRequestComm
           method,
           headers,
           body,
+          payloadHash,
           query,
           ip,
           contentType,

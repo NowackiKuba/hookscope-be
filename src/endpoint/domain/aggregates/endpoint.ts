@@ -4,6 +4,7 @@ import {
   EndpointProvider,
   EndpointProviderValue,
 } from '../value-objects/endpoint-provider.vo';
+import { DEFAULT_EVENT_TYPE_KEY } from '@endpoint/constants';
 
 export type EndpointProps = {
   id?: string;
@@ -155,6 +156,15 @@ export class Endpoint {
   }
   get updatedAt(): Date {
     return this._updatedAt;
+  }
+
+  saveSchema(schema: Record<string, string>, key?: string): void {
+    const schemaKey = key ?? DEFAULT_EVENT_TYPE_KEY;
+
+    this._schemas = this._schemas ?? {};
+    this._schemas[schemaKey] = { ...schema };
+
+    this._lastSchemaAt = new Date();
   }
 
   toJSON(): EndpointJSON {

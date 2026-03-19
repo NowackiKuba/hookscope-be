@@ -35,6 +35,9 @@ export class RequestEntity {
   @Property({ type: 'text', nullable: true })
   ip: string | null = null;
 
+  @Property({ type: 'text' })
+  payloadHash: string;
+
   @Property({ type: 'text', nullable: true, fieldName: 'content_type' })
   contentType: string | null = null;
 

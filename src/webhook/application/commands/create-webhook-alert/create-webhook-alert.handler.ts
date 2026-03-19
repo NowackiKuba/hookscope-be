@@ -7,7 +7,7 @@ import {
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { Token } from '@webhook/constants';
 import { WebhookAlert } from '@webhook/domain/aggreagates/webhook-alert';
-import { WebhookAlertRepositoryPort } from '@webhook/domain/ports/outbound/persistence/entities/webhook-alert.repository.port';
+import { WebhookAlertRepositoryPort } from '@webhook/domain/ports/outbound/persistence/repositories/webhook-alert.repository.port';
 import { CreateWebhookAlertCommand } from './create-webhook-alert.command';
 
 function requireNonEmptyString(
@@ -21,9 +21,7 @@ function requireNonEmptyString(
 }
 
 @CommandHandler(CreateWebhookAlertCommand)
-export class CreateWebhookAlertHandler
-  implements ICommandHandler<CreateWebhookAlertCommand>
-{
+export class CreateWebhookAlertHandler implements ICommandHandler<CreateWebhookAlertCommand> {
   private readonly logger = new Logger(CreateWebhookAlertHandler.name);
 
   constructor(

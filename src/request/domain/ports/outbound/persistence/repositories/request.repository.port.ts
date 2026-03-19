@@ -24,8 +24,17 @@ export interface RequestRepositoryPort {
     endpointId: string,
   ): Promise<Page<Request>>;
   findByUserId(filters: RequestFilters, userId: UserId): Promise<Page<Request>>;
+  findByPayloadHash(
+    payloadHash: string,
+    requestId: string,
+    withinMinutes: number,
+  ): Promise<Request[]>;
   countByEndpointId(endpointId: string): Promise<number>;
-  countByUserIdInPeriod(userId: string, start: Date, end: Date): Promise<number>;
+  countByUserIdInPeriod(
+    userId: string,
+    start: Date,
+    end: Date,
+  ): Promise<number>;
   countThisMonth(endpointId: string): Promise<number>;
   deleteOlderThan(endpointId: string, before: Date): Promise<number>;
   delete(id: string): Promise<void>;

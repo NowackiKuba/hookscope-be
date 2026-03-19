@@ -42,6 +42,8 @@ export class EndpointMapper {
       secretKey: json.secretKey,
       requestCount: json.requestCount,
       lastRequestAt: json.lastRequestAt,
+      schemas: json.schemas,
+      lastSchemaAt: json.lastSchemaAt,
     });
   }
 }

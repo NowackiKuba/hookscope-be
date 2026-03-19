@@ -9,6 +9,7 @@ export type RequestProps = {
   query: Record<string, string>;
   ip: string | null;
   contentType: string | null;
+  payloadHash: string;
   size: number;
   overlimit: boolean;
   forwardStatus?: number | null;
@@ -20,6 +21,7 @@ export type RequestProps = {
 export type RequestJSON = RequestProps & {
   id: string;
   forwardStatus: number | null;
+  payloadHash: string;
   forwardedAt: Date | null;
   forwardError: string | null;
   receivedAt: Date;
@@ -33,6 +35,7 @@ export class Request {
   private _body: Record<string, unknown> | null;
   private _query: Record<string, string>;
   private _ip: string | null;
+  private _payloadHash: string;
   private _contentType: string | null;
   private _size: number;
   private _overlimit: boolean;
@@ -45,6 +48,7 @@ export class Request {
     this._id = props.id ?? generateUUID();
     this._endpointId = props.endpointId;
     this._method = props.method;
+    this._payloadHash = props.payloadHash;
     this._headers = props.headers ?? {};
     this._body = props.body ?? null;
     this._query = props.query ?? {};
@@ -68,6 +72,7 @@ export class Request {
       method: 'POST',
       headers: {},
       body: null,
+      payloadHash: '',
       query: {},
       ip: null,
       contentType: null,
@@ -90,6 +95,9 @@ export class Request {
   }
   get method(): string {
     return this._method;
+  }
+  get payloadHash(): string {
+    return this._payloadHash;
   }
   get headers(): Record<string, string> {
     return this._headers;
@@ -136,6 +144,7 @@ export class Request {
       id: this._id,
       endpointId: this._endpointId,
       method: this._method,
+      payloadHash: this._payloadHash,
       headers: this._headers,
       body: this._body,
       query: this._query,

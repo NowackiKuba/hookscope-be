@@ -63,6 +63,55 @@ export class AlertMetadata {
     return new AlertMetadata(value);
   }
 
+  static schemaDrift(
+    input: Omit<SchemaDriftMetadata, 'updatedDto'> & {
+      updatedDto?: string | null;
+    },
+  ): AlertMetadata {
+    return AlertMetadata.create({
+      added: input.added,
+      removed: input.removed,
+      typeChanged: input.typeChanged,
+      updatedDto: input.updatedDto ?? null,
+    });
+  }
+
+  static endpointError(
+    input: EndpointErrorMetadata,
+  ): AlertMetadata {
+    return AlertMetadata.create(input);
+  }
+
+  static signatureFailed(
+    input: SignatureFailedMetadata,
+  ): AlertMetadata {
+    return AlertMetadata.create(input);
+  }
+
+  static duplicateDetected(
+    input: DuplicateDetectedMetadata,
+  ): AlertMetadata {
+    return AlertMetadata.create(input);
+  }
+
+  static volumeSpike(
+    input: VolumeSpikeMetadata,
+  ): AlertMetadata {
+    return AlertMetadata.create(input);
+  }
+
+  static silenceDetected(
+    input: SilenceDetectedMetadata,
+  ): AlertMetadata {
+    return AlertMetadata.create(input);
+  }
+
+  static securityThreat(
+    input: SecurityThreatMetadata,
+  ): AlertMetadata {
+    return AlertMetadata.create(input);
+  }
+
   get value(): AlertMetadataValue {
     return this._value;
   }

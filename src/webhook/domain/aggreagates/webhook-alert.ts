@@ -55,9 +55,7 @@ export class WebhookAlert {
     this._status = WebhookAlertStatus.create(props.status);
     this._eventType = props.eventType;
     this._metadata =
-      props.metadata != null
-        ? AlertMetadata.create(props.metadata)
-        : undefined;
+      props.metadata != null ? AlertMetadata.create(props.metadata) : undefined;
     this._createdAt = props.createdAt ?? new Date();
     this._updatedAt = props.updatedAt ?? new Date();
   }
