@@ -14,7 +14,9 @@ import type { Request as ExpressRequest } from 'express';
 
 type WebhookRequest = ExpressRequest & { rawBody?: Buffer };
 
-function headersToRecord(headers: ExpressRequest['headers']): Record<string, string> {
+function headersToRecord(
+  headers: ExpressRequest['headers'],
+): Record<string, string> {
   const out: Record<string, string> = {};
 
   for (const [key, value] of Object.entries(headers)) {
@@ -43,6 +45,10 @@ export class WebhookGuard implements CanActivate {
 
     if (!endpoint) {
       throw new UnauthorizedException('Invalid webhook token');
+    }
+
+    if (!endpoint.secretKey) {
+      return true;
     }
 
     const rawBody = request.rawBody;

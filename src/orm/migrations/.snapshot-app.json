@@ -615,6 +615,22 @@
           "comment": null,
           "enumItems": [],
           "mappedType": "text"
+        },
+        "provider": {
+          "name": "provider",
+          "type": "text",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "enumItems": [],
+          "mappedType": "text"
         }
       },
       "name": "endpoints",
@@ -1672,31 +1688,11 @@
         },
         {
           "columnNames": [
-            "stripe_subscription_id"
-          ],
-          "composite": false,
-          "constraint": false,
-          "keyName": "subscriptions_stripe_subscription_unique",
-          "unique": true,
-          "primary": false
-        },
-        {
-          "columnNames": [
             "user_id"
           ],
           "composite": false,
           "constraint": true,
           "keyName": "subscriptions_user_id_unique",
-          "unique": true,
-          "primary": false
-        },
-        {
-          "columnNames": [
-            "user_id"
-          ],
-          "composite": false,
-          "constraint": false,
-          "keyName": "subscriptions_user_unique",
           "unique": true,
           "primary": false
         }
