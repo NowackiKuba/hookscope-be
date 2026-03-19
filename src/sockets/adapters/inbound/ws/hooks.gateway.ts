@@ -34,9 +34,7 @@ export class HooksGateway
   ) {}
   @WebSocketServer() server!: Server;
 
-  afterInit(): void {
-    // Gateway ready for connections
-  }
+  afterInit(): void {}
 
   handleConnection(client: Socket): void {
     this.logger.info('WS CLIENT CONNECTED', {

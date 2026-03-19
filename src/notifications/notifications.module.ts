@@ -6,6 +6,7 @@ import { NotificationRepository } from '@notifications/adapters/outbound/persist
 import { NotificationService } from '@notifications/application/services/notification.service';
 import { NotificationsController } from '@notifications/adapters/inbound/http/controllers/notifications.controller';
 import { NewNotificationListener } from '@notifications/application/listeners/new-notification.listener';
+import { NotificationsGateway } from '@notifications/adapters/inbound/ws/notifications.gateway';
 import { AuthModule } from '@auth/auth.module';
 
 @Global()
@@ -17,9 +18,14 @@ import { AuthModule } from '@auth/auth.module';
     NotificationRepository,
     NotificationService,
     NewNotificationListener,
+    NotificationsGateway,
     {
       provide: Token.NotificationRepository,
       useExisting: NotificationRepository,
+    },
+    {
+      provide: Token.NotificationSocketsService,
+      useExisting: NotificationsGateway,
     },
   ],
   exports: [CqrsModule, NotificationService, Token.NotificationRepository],

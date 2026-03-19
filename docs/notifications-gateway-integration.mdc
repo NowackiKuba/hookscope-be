@@ -1,0 +1,146 @@
+---
+title: Notifications Gateway - Frontend Integration
+description: Real-time in-app notifications via Socket.IO. Subscribe by user ID and receive notification.received events.
+---
+
+# Notifications Gateway - Frontend Integration
+
+Use **Socket.IO** to receive real-time notifications from the backend.  
+The client subscribes with a **user ID** and listens for `notification.received`.
+
+---
+
+## 1. Install
+
+```bash
+npm install socket.io-client
+# or
+pnpm add socket.io-client
+```
+
+---
+
+## 2. TypeScript types
+
+```typescript
+/** Payload from socket event "notification.received" */
+export interface NotificationReceivedPayload {
+  id: string;
+  userId: string;
+  channel: 'inApp' | 'email' | 'slack';
+  status: 'sent' | 'read' | 'archived' | 'failed';
+  referenceId: string;
+  payload: Record<string, unknown>;
+  failedReason?: string;
+  sentAt?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/** Send with socket.emit('subscribe', payload) */
+export interface NotificationSubscribePayload {
+  userId: string;
+}
+```
+
+---
+
+## 3. Connect to API socket server
+
+Connect to the API origin (not frontend dev origin):
+
+```typescript
+import { io } from 'socket.io-client';
+
+function getSocketUrl(): string {
+  const apiUrl = import.meta.env.VITE_API_URL ?? 'http://localhost:8080/api';
+  try {
+    return new URL(apiUrl).origin;
+  } catch {
+    return 'http://localhost:8080';
+  }
+}
+
+const socket = io(getSocketUrl(), {
+  path: '/socket.io',
+  transports: ['websocket', 'polling'],
+});
+```
+
+---
+
+## 4. Subscribe to notifications
+
+After connect, subscribe by user ID:
+
+```typescript
+socket.emit('subscribe', {
+  userId: currentUser.id,
+} satisfies NotificationSubscribePayload);
+```
+
+---
+
+## 5. Listen for notifications
+
+```typescript
+socket.on('notification.received', (notification: NotificationReceivedPayload) => {
+  console.log('New notification:', notification);
+  // e.g. show toast, increment unread badge, prepend to list
+});
+```
+
+---
+
+## 6. React-style helper example
+
+```typescript
+import { io, Socket } from 'socket.io-client';
+
+let socket: Socket | null = null;
+
+function getSocketUrl(): string {
+  const apiUrl = import.meta.env.VITE_API_URL ?? 'http://localhost:8080/api';
+  try {
+    return new URL(apiUrl).origin;
+  } catch {
+    return 'http://localhost:8080';
+  }
+}
+
+export function connectNotificationsSocket(): Socket {
+  if (socket?.connected) return socket;
+  socket = io(getSocketUrl(), { path: '/socket.io', transports: ['websocket', 'polling'] });
+  return socket;
+}
+
+export function subscribeToNotifications(
+  userId: string,
+  onNotification: (payload: NotificationReceivedPayload) => void
+): () => void {
+  const s = connectNotificationsSocket();
+  s.emit('subscribe', { userId } satisfies NotificationSubscribePayload);
+  s.on('notification.received', onNotification);
+
+  return () => {
+    s.off('notification.received', onNotification);
+  };
+}
+```
+
+---
+
+## 7. Quick reference
+
+| Action | Event / direction | Payload |
+|---|---|---|
+| Subscribe | Client -> Server | `socket.emit('subscribe', { userId })` |
+| New notification | Server -> Client | `socket.on('notification.received', notification)` |
+| Room strategy | Server | `app:user:${userId}` |
+
+---
+
+## 8. Notes and security
+
+- The current gateway accepts `userId` from client payload and does not validate ownership/session at socket level.
+- For production-hardening, add socket auth (JWT/session) and derive user ID on backend from verified identity instead of trusting payload.
