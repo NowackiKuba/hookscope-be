@@ -1,9 +1,9 @@
 import { createHash, createHmac } from 'crypto';
 import { WebhookVerificationService } from './webhook-verification.service';
-import { GitHubWebhookProvider } from '../../providers/github-webhook.provider';
-import { Przelewy24WebhookProvider } from '../../providers/przelewy24-webhook.provider';
-import { ShopifyWebhookProvider } from '../../providers/shopify-webhook.provider';
-import { StripeWebhookProvider } from '../../providers/stripe-webhook.provider';
+import { GitHubWebhookProvider } from '../../external/github-webhook.provider';
+import { Przelewy24WebhookProvider } from '../../external/przelewy24-webhook.provider';
+import { ShopifyWebhookProvider } from '../../external/shopify-webhook.provider';
+import { StripeWebhookProvider } from '../../external/stripe-webhook.provider';
 
 describe('WebhookVerificationService', () => {
   const providers = [
@@ -36,7 +36,9 @@ describe('WebhookVerificationService', () => {
   it('verifies GitHub signatures with sha256 header format', () => {
     const payload = Buffer.from('{"action":"opened"}');
     const secret = 'github_secret';
-    const signature = createHmac('sha256', secret).update(payload).digest('hex');
+    const signature = createHmac('sha256', secret)
+      .update(payload)
+      .digest('hex');
 
     const result = service.verify(
       'github',

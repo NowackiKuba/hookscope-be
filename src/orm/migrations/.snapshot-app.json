@@ -2118,6 +2118,221 @@
       "foreignKeys": {},
       "nativeEnums": {},
       "comment": null
+    },
+    {
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": true,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": "gen_random_uuid()",
+          "comment": null,
+          "enumItems": [],
+          "mappedType": "uuid"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamptz(6)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": 6,
+          "precision": null,
+          "scale": null,
+          "default": "CURRENT_TIMESTAMP",
+          "comment": null,
+          "enumItems": [],
+          "mappedType": "datetime"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamptz(6)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": 6,
+          "precision": null,
+          "scale": null,
+          "default": "CURRENT_TIMESTAMP",
+          "comment": null,
+          "enumItems": [],
+          "mappedType": "datetime"
+        },
+        "endpoint_id": {
+          "name": "endpoint_id",
+          "type": "uuid",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "enumItems": [],
+          "mappedType": "uuid"
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "uuid",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "enumItems": [],
+          "mappedType": "uuid"
+        },
+        "type": {
+          "name": "type",
+          "type": "text",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "enumItems": [],
+          "mappedType": "text"
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "enumItems": [],
+          "mappedType": "text"
+        },
+        "event_type": {
+          "name": "event_type",
+          "type": "text",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "enumItems": [],
+          "mappedType": "text"
+        },
+        "metadata": {
+          "name": "metadata",
+          "type": "jsonb",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "enumItems": [],
+          "mappedType": "json"
+        }
+      },
+      "name": "webhook_alerts",
+      "schema": "public",
+      "indexes": [
+        {
+          "columnNames": [
+            "endpoint_id",
+            "created_at"
+          ],
+          "composite": true,
+          "constraint": false,
+          "keyName": "webhook_alerts_endpoint_id_created_at_index",
+          "unique": false,
+          "primary": false
+        },
+        {
+          "columnNames": [
+            "id"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "webhook_alerts_pkey",
+          "unique": true,
+          "primary": true
+        },
+        {
+          "columnNames": [
+            "user_id",
+            "created_at"
+          ],
+          "composite": true,
+          "constraint": false,
+          "keyName": "webhook_alerts_user_id_created_at_index",
+          "unique": false,
+          "primary": false
+        }
+      ],
+      "checks": [],
+      "foreignKeys": {
+        "webhook_alerts_endpoint_id_foreign": {
+          "columnNames": [
+            "endpoint_id"
+          ],
+          "constraintName": "webhook_alerts_endpoint_id_foreign",
+          "localTableName": "public.webhook_alerts",
+          "referencedTableName": "public.endpoints",
+          "referencedColumnNames": [
+            "id"
+          ],
+          "updateRule": "cascade",
+          "deleteRule": "cascade"
+        },
+        "webhook_alerts_user_id_foreign": {
+          "columnNames": [
+            "user_id"
+          ],
+          "constraintName": "webhook_alerts_user_id_foreign",
+          "localTableName": "public.webhook_alerts",
+          "referencedTableName": "public.users",
+          "referencedColumnNames": [
+            "id"
+          ],
+          "updateRule": "cascade",
+          "deleteRule": "cascade"
+        }
+      },
+      "nativeEnums": {},
+      "comment": null
     }
   ],
   "nativeEnums": {}

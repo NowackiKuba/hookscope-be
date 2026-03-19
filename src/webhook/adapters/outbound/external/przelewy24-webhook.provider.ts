@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { createHash } from 'crypto';
-import { IWebhookProvider } from '../domain/interfaces/webhook-provider.interface';
-import { constantTimeEqual } from './utils/constant-time-equal';
+import { IWebhookProvider } from '../../../domain/ports/outbound/external/webhook-provider.port';
+import { constantTimeEqual } from '../../../providers/utils/constant-time-equal';
 
 type Przelewy24Payload = {
   crc?: string;
@@ -38,5 +38,12 @@ export class Przelewy24WebhookProvider implements IWebhookProvider {
       .digest('hex');
 
     return constantTimeEqual(expectedSignature, signature, 'hex');
+  }
+
+  extractEventType(
+    _payload: Buffer,
+    _headers: Record<string, string>,
+  ): string | null {
+    return null;
   }
 }

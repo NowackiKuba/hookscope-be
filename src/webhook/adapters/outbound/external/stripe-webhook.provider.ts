@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { createHmac } from 'crypto';
-import { IWebhookProvider } from '../domain/interfaces/webhook-provider.interface';
-import { constantTimeEqual } from './utils/constant-time-equal';
+import { IWebhookProvider } from '../../../domain/ports/outbound/external/webhook-provider.port';
+import { constantTimeEqual } from '../../../providers/utils/constant-time-equal';
 
 @Injectable()
 export class StripeWebhookProvider implements IWebhookProvider {
@@ -59,5 +59,14 @@ export class StripeWebhookProvider implements IWebhookProvider {
       timestamp: values.get('t')?.[0],
       signature: values.get('v1')?.[0],
     };
+  }
+
+  extractEventType(payload: Buffer): string | null {
+    try {
+      const parsed = JSON.parse(payload.toString('utf8')) as { type?: unknown };
+      return typeof parsed.type === 'string' ? parsed.type : null;
+    } catch {
+      return null;
+    }
   }
 }

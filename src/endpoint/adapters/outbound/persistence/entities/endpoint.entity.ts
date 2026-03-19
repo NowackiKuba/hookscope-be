@@ -16,6 +16,8 @@ export type EndpointEntityProps = {
   secretKey?: string | null;
   requestCount?: number;
   lastRequestAt?: Date | null;
+  schemas?: Record<string, Record<string, string>>;
+  lastSchemaAt?: Date;
 };
 
 @Entity({ tableName: 'endpoints' })
@@ -57,6 +59,11 @@ export class EndpointEntity extends BaseEntity implements EndpointEntityProps {
   })
   lastRequestAt: Date | null = null;
 
+  @Property({ type: 'jsonb', nullable: true })
+  schemas?: Record<string, Record<string, string>>;
+  @Property({ type: 'timestamptz', nullable: true })
+  lastSchemaAt?: Date;
+
   constructor(props: EndpointEntityProps) {
     super();
     this.id = props.id ?? generateUUID();
@@ -64,6 +71,8 @@ export class EndpointEntity extends BaseEntity implements EndpointEntityProps {
     this.name = props.name;
     this.description = props.description ?? '';
     this.token = props.token;
+    this.schemas = props.schemas;
+    this.lastSchemaAt = props.lastSchemaAt;
     this.provider = props.provider;
     this.isActive = props.isActive ?? true;
     this.targetUrl = props.targetUrl ?? null;

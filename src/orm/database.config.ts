@@ -13,6 +13,7 @@ import { WaitlistEntity } from '@waitlist/adapters/outbound/persistence/entities
 import { PacketEntity } from '@billing/adapters/outbound/persistence/entities/packet.entity';
 import { SubscriptionEntity } from '@billing/adapters/outbound/persistence/entities/subscription.entity';
 import { CLITokenEntity } from '@cli-token/adapters/outbound/persistence/entities/cli-token.entity';
+import { WebhookAlertEntity } from '@webhook/adapters/outbound/persistence/entities/webhook-alert.entity';
 import { Migration20260314171016 } from './migrations/Migration20260314171016';
 import { Migration20260314180000 } from './migrations/Migration20260314180000';
 import { Migration20260314200000 } from './migrations/Migration20260314200000';
@@ -23,6 +24,7 @@ import { Migration20260317093627 } from './migrations/Migration20260317093627';
 import { Migration20260317123000 } from './migrations/Migration20260317123000';
 import { Migration20260318114408 } from './migrations/Migration20260318114408';
 import { Migration20260319133153 } from './migrations/Migration20260319133153';
+import { Migration20260320100000 } from './migrations/Migration20260320100000';
 
 // Create Winston logger instance for MikroORM
 // This is used in static config before NestJS DI is available
@@ -79,6 +81,7 @@ export const config = defineConfig({
     PacketEntity,
     SubscriptionEntity,
     CLITokenEntity,
+    WebhookAlertEntity,
   ],
   extensions: [SeedManager, Migrator],
   //
@@ -103,6 +106,7 @@ export const config = defineConfig({
       { name: Migration20260317123000.name, class: Migration20260317123000 },
       { name: Migration20260318114408.name, class: Migration20260318114408 },
       { name: Migration20260319133153.name, class: Migration20260319133153 },
+      { name: Migration20260320100000.name, class: Migration20260320100000 },
     ],
   },
 });

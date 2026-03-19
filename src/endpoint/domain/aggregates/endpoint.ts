@@ -18,6 +18,8 @@ export type EndpointProps = {
   secretKey?: string | null;
   requestCount?: number;
   lastRequestAt?: Date | null;
+  schemas?: Record<string, Record<string, string>>;
+  lastSchemaAt?: Date;
   createdAt?: Date;
   updatedAt?: Date;
 };
@@ -35,6 +37,8 @@ export type EndpointJSON = {
   secretKey: string | null;
   requestCount: number;
   lastRequestAt: Date | null;
+  schemas?: Record<string, Record<string, string>>;
+  lastSchemaAt?: Date;
   createdAt: Date;
   updatedAt: Date;
 };
@@ -52,6 +56,8 @@ export class Endpoint {
   private _secretKey: string | null;
   private _requestCount: number;
   private _lastRequestAt: Date | null;
+  private _schemas?: Record<string, Record<string, string>>;
+  private _lastSchemaAt?: Date;
   private _createdAt: Date;
   private _updatedAt: Date;
 
@@ -66,6 +72,8 @@ export class Endpoint {
     this._targetUrl = props.targetUrl ?? null;
     this._webhookUrl = props.webhookUrl;
     this._secretKey = props.secretKey ?? null;
+    this._schemas = props.schemas ?? null;
+    this._lastSchemaAt = props.lastSchemaAt ?? null;
     this._requestCount = props.requestCount ?? 0;
     this._lastRequestAt = props.lastRequestAt ?? null;
     this._createdAt = props.createdAt ?? new Date();
@@ -124,7 +132,12 @@ export class Endpoint {
   get provider(): EndpointProvider {
     return this._provider;
   }
-
+  get schemas(): Record<string, Record<string, string>> {
+    return this._schemas;
+  }
+  get lastSchemaAt(): Date {
+    return this._lastSchemaAt;
+  }
   get webhookUrl(): string {
     return this._webhookUrl;
   }
@@ -156,6 +169,8 @@ export class Endpoint {
       targetUrl: this._targetUrl,
       webhookUrl: this._webhookUrl,
       secretKey: this._secretKey,
+      schemas: this._schemas,
+      lastSchemaAt: this._lastSchemaAt,
       requestCount: this._requestCount,
       lastRequestAt: this._lastRequestAt,
       createdAt: this._createdAt,

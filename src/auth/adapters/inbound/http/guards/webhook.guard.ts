@@ -9,7 +9,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { decryptSecret } from '@shared/utils/encryption';
-import { WebhookVerificationService } from '@webhook/application/services/webhook-verification.service';
+import { WebhookVerificationService } from '@webhook/adapters/outbound/persistence/services/webhook-verification.service';
 import type { Request as ExpressRequest } from 'express';
 
 type WebhookRequest = ExpressRequest & { rawBody?: Buffer };

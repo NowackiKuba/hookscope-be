@@ -1,7 +1,7 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
-import { WEBHOOK_PROVIDERS } from '../../constants';
-import { UnknownProviderException } from '../../domain/exceptions';
-import { IWebhookProvider } from '../../domain/interfaces/webhook-provider.interface';
+import { WEBHOOK_PROVIDERS } from '../../../../constants';
+import { UnknownProviderException } from '../../../../domain/exceptions';
+import { IWebhookProvider } from '../../../../domain/ports/outbound/external/webhook-provider.port';
 
 @Injectable()
 export class WebhookVerificationService {
@@ -22,7 +22,8 @@ export class WebhookVerificationService {
     secret: string,
   ): boolean {
     const provider = this.providers.find(
-      (candidate) => candidate.name.toLowerCase() === providerName.toLowerCase(),
+      (candidate) =>
+        candidate.name.toLowerCase() === providerName.toLowerCase(),
     );
 
     if (!provider) {

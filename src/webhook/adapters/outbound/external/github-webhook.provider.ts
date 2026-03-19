@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { createHmac } from 'crypto';
-import { IWebhookProvider } from '../domain/interfaces/webhook-provider.interface';
-import { constantTimeEqual } from './utils/constant-time-equal';
+import { IWebhookProvider } from '../../../domain/ports/outbound/external/webhook-provider.port';
+import { constantTimeEqual } from '../../../providers/utils/constant-time-equal';
 
 @Injectable()
 export class GitHubWebhookProvider implements IWebhookProvider {
@@ -23,5 +23,12 @@ export class GitHubWebhookProvider implements IWebhookProvider {
       .digest('hex');
 
     return constantTimeEqual(expectedSignature, signature, 'hex');
+  }
+
+  extractEventType(
+    _payload: Buffer,
+    headers: Record<string, string>,
+  ): string | null {
+    return headers['x-github-event'] ?? null;
   }
 }

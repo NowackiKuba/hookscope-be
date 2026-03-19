@@ -5,4 +5,5 @@ export const Token = {
   GitHubWebhookProvider: Symbol('GitHubWebhookProvider'),
   ShopifyWebhookProvider: Symbol('ShopifyWebhookProvider'),
   Przelewy24WebhookProvider: Symbol('Przelewy24WebhookProvider'),
+  WebhookAlertRepository: Symbol('WebhookAlertRepository'),
 } as const;

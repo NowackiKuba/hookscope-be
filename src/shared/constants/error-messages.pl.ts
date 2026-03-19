@@ -52,6 +52,8 @@ export const ERROR_MESSAGES_PL: Record<string, string> = {
 
   ENDPOINT_NOT_FOUND: 'Nie znaleziono endpointu.',
   REQUEST_NOT_FOUND: 'Nie znaleziono żądania.',
+  WEBHOOK_ALERT_NOT_FOUND: 'Nie znaleziono alertu webhook.',
+  UNKNOWN_WEBHOOK_PROVIDER: 'Nieobsługiwany dostawca webhooków.',
 
   WAITLIST_ALREADY_EXISTS: 'Ten adres e-mail jest już zapisany na listę oczekujących.',
   WAITLIST_VALIDATION: 'Nieprawidłowe dane. Sprawdź adres e-mail i spróbuj ponownie.',
