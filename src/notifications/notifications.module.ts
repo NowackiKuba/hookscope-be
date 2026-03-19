@@ -6,10 +6,11 @@ import { NotificationRepository } from '@notifications/adapters/outbound/persist
 import { NotificationService } from '@notifications/application/services/notification.service';
 import { NotificationsController } from '@notifications/adapters/inbound/http/controllers/notifications.controller';
 import { NewNotificationListener } from '@notifications/application/listeners/new-notification.listener';
+import { AuthModule } from '@auth/auth.module';
 
 @Global()
 @Module({
-  imports: [CqrsModule],
+  imports: [CqrsModule, AuthModule],
   controllers: [NotificationsController],
   providers: [
     NotificationMapper,
