@@ -33,6 +33,7 @@
       "@waitlist/*": ["src/waitlist/*"],
       "@cli-token/*": ["src/cli-token/*"],
       "@webhook/*": ["src/webhook/*"],
+      "@notifications/*": ["src/notifications/*"],
       "src/*": ["src/*"]
     }
   }

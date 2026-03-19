@@ -26,6 +26,7 @@ import { BullModule } from '@nestjs/bullmq';
 import { ConfigService as NestConfigService } from '@nestjs/config';
 import { WebhookModule } from './webhook/webhook.module';
 import { RawBodyMiddleware } from './webhook/infrastructure/middleware/raw-body.middleware';
+import { NotificationsModule } from './notifications/notifications.module';
 
 @Module({
   imports: [
@@ -70,6 +71,7 @@ import { RawBodyMiddleware } from './webhook/infrastructure/middleware/raw-body.
     UsageModule,
     CliTokenModule,
     WebhookModule,
+    NotificationsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

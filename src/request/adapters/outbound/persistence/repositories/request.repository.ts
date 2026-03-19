@@ -1,4 +1,4 @@
-import { EntityManager } from '@mikro-orm/postgresql';
+import { EntityManager, EntityRepository } from '@mikro-orm/postgresql';
 import { RequestContext } from '@mikro-orm/core';
 import type { FilterQuery } from '@mikro-orm/core';
 import { Injectable } from '@nestjs/common';
@@ -20,27 +20,23 @@ function getEm(fallback: EntityManager): EntityManager {
 
 @Injectable()
 export class RequestRepository implements RequestRepositoryPort {
+  private readonly dbSource: EntityRepository<RequestEntity>;
   constructor(
     private readonly em: EntityManager,
     private readonly mapper: RequestMapper,
-  ) {}
-
-  private getEm(): EntityManager {
-    return getEm(this.em);
+  ) {
+    this.dbSource = this.em.getRepository(RequestEntity);
   }
 
   async save(request: Request): Promise<Request> {
-    const em = this.getEm();
-    const entity = this.mapper.toPersistence(request);
-    em.persist(entity);
-    await em.flush();
-    return this.mapper.toDomain(entity);
+    const res = this.dbSource.create(this.mapper.toEntity(request));
+    this.em.persist(res);
+    await this.em.flush();
+    return this.mapper.toDomain(res);
   }
 
   async findById(id: string): Promise<Request | null> {
-    const em = this.getEm();
-    const entity = await em.findOne(
-      RequestEntity,
+    const entity = await this.dbSource.findOne(
       { id },
       { populate: ['endpoint'] },
     );
@@ -51,7 +47,6 @@ export class RequestRepository implements RequestRepositoryPort {
     filters: RequestFilters,
     endpointId: string,
   ): Promise<Page<Request>> {
-    const em = this.getEm();
     const {
       limit = 20,
       offset = 0,
@@ -59,8 +54,7 @@ export class RequestRepository implements RequestRepositoryPort {
       orderByField = 'receivedAt',
     } = filters;
 
-    const [entities, totalCount] = await em.findAndCount(
-      RequestEntity,
+    const [entities, totalCount] = await this.dbSource.findAndCount(
       { endpoint: endpointId } as FilterQuery<RequestEntity>,
       {
         orderBy: { [orderByField]: orderBy },
@@ -75,8 +69,7 @@ export class RequestRepository implements RequestRepositoryPort {
   }
 
   async countByEndpointId(endpointId: string): Promise<number> {
-    const em = this.getEm();
-    return em.count(RequestEntity, {
+    return this.dbSource.count({
       endpoint: endpointId,
     } as FilterQuery<RequestEntity>);
   }
@@ -86,55 +79,48 @@ export class RequestRepository implements RequestRepositoryPort {
     start: Date,
     end: Date,
   ): Promise<number> {
-    const em = this.getEm();
-    return em.count(RequestEntity, {
+    return this.dbSource.count({
       endpoint: { user: { id: userId } },
       receivedAt: { $gte: start, $lt: end },
     } as FilterQuery<RequestEntity>);
   }
 
   async countThisMonth(endpointId: string): Promise<number> {
-    const em = this.getEm();
     const now = new Date();
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-    return em.count(RequestEntity, {
+    return this.dbSource.count({
       endpoint: endpointId,
       receivedAt: { $gte: startOfMonth },
     } as FilterQuery<RequestEntity>);
   }
 
   async deleteOlderThan(endpointId: string, before: Date): Promise<number> {
-    const em = this.getEm();
-    const result = await em.nativeDelete(RequestEntity, {
+    const result = await this.dbSource.nativeDelete({
       endpoint: endpointId,
       receivedAt: { $lt: before },
     } as FilterQuery<RequestEntity>);
-    await em.flush();
+    await this.em.flush();
     return result;
   }
 
   async delete(id: string): Promise<void> {
-    const em = this.getEm();
-    await em.nativeDelete(RequestEntity, { id });
-    await em.flush();
+    await this.dbSource.nativeDelete({ id });
+    await this.em.flush();
   }
 
   async updateForwardResult(id: string, result: ForwardResult): Promise<void> {
-    const em = this.getEm();
-    const entity = await em.findOne(RequestEntity, { id });
+    const entity = await this.dbSource.findOne({ id });
     if (!entity) return;
     entity.forwardStatus = result.forwardStatus;
     entity.forwardedAt = result.forwardedAt;
     entity.forwardError = result.forwardError;
-    await em.flush();
+    await this.em.flush();
   }
 
   async findByUserId(
     filters: RequestFilters,
     userId: UserId,
   ): Promise<Page<Request>> {
-    const em = this.getEm();
-
     const {
       endpointId,
       forwardedStatus,
@@ -164,7 +150,7 @@ export class RequestRepository implements RequestRepositoryPort {
       where.overlimit = overlimit;
     }
 
-    const [entities, totalCount] = await em.findAndCount(RequestEntity, where, {
+    const [entities, totalCount] = await this.dbSource.findAndCount(where, {
       limit,
       offset,
       orderBy: { [orderByField]: orderBy },
@@ -173,5 +159,41 @@ export class RequestRepository implements RequestRepositoryPort {
 
     const data = entities.map((e) => this.mapper.toDomain(e));
     return paginate(data, { limit, offset, totalCount });
+  }
+
+  async findByPayloadHash(
+    payloadHash: string,
+    requestId: string,
+    withinMinutes: number,
+  ): Promise<Request[]> {
+    const em = getEm(this.em);
+    const dbSource = em.getRepository(RequestEntity);
+
+    const currentRequest = await dbSource.findOne(
+      { id: requestId },
+      { populate: ['endpoint'] },
+    );
+
+    if (!currentRequest) {
+      return [];
+    }
+
+    const since = new Date(Date.now() - withinMinutes * 60 * 1000);
+
+    const entities = await dbSource.find(
+      {
+        payloadHash,
+        id: { $ne: requestId },
+        endpoint: { id: currentRequest.endpoint.id },
+        receivedAt: { $gte: since },
+      } as FilterQuery<RequestEntity>,
+      {
+        orderBy: { receivedAt: 'desc' },
+        limit: 1,
+        populate: ['endpoint'],
+      },
+    );
+
+    return entities.map((entity) => this.mapper.toDomain(entity));
   }
 }

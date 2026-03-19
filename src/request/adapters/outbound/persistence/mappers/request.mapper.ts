@@ -10,7 +10,9 @@ export class RequestMapper {
 
   toDomain(entity: RequestEntity): Request {
     const endpointId =
-      entity.endpoint?.id ?? (entity as unknown as { endpoint_id?: string }).endpoint_id ?? '';
+      entity.endpoint?.id ??
+      (entity as unknown as { endpoint_id?: string }).endpoint_id ??
+      '';
     return Request.reconstitute({
       id: entity.id,
       endpointId,
@@ -26,26 +28,15 @@ export class RequestMapper {
       forwardedAt: entity.forwardedAt ?? null,
       forwardError: entity.forwardError ?? null,
       receivedAt: entity.receivedAt,
+      payloadHash: entity.payloadHash,
     });
   }
 
-  toPersistence(request: Request): RequestEntity {
+  toEntity(request: Request): RequestEntity {
     const json = request.toJSON();
-    const entity = new RequestEntity();
-    entity.id = json.id;
-    entity.endpoint = this.em.getReference(EndpointEntity, json.endpointId);
-    entity.method = json.method;
-    entity.headers = json.headers;
-    entity.body = json.body;
-    entity.query = json.query;
-    entity.forwardStatus = json.forwardStatus ?? null;
-    entity.forwardedAt = json.forwardedAt ?? null;
-    entity.forwardError = json.forwardError ?? null;
-    entity.ip = json.ip;
-    entity.contentType = json.contentType;
-    entity.size = json.size;
-    entity.overlimit = json.overlimit;
-    entity.receivedAt = json.receivedAt;
-    return entity;
+    return new RequestEntity({
+      ...json,
+      endpoint: this.em.getReference(EndpointEntity, json.endpointId),
+    });
   }
 }

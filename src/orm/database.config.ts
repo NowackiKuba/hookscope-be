@@ -25,6 +25,8 @@ import { Migration20260317123000 } from './migrations/Migration20260317123000';
 import { Migration20260318114408 } from './migrations/Migration20260318114408';
 import { Migration20260319133153 } from './migrations/Migration20260319133153';
 import { Migration20260320100000 } from './migrations/Migration20260320100000';
+import { NotificationEntity } from '@notifications/adapters/outbound/persistence/entities/notification.entity';
+import { Migration20260319204700 } from './migrations/Migration20260319204700';
 
 // Create Winston logger instance for MikroORM
 // This is used in static config before NestJS DI is available
@@ -82,6 +84,7 @@ export const config = defineConfig({
     SubscriptionEntity,
     CLITokenEntity,
     WebhookAlertEntity,
+    NotificationEntity,
   ],
   extensions: [SeedManager, Migrator],
   //
@@ -107,6 +110,7 @@ export const config = defineConfig({
       { name: Migration20260318114408.name, class: Migration20260318114408 },
       { name: Migration20260319133153.name, class: Migration20260319133153 },
       { name: Migration20260320100000.name, class: Migration20260320100000 },
+      { name: Migration20260319204700.name, class: Migration20260319204700 },
     ],
   },
 });

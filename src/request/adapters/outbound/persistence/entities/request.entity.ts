@@ -6,14 +6,30 @@ import {
   PrimaryKey,
   Property,
 } from '@mikro-orm/core';
+import { BaseEntity } from '@orm/entities/base.entity';
+
+export type RequestEntityProps = {
+  id?: string;
+  endpoint: EndpointEntity;
+  method: string;
+  headers: Record<string, string>;
+  body: unknown;
+  query: Record<string, string>;
+  ip?: string | null;
+  payloadHash: string;
+  contentType?: string | null;
+  size: number;
+  overlimit: boolean;
+  forwardStatus?: number | null;
+  forwardedAt?: Date | null;
+  forwardError?: string | null;
+  receivedAt: Date;
+};
 
 @Entity({ tableName: 'requests' })
 @Index({ properties: ['endpoint', 'receivedAt'] })
 @Index({ properties: ['endpoint', 'overlimit'] })
-export class RequestEntity {
-  @PrimaryKey({ type: 'uuid', defaultRaw: 'gen_random_uuid()' })
-  id!: string;
-
+export class RequestEntity extends BaseEntity implements RequestEntityProps {
   @ManyToOne(() => EndpointEntity, {
     fieldName: 'endpoint_id',
     deleteRule: 'cascade',
@@ -62,4 +78,23 @@ export class RequestEntity {
     onCreate: () => new Date(),
   })
   receivedAt!: Date;
+
+  constructor(props: RequestEntityProps) {
+    super();
+    this.id = props.id;
+    this.endpoint = props.endpoint;
+    this.method = props.method;
+    this.headers = props.headers;
+    this.body = props.body;
+    this.query = props.query;
+    this.ip = props.ip;
+    this.payloadHash = props.payloadHash;
+    this.contentType = props.contentType;
+    this.size = props.size;
+    this.overlimit = props.overlimit;
+    this.forwardStatus = props.forwardStatus;
+    this.forwardedAt = props.forwardedAt;
+    this.forwardError = props.forwardError;
+    this.receivedAt = props.receivedAt;
+  }
 }
