@@ -1,4 +1,9 @@
-import { Module } from '@nestjs/common';
+import {
+  MiddlewareConsumer,
+  Module,
+  NestModule,
+  RequestMethod,
+} from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { ScheduleModule } from '@nestjs/schedule';
 import { MikroOrmModule } from '@mikro-orm/nestjs';
@@ -19,6 +24,8 @@ import { UsageModule } from './usage/usage.module';
 import { CliTokenModule } from './cli-token/cli-token.module';
 import { BullModule } from '@nestjs/bullmq';
 import { ConfigService as NestConfigService } from '@nestjs/config';
+import { WebhookModule } from './webhook/webhook.module';
+import { RawBodyMiddleware } from './webhook/infrastructure/middleware/raw-body.middleware';
 
 @Module({
   imports: [
@@ -62,8 +69,15 @@ import { ConfigService as NestConfigService } from '@nestjs/config';
     BillingModule,
     UsageModule,
     CliTokenModule,
+    WebhookModule,
   ],
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer
+      .apply(RawBodyMiddleware)
+      .forRoutes({ path: '/hooks/*', method: RequestMethod.POST });
+  }
+}

@@ -16,7 +16,9 @@ import { Token as RequestToken } from '@request/constants';
 import type { RequestRepositoryPort } from '@request/domain/ports/outbound/persistence/repositories/request.repository.port';
 import { Inject } from '@nestjs/common';
 
-function headersToRecord(headers: ExpressRequest['headers']): Record<string, string> {
+function headersToRecord(
+  headers: ExpressRequest['headers'],
+): Record<string, string> {
   const out: Record<string, string> = {};
   for (const [k, v] of Object.entries(headers)) {
     if (v !== undefined && v !== null) {
@@ -75,7 +77,11 @@ export class HooksController {
         const limits = packetToLimits(packet);
         if (limits.requestsPerMonth != null) {
           const { start, end } = subscriptionPeriod({ packet, subscription });
-          const used = await this.requests.countByUserIdInPeriod(userId, start, end);
+          const used = await this.requests.countByUserIdInPeriod(
+            userId,
+            start,
+            end,
+          );
           overlimit = used >= limits.requestsPerMonth;
         }
       }
@@ -90,7 +96,11 @@ export class HooksController {
           : 0;
 
       let body: Record<string, unknown> | null = null;
-      if (req.body && typeof req.body === 'object' && !Buffer.isBuffer(req.body)) {
+      if (
+        req.body &&
+        typeof req.body === 'object' &&
+        !Buffer.isBuffer(req.body)
+      ) {
         body = req.body as Record<string, unknown>;
       }
 

@@ -1,5 +1,9 @@
 import { randomBytes } from 'crypto';
 import { generateUUID } from '@shared/utils/generate-uuid';
+import {
+  EndpointProvider,
+  EndpointProviderValue,
+} from '../value-objects/endpoint-provider.vo';
 
 export type EndpointProps = {
   id?: string;
@@ -8,6 +12,7 @@ export type EndpointProps = {
   description?: string;
   token: string;
   isActive?: boolean;
+  provider?: string;
   webhookUrl: string;
   targetUrl?: string | null;
   secretKey?: string | null;
@@ -24,6 +29,7 @@ export type EndpointJSON = {
   description: string;
   token: string;
   isActive: boolean;
+  provider?: EndpointProviderValue;
   targetUrl: string | null;
   webhookUrl: string;
   secretKey: string | null;
@@ -40,6 +46,7 @@ export class Endpoint {
   private _description: string;
   private _token: string;
   private _isActive: boolean;
+  private _provider?: EndpointProvider;
   private _targetUrl: string | null;
   private _webhookUrl: string;
   private _secretKey: string | null;
@@ -52,6 +59,7 @@ export class Endpoint {
     this._id = props.id ?? generateUUID();
     this._userId = props.userId;
     this._name = props.name;
+    this._provider = new EndpointProvider(props.provider);
     this._description = props.description ?? '';
     this._token = props.token;
     this._isActive = props.isActive ?? true;
@@ -69,6 +77,7 @@ export class Endpoint {
     name: string;
     description?: string;
     isActive?: boolean;
+    provider?: EndpointProviderValue;
     targetUrl?: string | null;
     webhookUrl: string;
     secretKey?: string | null;
@@ -82,6 +91,7 @@ export class Endpoint {
       targetUrl: props.targetUrl ?? null,
       webhookUrl: props.webhookUrl + token,
       secretKey: props.secretKey ?? null,
+      provider: props.provider,
       token,
     });
   }
@@ -111,6 +121,10 @@ export class Endpoint {
   get targetUrl(): string | null {
     return this._targetUrl;
   }
+  get provider(): EndpointProvider {
+    return this._provider;
+  }
+
   get webhookUrl(): string {
     return this._webhookUrl;
   }
@@ -138,6 +152,7 @@ export class Endpoint {
       description: this._description,
       token: this._token,
       isActive: this._isActive,
+      provider: this._provider.value,
       targetUrl: this._targetUrl,
       webhookUrl: this._webhookUrl,
       secretKey: this._secretKey,

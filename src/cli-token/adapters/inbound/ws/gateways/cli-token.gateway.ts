@@ -16,11 +16,11 @@ import { HashServicePort } from '@auth/domain/ports/services/hash.service.port';
 import { QueryBus } from '@nestjs/cqrs';
 import { GetEndpointsQuery } from '@endpoint/application/queries/get-endpoints/get-endpoints.query';
 import { GetEndpointByIdQuery } from '@endpoint/application/queries/get-endpoint-by-id/get-endpoint-by-id.query';
-import { Endpoint } from '@endpoint/domain/endpoint.entity';
 import { withForkedContext } from '@shared/utils/request-context';
 import { CLITokenPrefix } from '@cli-token/domain/value-objects/cli-token-prefix.vo';
 import type { RequestJSON } from '@request/domain/aggregates/request';
 import type { CliSocketsServicePort } from '@sockets/domain/ports/outbound/services/cli-sockets.service.port';
+import { Endpoint } from '@endpoint/domain/aggregates/endpoint';
 
 const ROOM_PREFIX = 'cli:endpoint:';
 
@@ -57,7 +57,8 @@ export class CliGateway implements CliSocketsServicePort {
 
     try {
       await withForkedContext(this.orm, async () => {
-        const token = typeof payload?.token === 'string' ? payload.token.trim() : '';
+        const token =
+          typeof payload?.token === 'string' ? payload.token.trim() : '';
         if (token.length === 0) {
           this.logger.warn('CLI AUTH MISSING TOKEN', { socketId: client.id });
           client.emit('auth.error', { message: 'invalid token' });

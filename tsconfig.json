@@ -32,6 +32,7 @@
       "@sockets/*": ["src/sockets/*"],
       "@waitlist/*": ["src/waitlist/*"],
       "@cli-token/*": ["src/cli-token/*"],
+      "@webhook/*": ["src/webhook/*"],
       "src/*": ["src/*"]
     }
   }

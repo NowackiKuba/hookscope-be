@@ -6,6 +6,7 @@ import { Endpoint } from '@endpoint/domain/aggregates/endpoint';
 import type { EndpointRepositoryPort } from '@endpoint/domain/ports/outbound/persistence/repositories/endpoint.repository.port';
 import { Token } from '@endpoint/constants';
 import { EndpointCreatedEvent } from '@endpoint/domain/events/endpoint-created.event';
+import { encryptSecret } from '@shared/utils/encryption';
 
 @CommandHandler(CreateEndpointCommand)
 export class CreateEndpointHandler implements ICommandHandler<CreateEndpointCommand> {
@@ -16,15 +17,24 @@ export class CreateEndpointHandler implements ICommandHandler<CreateEndpointComm
   ) {}
 
   async execute(command: CreateEndpointCommand): Promise<string> {
-    const { userId, name, description, isActive, targetUrl, secretKey } =
-      command.payload;
-    const endpoint = Endpoint.create({
+    const {
       userId,
       name,
       description,
       isActive,
       targetUrl,
       secretKey,
+      provider,
+    } = command.payload;
+
+    const encryptedSecret = encryptSecret(secretKey);
+    const endpoint = Endpoint.create({
+      userId,
+      name,
+      description,
+      isActive,
+      targetUrl,
+      secretKey: encryptedSecret,
       webhookUrl: `https://api.hookscope.dev/hooks/`,
     });
     const saved = await this.endpointRepository.save(endpoint);

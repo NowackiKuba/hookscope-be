@@ -8,6 +8,7 @@ export type EndpointEntityProps = {
   user: UserEntity;
   name: string;
   description?: string;
+  provider?: string;
   token: string;
   isActive?: boolean;
   targetUrl?: string | null;
@@ -30,6 +31,9 @@ export class EndpointEntity extends BaseEntity implements EndpointEntityProps {
 
   @Property({ type: 'text', unique: true })
   token!: string;
+
+  @Property({ type: 'text' })
+  provider: string;
 
   @Property({ type: 'boolean', default: true })
   isActive: boolean = true;
@@ -60,6 +64,7 @@ export class EndpointEntity extends BaseEntity implements EndpointEntityProps {
     this.name = props.name;
     this.description = props.description ?? '';
     this.token = props.token;
+    this.provider = props.provider;
     this.isActive = props.isActive ?? true;
     this.targetUrl = props.targetUrl ?? null;
     this.webhookUrl = props.webhookUrl;

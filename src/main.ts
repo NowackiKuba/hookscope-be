@@ -9,11 +9,14 @@ import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import { MikroORM } from '@mikro-orm/core';
 import { Config } from './config/config.schema';
+import { validateEncryptionKey } from './common/utils/encryption.util';
 
 const GLOBAL_PREFIX = 'api';
 export const APP_NAME = 'revoply';
 
 async function bootstrap() {
+  validateEncryptionKey();
+
   const app = await NestFactory.create(AppModule, {
     rawBody: true,
   });
