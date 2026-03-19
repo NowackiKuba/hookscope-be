@@ -7,6 +7,7 @@ import type { EndpointRepositoryPort } from '@endpoint/domain/ports/outbound/per
 import { Token } from '@endpoint/constants';
 import { EndpointCreatedEvent } from '@endpoint/domain/events/endpoint-created.event';
 import { encryptSecret } from '@shared/utils/encryption';
+import { EndpointProviderValue } from '@endpoint/domain/value-objects/endpoint-provider.vo';
 
 @CommandHandler(CreateEndpointCommand)
 export class CreateEndpointHandler implements ICommandHandler<CreateEndpointCommand> {
@@ -32,6 +33,7 @@ export class CreateEndpointHandler implements ICommandHandler<CreateEndpointComm
       userId,
       name,
       description,
+      provider: provider as EndpointProviderValue,
       isActive,
       targetUrl,
       secretKey: encryptedSecret,

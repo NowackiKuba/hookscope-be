@@ -23,11 +23,17 @@ import { GetEndpointByIdQuery } from '@endpoint/application/queries/get-endpoint
 import { ConfigService } from '@nestjs/config';
 import type { Config } from '@config/config.schema';
 import type { EndpointResponseDto } from '../dto/endpoint-response.dto';
-import { CreateEndpointDto, createEndpointSchema } from '../dto/create-endpoint';
+import {
+  CreateEndpointDto,
+  createEndpointSchema,
+} from '../dto/create-endpoint';
 import type { Endpoint } from '@endpoint/domain/aggregates/endpoint';
 import { SubscriptionLimitsGuard } from '../guards/subscription-limits.guard';
 
-function toResponseDto(endpoint: Endpoint, appUrl: string): EndpointResponseDto {
+function toResponseDto(
+  endpoint: Endpoint,
+  appUrl: string,
+): EndpointResponseDto {
   const json = endpoint.toJSON();
   return {
     id: json.id,
@@ -56,10 +62,12 @@ export class EndpointsController {
   ) {}
 
   @Get()
-  async list(@CurrentUser() user: AuthenticatedUser): Promise<EndpointResponseDto[]> {
-    const endpoints = await this.queryBus.execute(
+  async list(
+    @CurrentUser() user: AuthenticatedUser,
+  ): Promise<EndpointResponseDto[]> {
+    const endpoints = (await this.queryBus.execute(
       new GetEndpointsQuery({ userId: user.userId }),
-    ) as Endpoint[];
+    )) as Endpoint[];
     const appUrl = this.configService.get('APP_URL', { infer: true });
     return endpoints.map((e) => toResponseDto(e, appUrl));
   }
@@ -74,7 +82,8 @@ export class EndpointsController {
     if (!parsed.success) {
       throw new BadRequestException(parsed.error.flatten());
     }
-    const { name, description, isActive, targetUrl, secretKey } = parsed.data;
+    const { name, description, isActive, targetUrl, secretKey, provider } =
+      parsed.data;
     const endpointId = await this.commandBus.execute(
       new CreateEndpointCommand({
         userId: user.userId,
@@ -82,6 +91,7 @@ export class EndpointsController {
         description,
         isActive,
         targetUrl,
+        provider,
         secretKey,
       }),
     );
