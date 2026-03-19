@@ -5,6 +5,7 @@ import { Injectable } from '@nestjs/common';
 import { RequestEntity } from '@request/adapters/outbound/persistence/entities/request.entity';
 import { RequestMapper } from '@request/adapters/outbound/persistence/mappers/request.mapper';
 import type {
+  EndpointRequestCount,
   ForwardResult,
   RequestFilters,
   RequestRepositoryPort,
@@ -83,6 +84,44 @@ export class RequestRepository implements RequestRepositoryPort {
       endpoint: { user: { id: userId } },
       receivedAt: { $gte: start, $lt: end },
     } as FilterQuery<RequestEntity>);
+  }
+
+  async countByEndpointInPeriod(
+    start: Date,
+    end: Date,
+  ): Promise<EndpointRequestCount[]> {
+    const em = getEm(this.em);
+    const rows = (await em.getConnection().execute(
+      `
+        SELECT endpoint_id, COUNT(*)::int AS count
+        FROM requests
+        WHERE received_at >= ? AND received_at < ?
+        GROUP BY endpoint_id
+      `,
+      [start, end],
+    )) as Array<{ endpoint_id: string; count: number | string }>;
+
+    return rows.map((row) => ({
+      endpointId: row.endpoint_id,
+      count:
+        typeof row.count === 'number'
+          ? row.count
+          : Number.parseInt(row.count, 10),
+    }));
+  }
+
+  async findInPeriod(start: Date, end: Date): Promise<Request[]> {
+    const entities = await this.dbSource.find(
+      {
+        receivedAt: { $gte: start, $lt: end },
+      } as FilterQuery<RequestEntity>,
+      {
+        orderBy: { receivedAt: 'desc' },
+        populate: ['endpoint'],
+      },
+    );
+
+    return entities.map((entity) => this.mapper.toDomain(entity));
   }
 
   async countThisMonth(endpointId: string): Promise<number> {

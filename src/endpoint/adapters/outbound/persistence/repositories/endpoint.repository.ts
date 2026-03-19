@@ -84,6 +84,16 @@ export class EndpointRepository implements EndpointRepositoryPort {
     }
   }
 
+  async getAll(): Promise<Endpoint[]> {
+    const em = this.getEm();
+    const entities = await em.find(
+      EndpointEntity,
+      {},
+      { orderBy: { createdAt: 'desc' } },
+    );
+    return entities.map((entity) => this.mapper.toDomain(entity));
+  }
+
   async delete(id: string): Promise<void> {
     const em = this.getEm();
     await em.nativeDelete(EndpointEntity, { id });

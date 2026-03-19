@@ -16,6 +16,11 @@ export type ForwardResult = {
   forwardError: string | null;
 };
 
+export type EndpointRequestCount = {
+  endpointId: string;
+  count: number;
+};
+
 export interface RequestRepositoryPort {
   save(request: Request): Promise<Request>;
   findById(id: string): Promise<Request | null>;
@@ -35,6 +40,8 @@ export interface RequestRepositoryPort {
     start: Date,
     end: Date,
   ): Promise<number>;
+  countByEndpointInPeriod(start: Date, end: Date): Promise<EndpointRequestCount[]>;
+  findInPeriod(start: Date, end: Date): Promise<Request[]>;
   countThisMonth(endpointId: string): Promise<number>;
   deleteOlderThan(endpointId: string, before: Date): Promise<number>;
   delete(id: string): Promise<void>;

@@ -7,5 +7,6 @@ export interface EndpointRepositoryPort {
   findAllByUserId(userId: string): Promise<Endpoint[]>;
   countByUserId(userId: string): Promise<number>;
   incrementRequestCount(id: string, lastRequestAt: Date): Promise<void>;
+  getAll(): Promise<Endpoint[]>;
   delete(id: string): Promise<void>;
 }
