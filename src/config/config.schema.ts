@@ -9,7 +9,6 @@ const AppConfigSchema = z.object({
   /** Base URL of the API (e.g. for webhook URLs). Defaults to http://localhost:PORT */
   APP_URL: z.string().default('http://localhost:8080'),
   ANTHROPIC_API_KEY: z.string(),
-  ENDPOINT_SCHEMA_GENERATION_SYSTEM_PROMPT: z.string(),
 });
 
 //

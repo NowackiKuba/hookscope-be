@@ -1,4 +1,4 @@
-import { GenerationTarget } from '@endpoint/domain/value-objects/edpoint-schema-generated.vo';
+import { GenerationTarget } from '@endpoint/domain/value-objects/endpoint-schema-generated.vo';
 
 export type AiGenerationContext = {
   schema: Record<string, unknown>;

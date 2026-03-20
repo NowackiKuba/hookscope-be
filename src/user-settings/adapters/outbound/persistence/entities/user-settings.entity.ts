@@ -2,7 +2,7 @@ import { Entity, OneToOne, Property } from '@mikro-orm/core';
 import { BaseEntity } from '@orm/entities/base.entity';
 import { generateUUID } from '@shared/utils/generate-uuid';
 import { UserEntity } from '@users/adapters/outbound/persistence/entities/user.entity';
-import { GenerationTarget } from '@endpoint/domain/value-objects/edpoint-schema-generated.vo';
+import { GenerationTarget } from '@endpoint/domain/value-objects/endpoint-schema-generated.vo';
 import type {
   UserSettingsNotificationChannels,
   UserSettingsTheme,

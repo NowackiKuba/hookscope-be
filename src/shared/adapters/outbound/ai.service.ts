@@ -1,6 +1,8 @@
 import Anthropic from '@anthropic-ai/sdk';
-import { ConfigService } from '@config/config.schema';
+import type { Config } from '@config/config.schema';
+import { SCHEMA_GENERATION_PROMPT } from '@endpoint/constants';
 import { Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import {
   AiGenerationContext,
   AiServicePort,
@@ -10,7 +12,7 @@ import {
 export class AiService implements AiServicePort {
   private readonly client: Anthropic;
 
-  constructor(private readonly config: ConfigService) {
+  constructor(private readonly config: ConfigService<Config, true>) {
     this.client = new Anthropic({
       apiKey: this.config.get('ANTHROPIC_API_KEY'),
     });
@@ -20,9 +22,7 @@ export class AiService implements AiServicePort {
     prompt: string,
     context: AiGenerationContext,
   ): Promise<T> {
-    const systemPrompt = this.config.get(
-      'ENDPOINT_SCHEMA_GENERATION_SYSTEM_PROMPT',
-    );
+    const systemPrompt = SCHEMA_GENERATION_PROMPT;
 
     const response = await this.client.messages.create({
       model: 'claude-3-5-sonnet-latest',

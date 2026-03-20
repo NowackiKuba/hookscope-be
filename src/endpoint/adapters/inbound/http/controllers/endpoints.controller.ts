@@ -32,6 +32,8 @@ import type { Endpoint } from '@endpoint/domain/aggregates/endpoint';
 import { SubscriptionLimitsGuard } from '../guards/subscription-limits.guard';
 import { Token } from '@endpoint/constants';
 import { EndpointSchemaRepositoryPort } from '@endpoint/domain/ports/outbound/persistence/repositories/endpoint-schema.repository.port';
+import { CreateEndpiointSchemaDto } from '../dto/create-endpoint-schema';
+import { CreateEndpointSchemaCommand } from '@endpoint/application/commands/create-endpoint-schema/create-endpoint-schema.command';
 
 function toResponseDto(
   endpoint: Endpoint,
@@ -171,6 +173,16 @@ export class EndpointsController {
   ): Promise<void> {
     await this.commandBus.execute(
       new DeleteEndpointCommand({ userId: user.userId, endpointId: id }),
+    );
+  }
+
+  @Post('/schemas')
+  async createSchema(@Body() body: CreateEndpiointSchemaDto) {
+    return await this.commandBus.execute(
+      new CreateEndpointSchemaCommand({
+        endpointId: body.endpointId,
+        schema: body.schema,
+      }),
     );
   }
 }

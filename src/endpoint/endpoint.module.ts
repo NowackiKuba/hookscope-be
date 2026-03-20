@@ -16,8 +16,16 @@ import { DomainExceptionFilter } from '@endpoint/adapters/inbound/http/filters/d
 import { BillingModule } from '@billing/billing.module';
 import { SubscriptionLimitsGuard } from '@endpoint/adapters/inbound/http/guards/subscription-limits.guard';
 import { EndpointSchemaRepository } from '@endpoint/adapters/outbound/persistence/repositories/endpoint-schema.repository';
+import { EndpointSchemaMapper } from '@endpoint/adapters/outbound/persistence/mappers/endpoint-schema.mapper';
+import { CreateEndpointSchemaHandler } from './application/commands/create-endpoint-schema/create-endpoint-schema.handler';
+import { AIService } from '@shared/constants';
+import { AiService } from '@shared/adapters/outbound/ai.service';
 
-const CommandHandlers = [CreateEndpointHandler, DeleteEndpointHandler];
+const CommandHandlers = [
+  CreateEndpointHandler,
+  DeleteEndpointHandler,
+  CreateEndpointSchemaHandler,
+];
 const QueryHandlers = [
   GetEndpointsHandler,
   GetEndpointByIdHandler,
@@ -31,6 +39,7 @@ const QueryHandlers = [
     ...CommandHandlers,
     ...QueryHandlers,
     EndpointMapper,
+    EndpointSchemaMapper,
     DomainExceptionFilter,
     SubscriptionLimitsGuard,
     {
@@ -38,10 +47,18 @@ const QueryHandlers = [
       useClass: EndpointRepository,
     },
     {
+      provide: AIService,
+      useClass: AiService,
+    },
+    {
       provide: Token.EndpointSchemaRepository,
       useClass: EndpointSchemaRepository,
     },
   ],
-  exports: [CqrsModule, Token.EndpointRepository, Token.EndpointSchemaRepository],
+  exports: [
+    CqrsModule,
+    Token.EndpointRepository,
+    Token.EndpointSchemaRepository,
+  ],
 })
 export class EndpointModule {}

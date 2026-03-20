@@ -1,43 +1,28 @@
 import { EntityManager, EntityRepository, FilterQuery } from '@mikro-orm/postgresql';
 import { Injectable } from '@nestjs/common';
-import { EndpointEntity } from '../entities/endpoint.entity';
 import {
   EndpointSchemaRepositoryPort,
-  EndpointSchemaVersion,
 } from '@endpoint/domain/ports/outbound/persistence/repositories/endpoint-schema.repository.port';
 import { EndpointSchemaEntity } from '../entities/endpoint-schema.entity';
-import {
-  EndpointSchemaGenerated,
-  EndpointSchemaGeneratedValue,
-} from '@endpoint/domain/value-objects/edpoint-schema-generated.vo';
-
-function toVersion(entity: EndpointSchemaEntity): EndpointSchemaVersion {
-  return {
-    id: entity.id,
-    endpointId: entity.endpoint.id,
-    eventType: entity.eventType ?? null,
-    version: entity.version,
-    isLatest: entity.isLatest,
-    schema: entity.schema,
-    generated: entity.generated,
-    generatedAt: entity.generatedAt,
-    createdAt: entity.createdAt,
-    updatedAt: entity.updatedAt,
-  };
-}
+import type { EndpointSchemaGeneratedValue } from '@endpoint/domain/value-objects/endpoint-schema-generated.vo';
+import { EndpointSchema } from '@endpoint/domain/aggregates/endpoint-schema';
+import { EndpointSchemaMapper } from '../mappers/endpoint-schema.mapper';
 
 @Injectable()
 export class EndpointSchemaRepository implements EndpointSchemaRepositoryPort {
   private readonly dbSource: EntityRepository<EndpointSchemaEntity>;
 
-  constructor(private readonly em: EntityManager) {
+  constructor(
+    private readonly em: EntityManager,
+    private readonly mapper: EndpointSchemaMapper,
+  ) {
     this.dbSource = this.em.getRepository(EndpointSchemaEntity);
   }
 
   async getLatest(
     endpointId: string,
     eventType?: string | null,
-  ): Promise<EndpointSchemaVersion | null> {
+  ): Promise<EndpointSchema | null> {
     const latest = await this.dbSource.findOne(
       {
         endpoint: { id: endpointId },
@@ -50,7 +35,7 @@ export class EndpointSchemaRepository implements EndpointSchemaRepositoryPort {
       },
     );
 
-    return latest ? toVersion(latest) : null;
+    return latest ? this.mapper.toDomain(latest) : null;
   }
 
   async createNextVersion(params: {
@@ -58,10 +43,9 @@ export class EndpointSchemaRepository implements EndpointSchemaRepositoryPort {
     eventType?: string | null;
     schema: Record<string, string>;
     generated?: EndpointSchemaGeneratedValue;
-  }): Promise<EndpointSchemaVersion> {
+  }): Promise<EndpointSchema> {
     const { endpointId, eventType, schema, generated } = params;
     const normalizedEventType = eventType ?? null;
-    const generatedValue = EndpointSchemaGenerated.create(generated).value;
 
     const latest = await this.dbSource.findOne(
       {
@@ -79,30 +63,26 @@ export class EndpointSchemaRepository implements EndpointSchemaRepositoryPort {
       this.em.persist(latest);
     }
 
-    const next = this.dbSource.create(
-      new EndpointSchemaEntity({
-        endpoint: this.em.getReference(EndpointEntity, endpointId),
-        eventType: normalizedEventType,
-        version: latest ? latest.version + 1 : 1,
-        isLatest: true,
-        prevVersion: latest ?? null,
-        schema,
-        generated: generatedValue,
-        generatedAt: new Date(),
-      }),
-    );
+    const domain = EndpointSchema.create({
+      endpointId,
+      eventType: normalizedEventType,
+      version: latest ? latest.version + 1 : 1,
+      schema,
+      generated,
+    });
 
-    this.em.persist(next);
+    const entity = this.mapper.toEntity(domain, latest);
+    this.em.persist(entity);
     await this.em.flush();
-    await this.em.populate(next, ['endpoint']);
+    await this.em.populate(entity, ['endpoint']);
 
-    return toVersion(next);
+    return this.mapper.toDomain(entity);
   }
 
   async getByEndpointId(
     endpointId: string,
     eventType?: string | null,
-  ): Promise<EndpointSchemaVersion[]> {
+  ): Promise<EndpointSchema[]> {
     const where: FilterQuery<EndpointSchemaEntity> = {
       endpoint: { id: endpointId },
     };
@@ -114,6 +94,6 @@ export class EndpointSchemaRepository implements EndpointSchemaRepositoryPort {
       orderBy: { version: 'desc' },
       populate: ['endpoint'],
     });
-    return rows.map(toVersion);
+    return rows.map((row) => this.mapper.toDomain(row));
   }
 }

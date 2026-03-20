@@ -1,31 +1,19 @@
-import { EndpointSchemaGeneratedValue } from '@endpoint/domain/value-objects/edpoint-schema-generated.vo';
-
-export type EndpointSchemaVersion = {
-  id: string;
-  endpointId: string;
-  eventType: string | null;
-  version: number;
-  isLatest: boolean;
-  schema: Record<string, string>;
-  generated: EndpointSchemaGeneratedValue;
-  generatedAt: Date;
-  createdAt: Date;
-  updatedAt: Date;
-};
+import { EndpointSchema } from '@endpoint/domain/aggregates/endpoint-schema';
+import type { EndpointSchemaGeneratedValue } from '@endpoint/domain/value-objects/endpoint-schema-generated.vo';
 
 export interface EndpointSchemaRepositoryPort {
   getLatest(
     endpointId: string,
     eventType?: string | null,
-  ): Promise<EndpointSchemaVersion | null>;
+  ): Promise<EndpointSchema | null>;
   createNextVersion(params: {
     endpointId: string;
     eventType?: string | null;
     schema: Record<string, string>;
     generated?: EndpointSchemaGeneratedValue;
-  }): Promise<EndpointSchemaVersion>;
+  }): Promise<EndpointSchema>;
   getByEndpointId(
     endpointId: string,
     eventType?: string | null,
-  ): Promise<EndpointSchemaVersion[]>;
+  ): Promise<EndpointSchema[]>;
 }

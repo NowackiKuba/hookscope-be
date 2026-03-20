@@ -1,5 +1,5 @@
 import { generateUUID } from '@shared/utils/generate-uuid';
-import { GenerationTarget } from '@endpoint/domain/value-objects/edpoint-schema-generated.vo';
+import { GenerationTarget } from '@endpoint/domain/value-objects/endpoint-schema-generated.vo';
 
 export type UserSettingsTheme = 'light' | 'dark' | 'system';
 

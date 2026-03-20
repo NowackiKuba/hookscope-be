@@ -27,10 +27,11 @@ export class AlertDetectedListener implements IEventHandler<AlertDetectedEvent> 
       return activeAlert.id.value;
     }
 
-    const latestAlert = await this.webhookAlertRepository.getLatestByEndpointAndType(
-      event.payload.endpointId,
-      event.payload.type,
-    );
+    const latestAlert =
+      await this.webhookAlertRepository.getLatestByEndpointAndType(
+        event.payload.endpointId,
+        event.payload.type,
+      );
     if (
       latestAlert &&
       latestAlert.scannerStatus.value === 'resolved' &&

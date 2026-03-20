@@ -1,4 +1,4 @@
-import type { GenerationTarget } from '@endpoint/domain/value-objects/edpoint-schema-generated.vo';
+import type { GenerationTarget } from '@endpoint/domain/value-objects/endpoint-schema-generated.vo';
 import type {
   UserSettingsNotificationChannels,
   UserSettingsTheme,

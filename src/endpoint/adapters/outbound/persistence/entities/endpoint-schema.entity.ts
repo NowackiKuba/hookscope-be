@@ -2,7 +2,7 @@ import { Entity, ManyToOne, OneToOne, Property, Unique } from '@mikro-orm/core';
 import { BaseEntity } from '@orm/entities/base.entity';
 import { EndpointEntity } from './endpoint.entity';
 import { WebhookAlertEntity } from '@webhook/adapters/outbound/persistence/entities/webhook-alert.entity';
-import { EndpointSchemaGeneratedValue } from '@endpoint/domain/value-objects/edpoint-schema-generated.vo';
+import { EndpointSchemaGeneratedValue } from '@endpoint/domain/value-objects/endpoint-schema-generated.vo';
 
 export type EndpointSchemaEntityProps = {
   id?: string;

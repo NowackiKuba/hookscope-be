@@ -1,5 +1,5 @@
 import z from 'zod';
-import { GenerationTarget } from '@endpoint/domain/value-objects/edpoint-schema-generated.vo';
+import { GenerationTarget } from '@endpoint/domain/value-objects/endpoint-schema-generated.vo';
 
 const notificationChannelsSchema = z
   .object({
