@@ -27,6 +27,7 @@ import { ConfigService as NestConfigService } from '@nestjs/config';
 import { WebhookModule } from './webhook/webhook.module';
 import { RawBodyMiddleware } from './webhook/infrastructure/middleware/raw-body.middleware';
 import { NotificationsModule } from './notifications/notifications.module';
+import { UserSettingsModule } from './user-settings/user-settings.module';
 
 @Module({
   imports: [
@@ -72,6 +73,7 @@ import { NotificationsModule } from './notifications/notifications.module';
     CliTokenModule,
     WebhookModule,
     NotificationsModule,
+    UserSettingsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

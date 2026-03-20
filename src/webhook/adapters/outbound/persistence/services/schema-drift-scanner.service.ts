@@ -13,12 +13,15 @@ import {
 import { EventBus } from '@nestjs/cqrs';
 import { AlertDetectedEvent } from '@webhook/domain/events/alert-detected.event';
 import { AlertMetadata } from '@webhook/domain/value-objects/alert-metadata.vo';
+import { EndpointSchemaRepositoryPort } from '@endpoint/domain/ports/outbound/persistence/repositories/endpoint-schema.repository.port';
 
 @Injectable()
 export class SchemaDriftScannerService implements ScanServicePort {
   constructor(
     @Inject(Token.EndpointRepository)
     private readonly endpointRepository: EndpointRepositoryPort,
+    @Inject(Token.EndpointSchemaRepository)
+    private readonly endpointSchemaRepository: EndpointSchemaRepositoryPort,
     private readonly eventBus: EventBus,
   ) {}
 
@@ -36,15 +39,19 @@ export class SchemaDriftScannerService implements ScanServicePort {
       return;
     }
 
-    if (!endpoint.schemas) {
-      return;
-    }
-
-    let targetSchema =
-      endpoint.schemas[context.eventType ?? DEFAULT_EVENT_TYPE_KEY];
     const schemaKey = context.eventType ?? DEFAULT_EVENT_TYPE_KEY;
+    const latestSchema = await this.endpointSchemaRepository.getLatest(
+      context.endpointId,
+      schemaKey,
+    );
+    const targetSchema = latestSchema?.schema;
 
     if (!targetSchema) {
+      await this.endpointSchemaRepository.createNextVersion({
+        endpointId: context.endpointId,
+        eventType: schemaKey,
+        schema: flattenedPayload,
+      });
       endpoint.saveSchema(flattenedPayload, schemaKey);
       await this.endpointRepository.save(endpoint);
       return;
@@ -67,6 +74,11 @@ export class SchemaDriftScannerService implements ScanServicePort {
           eventType: context.eventType ?? undefined,
         })
       );
+      await this.endpointSchemaRepository.createNextVersion({
+        endpointId: context.endpointId,
+        eventType: schemaKey,
+        schema: flattenedPayload,
+      });
       endpoint.saveSchema(flattenedPayload, schemaKey);
       await this.endpointRepository.save(endpoint);
     }

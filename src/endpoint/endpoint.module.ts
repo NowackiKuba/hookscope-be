@@ -15,6 +15,7 @@ import { EndpointsController } from '@endpoint/adapters/inbound/http/controllers
 import { DomainExceptionFilter } from '@endpoint/adapters/inbound/http/filters/domain-exception.filter';
 import { BillingModule } from '@billing/billing.module';
 import { SubscriptionLimitsGuard } from '@endpoint/adapters/inbound/http/guards/subscription-limits.guard';
+import { EndpointSchemaRepository } from '@endpoint/adapters/outbound/persistence/repositories/endpoint-schema.repository';
 
 const CommandHandlers = [CreateEndpointHandler, DeleteEndpointHandler];
 const QueryHandlers = [
@@ -36,7 +37,11 @@ const QueryHandlers = [
       provide: Token.EndpointRepository,
       useClass: EndpointRepository,
     },
+    {
+      provide: Token.EndpointSchemaRepository,
+      useClass: EndpointSchemaRepository,
+    },
   ],
-  exports: [CqrsModule, Token.EndpointRepository],
+  exports: [CqrsModule, Token.EndpointRepository, Token.EndpointSchemaRepository],
 })
 export class EndpointModule {}

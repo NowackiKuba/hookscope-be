@@ -5,9 +5,7 @@ import type { UserRepositoryPort } from '@users/domain/ports/outbound/persistenc
 import { Inject } from '@nestjs/common';
 import { Token } from '@users/constants';
 import { Email } from '@users/domain/value-objects/user-email.vo';
-import { CreateCLITokenCommand } from '@cli-token/application/commands/create-cli-token/create-cli-token.command';
-import { generateUUID } from '@shared/utils/generate-uuid';
-import { create } from 'domain';
+import { CreateUserSettingsCommand } from '@user-settings/application/commands/create-user-settings/create-user-settings.command';
 
 @CommandHandler(CreateUserCommand)
 export class CreateUserHandler implements ICommandHandler<CreateUserCommand> {
@@ -30,6 +28,10 @@ export class CreateUserHandler implements ICommandHandler<CreateUserCommand> {
       passwordHash: password,
     });
     const created = await this.userRepository.create(user);
+
+    await this.commandBus.execute(
+      new CreateUserSettingsCommand({ userId: created.id.value }),
+    );
 
     return created.id.value;
   }

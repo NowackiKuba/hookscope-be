@@ -8,6 +8,8 @@ const AppConfigSchema = z.object({
   ORIGIN: z.string().default('http://localhost:3000'),
   /** Base URL of the API (e.g. for webhook URLs). Defaults to http://localhost:PORT */
   APP_URL: z.string().default('http://localhost:8080'),
+  ANTHROPIC_API_KEY: z.string(),
+  ENDPOINT_SCHEMA_GENERATION_SYSTEM_PROMPT: z.string(),
 });
 
 //
@@ -79,11 +81,7 @@ const UploadThingConfigSchema = z.object({
 
 // Geo IP / location (optional; default uses ipwho.is, free for commercial use)
 const GeoConfigSchema = z.object({
-  GEO_API_BASE_URL: z
-    .string()
-    .url()
-    .optional()
-    .default('https://ipwho.is'),
+  GEO_API_BASE_URL: z.string().url().optional().default('https://ipwho.is'),
   /** When IP is private/local (e.g. localhost, Docker), use this country code so geo still works. E.g. "PL" for Poland. */
   DEFAULT_COUNTRY_CODE: z.string().length(2).optional(),
 });

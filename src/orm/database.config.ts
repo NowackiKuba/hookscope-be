@@ -14,6 +14,7 @@ import { PacketEntity } from '@billing/adapters/outbound/persistence/entities/pa
 import { SubscriptionEntity } from '@billing/adapters/outbound/persistence/entities/subscription.entity';
 import { CLITokenEntity } from '@cli-token/adapters/outbound/persistence/entities/cli-token.entity';
 import { WebhookAlertEntity } from '@webhook/adapters/outbound/persistence/entities/webhook-alert.entity';
+import { EndpointSchemaEntity } from '@endpoint/adapters/outbound/persistence/entities/endpoint-schema.entity';
 import { Migration20260314171016 } from './migrations/Migration20260314171016';
 import { Migration20260314180000 } from './migrations/Migration20260314180000';
 import { Migration20260314200000 } from './migrations/Migration20260314200000';
@@ -26,9 +27,11 @@ import { Migration20260318114408 } from './migrations/Migration20260318114408';
 import { Migration20260319133153 } from './migrations/Migration20260319133153';
 import { Migration20260320100000 } from './migrations/Migration20260320100000';
 import { NotificationEntity } from '@notifications/adapters/outbound/persistence/entities/notification.entity';
+import { UserSettingsEntity } from '@user-settings/adapters/outbound/persistence/entities/user-settings.entity';
 import { Migration20260319204700 } from './migrations/Migration20260319204700';
 import { Migration20260320132353 } from './migrations/Migration20260320132353';
 import { Migration20260320142055 } from './migrations/Migration20260320142055';
+import { Migration20260320183000 } from './migrations/Migration20260320183000';
 
 // Create Winston logger instance for MikroORM
 // This is used in static config before NestJS DI is available
@@ -86,7 +89,9 @@ export const config = defineConfig({
     SubscriptionEntity,
     CLITokenEntity,
     WebhookAlertEntity,
+    EndpointSchemaEntity,
     NotificationEntity,
+    UserSettingsEntity,
   ],
   extensions: [SeedManager, Migrator],
   //
@@ -115,6 +120,7 @@ export const config = defineConfig({
       { name: Migration20260319204700.name, class: Migration20260319204700 },
       { name: Migration20260320132353.name, class: Migration20260320132353 },
       { name: Migration20260320142055.name, class: Migration20260320142055 },
+      { name: Migration20260320183000.name, class: Migration20260320183000 },
     ],
   },
 });

@@ -6,6 +6,7 @@ import {
   Get,
   HttpCode,
   HttpStatus,
+  Inject,
   Param,
   Post,
   UseFilters,
@@ -29,6 +30,8 @@ import {
 } from '../dto/create-endpoint';
 import type { Endpoint } from '@endpoint/domain/aggregates/endpoint';
 import { SubscriptionLimitsGuard } from '../guards/subscription-limits.guard';
+import { Token } from '@endpoint/constants';
+import { EndpointSchemaRepositoryPort } from '@endpoint/domain/ports/outbound/persistence/repositories/endpoint-schema.repository.port';
 
 function toResponseDto(
   endpoint: Endpoint,
@@ -60,6 +63,8 @@ export class EndpointsController {
     private readonly commandBus: CommandBus,
     private readonly queryBus: QueryBus,
     private readonly configService: ConfigService<Config, true>,
+    @Inject(Token.EndpointSchemaRepository)
+    private readonly endpointSchemaRepository: EndpointSchemaRepositoryPort,
   ) {}
 
   @Get()
@@ -121,6 +126,41 @@ export class EndpointsController {
     );
     const appUrl = this.configService.get('APP_URL', { infer: true });
     return toResponseDto(endpoint, appUrl);
+  }
+
+  @Get(':id/schemas')
+  async getSchemas(
+    @Param('id') id: string,
+    @CurrentUser() user: AuthenticatedUser,
+  ): Promise<
+    Array<{
+      id: string;
+      eventType: string | null;
+      version: number;
+      isLatest: boolean;
+      schema: Record<string, string>;
+      generated: Record<string, string>;
+      generatedAt: string;
+      createdAt: string;
+      updatedAt: string;
+    }>
+  > {
+    await this.queryBus.execute(
+      new GetEndpointByIdQuery({ userId: user.userId, endpointId: id }),
+    );
+
+    const schemas = await this.endpointSchemaRepository.getByEndpointId(id);
+    return schemas.map((schema) => ({
+      id: schema.id,
+      eventType: schema.eventType,
+      version: schema.version,
+      isLatest: schema.isLatest,
+      schema: schema.schema,
+      generated: schema.generated,
+      generatedAt: schema.generatedAt.toISOString(),
+      createdAt: schema.createdAt.toISOString(),
+      updatedAt: schema.updatedAt.toISOString(),
+    }));
   }
 
   @Delete(':id')

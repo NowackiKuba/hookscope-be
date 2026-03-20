@@ -34,6 +34,7 @@
       "@cli-token/*": ["src/cli-token/*"],
       "@webhook/*": ["src/webhook/*"],
       "@notifications/*": ["src/notifications/*"],
+      "@user-settings/*": ["src/user-settings/*"],
       "src/*": ["src/*"]
     }
   }
