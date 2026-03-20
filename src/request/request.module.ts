@@ -26,6 +26,8 @@ import { CleanupOldRequestsScheduler } from '@request/adapters/inbound/cron/clea
 import { RequestCleanupQueueProducer } from '@request/adapters/outbound/queue/producers/request-cleanup.queue.producer';
 import { RequestCleanupQueueProcessor } from '@request/adapters/outbound/queue/processors/request-cleanup.queue.processor';
 import { RunRequestCleanupHandler } from '@request/application/commands/run-request-cleanup/run-request-cleanup.handler';
+import { ForwardRequestQueueProducer } from '@request/adapters/outbound/queue/producers/forward-request.queue.producer';
+import { ForwardRequestQueueProcessor } from '@request/adapters/outbound/queue/processors/forward-request.queue.processor';
 
 const CommandHandlers = [
   ReceiveRequestHandler,
@@ -47,6 +49,9 @@ const QueryHandlers = [
     BullModule.registerQueue({
       name: 'request-cleanup',
     }),
+    BullModule.registerQueue({
+      name: 'forward',
+    }),
   ],
   controllers: [RequestsController, HooksController],
   providers: [
@@ -56,6 +61,7 @@ const QueryHandlers = [
     DomainExceptionFilter,
     CleanupOldRequestsScheduler,
     RequestCleanupQueueProcessor,
+    ForwardRequestQueueProcessor,
     {
       provide: Token.RequestRepository,
       useClass: RequestRepository,
@@ -63,6 +69,10 @@ const QueryHandlers = [
     {
       provide: Token.RequestCleanupQueue,
       useClass: RequestCleanupQueueProducer,
+    },
+    {
+      provide: Token.ForwardRequestQueue,
+      useClass: ForwardRequestQueueProducer,
     },
     {
       provide: HttpClientProvider,
@@ -73,6 +83,11 @@ const QueryHandlers = [
       useClass: HttpService,
     },
   ],
-  exports: [CqrsModule, Token.RequestRepository, Token.RequestCleanupQueue],
+  exports: [
+    CqrsModule,
+    Token.RequestRepository,
+    Token.RequestCleanupQueue,
+    Token.ForwardRequestQueue,
+  ],
 })
 export class RequestModule {}

@@ -7,12 +7,10 @@ import { Token as RequestToken } from '@request/constants';
 import type { EndpointRepositoryPort } from '@endpoint/domain/ports/outbound/persistence/repositories/endpoint.repository.port';
 import { Token as EndpointToken } from '@endpoint/constants';
 import { RequestReceivedEvent } from '@request/domain/events/request-received.event';
-import { RequestForwardedEvent } from '@request/domain/events/request-forwarded.event';
-import { ForwardFailedEvent } from '@request/domain/events/forward-failed.event';
-import { HttpService, LoggerProvider } from '@shared/constants';
-import { HttpServicePort } from '@shared/domain/ports/outbound/http.service.port';
+import { LoggerProvider } from '@shared/constants';
 import { ReceiveRequestCommand } from './receive-request.command';
 import { hashPayload } from '@shared/utils/hash-payload';
+import { ForwardRequestQueuePort } from '@request/domain/ports/outbound/queue/forward-request.queue.port';
 
 @CommandHandler(ReceiveRequestCommand)
 export class ReceiveRequestHandler implements ICommandHandler<ReceiveRequestCommand> {
@@ -21,8 +19,8 @@ export class ReceiveRequestHandler implements ICommandHandler<ReceiveRequestComm
     private readonly requestRepository: RequestRepositoryPort,
     @Inject(EndpointToken.EndpointRepository)
     private readonly endpointRepository: EndpointRepositoryPort,
-    @Inject(HttpService)
-    private readonly httpService: HttpServicePort,
+    @Inject(RequestToken.ForwardRequestQueue)
+    private readonly forwardRequestQueue: ForwardRequestQueuePort,
     @Inject(LoggerProvider)
     private readonly logger: Logger,
     private readonly eventBus: EventBus,
@@ -83,59 +81,16 @@ export class ReceiveRequestHandler implements ICommandHandler<ReceiveRequestComm
 
     const targetUrl = endpoint?.targetUrl;
     if (targetUrl) {
-      this.logger.info('FORWARDING REQUEST', {
+      this.logger.info('ENQUEUE FORWARD REQUEST', {
         requestId: saved.id,
+        endpointId: saved.endpointId,
         targetUrl,
       });
-      try {
-        const response = await this.httpService.send(saved, targetUrl);
-        if (response) {
-          const forwardError = response.status >= 400 ? response.body : null;
-          saved.onForward(response.status, forwardError ?? undefined);
-          await this.requestRepository.updateForwardResult(saved.id, {
-            forwardStatus: response.status,
-            forwardedAt: new Date(),
-            forwardError,
-          });
-          this.logger.info('REQUEST FORWARDED', {
-            requestId: saved.id,
-            endpointId: saved.endpointId,
-            status: response.status,
-            error: forwardError,
-          });
-          this.eventBus.publish(
-            new RequestForwardedEvent(
-              saved.id,
-              saved.endpointId,
-              response.status,
-              targetUrl,
-              forwardError,
-            ),
-          );
-        }
-      } catch (err) {
-        const message = err instanceof Error ? err.message : String(err);
-        saved.onForward(0, message);
-        await this.requestRepository.updateForwardResult(saved.id, {
-          forwardStatus: 0,
-          forwardedAt: new Date(),
-          forwardError: message,
-        });
-        this.logger.error('REQUEST FORWARD ERROR', {
-          requestId: saved.id,
-          endpointId: saved.endpointId,
-          error: message,
-        });
-        this.eventBus.publish(
-          new RequestForwardedEvent(
-            saved.id,
-            saved.endpointId,
-            0,
-            targetUrl,
-            message,
-          ),
-        );
-      }
+      await this.forwardRequestQueue.enqueue({
+        requestId: saved.id,
+        endpointId: saved.endpointId,
+        targetUrl,
+      });
     }
 
     return saved.id;

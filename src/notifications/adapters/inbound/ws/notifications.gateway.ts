@@ -72,6 +72,9 @@ export class NotificationsGateway
   }
 
   emitNotification(userId: string, payload: NotificationJSON): void {
-    this.server.to(SOCKET_PREFIX + userId).emit('notification.received', payload);
+    this.logger.info(`EMITTING NOTIFICATION: ${SOCKET_PREFIX + userId}`);
+    this.server
+      .to(SOCKET_PREFIX + userId)
+      .emit('notification.received', payload);
   }
 }

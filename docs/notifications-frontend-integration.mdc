@@ -1,0 +1,274 @@
+---
+title: Notifications - Frontend Integration Guide
+description: HTTP endpoints, TypeScript types, and helper functions for notifications plus real-time Socket.IO updates.
+---
+
+# Notifications - Frontend Integration Guide
+
+Base URL: **`/api`** (example: `http://localhost:8080/api`)  
+All notifications routes are protected with JWT (`Authorization: Bearer <accessToken>`).
+
+---
+
+## 1. TypeScript types
+
+```typescript
+export const API_BASE = '/api';
+
+export type NotificationChannel = 'inApp' | 'email' | 'slack';
+export type NotificationStatus = 'sent' | 'read' | 'archived' | 'failed';
+
+export interface NotificationItem {
+  id: string;
+  userId: string;
+  channel: NotificationChannel;
+  status: NotificationStatus;
+  referenceId: string;
+  payload: Record<string, unknown>;
+  failedReason: string | null;
+  sentAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateNotificationBody {
+  // optional, backend defaults to current JWT user when omitted
+  userId?: string;
+  referenceId: string; // UUID
+  payload: Record<string, unknown>;
+  channel?: NotificationChannel;
+  status?: NotificationStatus;
+  failedReason?: string;
+  sentAt?: string; // ISO date string
+}
+
+export interface GetNotificationsParams {
+  channel?: NotificationChannel;
+  status?: NotificationStatus;
+  limit?: number;
+  offset?: number;
+  orderBy?: 'asc' | 'desc';
+  orderByField?: 'createdAt' | 'updatedAt' | 'sentAt';
+}
+
+export interface GetNotificationsResponse {
+  data: NotificationItem[];
+  limit?: number;
+  offset?: number;
+  totalCount?: number;
+}
+
+export interface ApiErrorResponse {
+  error: {
+    statusCode: number;
+    message: string;
+    error: string;
+    code: string;
+    metadata?: Record<string, unknown>;
+    timestamp: string;
+    path: string;
+  };
+}
+```
+
+---
+
+## 2. HTTP endpoints
+
+### POST `/api/notifications` (JWT)
+
+Create notification.
+
+- Body: `CreateNotificationBody`
+- Response 201/200: `NotificationItem`
+
+```typescript
+const res = await fetch(`${API_BASE}/notifications`, {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    Authorization: `Bearer ${accessToken}`,
+  },
+  body: JSON.stringify({
+    referenceId: crypto.randomUUID(),
+    payload: { message: 'Webhook alert detected' },
+    channel: 'inApp',
+    status: 'sent',
+  } satisfies CreateNotificationBody),
+});
+
+const created: NotificationItem = await res.json();
+```
+
+---
+
+### GET `/api/notifications` (JWT)
+
+List current user notifications with filters + pagination.
+
+- Query: `GetNotificationsParams`
+- Response 200: `GetNotificationsResponse`
+
+```typescript
+const params = new URLSearchParams({
+  limit: '20',
+  offset: '0',
+  orderBy: 'desc',
+  orderByField: 'createdAt',
+  status: 'sent',
+});
+
+const res = await fetch(`${API_BASE}/notifications?${params}`, {
+  headers: { Authorization: `Bearer ${accessToken}` },
+});
+
+const page: GetNotificationsResponse = await res.json();
+```
+
+---
+
+### GET `/api/notifications/:id` (JWT)
+
+Get one notification (scoped to current user).
+
+- Params: `id` (UUID)
+- Response 200: `NotificationItem`
+- 404 when not found/not owned
+
+```typescript
+const res = await fetch(`${API_BASE}/notifications/${notificationId}`, {
+  headers: { Authorization: `Bearer ${accessToken}` },
+});
+
+const item: NotificationItem = await res.json();
+```
+
+---
+
+## 3. Frontend helper functions
+
+```typescript
+function authHeaders(token: string): HeadersInit {
+  return { Authorization: `Bearer ${token}` };
+}
+
+async function parseApi<T>(res: Response): Promise<T> {
+  if (!res.ok) {
+    const err = (await res.json().catch(() => null)) as ApiErrorResponse | null;
+    throw new Error(err?.error?.message ?? `HTTP ${res.status}`);
+  }
+  return res.json() as Promise<T>;
+}
+
+export async function createNotification(
+  token: string,
+  body: CreateNotificationBody
+): Promise<NotificationItem> {
+  const res = await fetch(`${API_BASE}/notifications`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...authHeaders(token) },
+    body: JSON.stringify(body),
+  });
+  return parseApi<NotificationItem>(res);
+}
+
+export async function getNotifications(
+  token: string,
+  query: GetNotificationsParams = {}
+): Promise<GetNotificationsResponse> {
+  const params = new URLSearchParams();
+  if (query.channel) params.set('channel', query.channel);
+  if (query.status) params.set('status', query.status);
+  if (query.limit != null) params.set('limit', String(query.limit));
+  if (query.offset != null) params.set('offset', String(query.offset));
+  if (query.orderBy) params.set('orderBy', query.orderBy);
+  if (query.orderByField) params.set('orderByField', query.orderByField);
+
+  const res = await fetch(`${API_BASE}/notifications?${params.toString()}`, {
+    headers: authHeaders(token),
+  });
+  return parseApi<GetNotificationsResponse>(res);
+}
+
+export async function getNotificationById(
+  token: string,
+  id: string
+): Promise<NotificationItem> {
+  const res = await fetch(`${API_BASE}/notifications/${id}`, {
+    headers: authHeaders(token),
+  });
+  return parseApi<NotificationItem>(res);
+}
+```
+
+---
+
+## 4. Realtime notifications (Socket.IO)
+
+Server event flow: `NewNotificationEvent` -> save in DB -> emit `notification.received`.
+
+```typescript
+import { io, Socket } from 'socket.io-client';
+
+export interface NotificationSubscribePayload {
+  userId: string;
+}
+
+export interface NotificationReceivedPayload extends NotificationItem {}
+
+export function getSocketUrl(): string {
+  const apiUrl = import.meta.env.VITE_API_URL ?? 'http://localhost:8080/api';
+  try {
+    return new URL(apiUrl).origin;
+  } catch {
+    return 'http://localhost:8080';
+  }
+}
+
+export function connectNotificationsSocket(): Socket {
+  return io(getSocketUrl(), {
+    path: '/socket.io',
+    transports: ['websocket', 'polling'],
+  });
+}
+```
+
+Subscribe/listen:
+
+```typescript
+const socket = connectNotificationsSocket();
+socket.emit('subscribe', { userId: currentUser.id } satisfies NotificationSubscribePayload);
+
+socket.on('notification.received', (payload: NotificationReceivedPayload) => {
+  // prepend to list, increment badge, show toast
+  console.log('notification.received', payload);
+});
+```
+
+---
+
+## 5. Suggested UI functions
+
+- `fetchInitialNotifications()` -> call `GET /notifications` on page load
+- `loadMoreNotifications()` -> increment `offset` pagination
+- `markAsReadLocal(id)` -> optimistic local state update (until backend endpoint exists)
+- `bindRealtimeNotifications(userId)` -> subscribe socket + return cleanup
+
+---
+
+## 6. Quick reference
+
+| Method | Path | Auth | Purpose |
+|---|---|---|---|
+| `POST` | `/api/notifications` | JWT | create notification |
+| `GET` | `/api/notifications` | JWT | list my notifications |
+| `GET` | `/api/notifications/:id` | JWT | get one notification |
+| WS emit | `subscribe` | socket | subscribe user room |
+| WS on | `notification.received` | socket | receive realtime notification |
+
+---
+
+## 7. Important note
+
+Current websocket subscription uses `userId` from client payload.  
+For production hardening, prefer socket auth (JWT/session) and derive user ID server-side.

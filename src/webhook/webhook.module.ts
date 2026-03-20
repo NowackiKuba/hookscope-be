@@ -18,9 +18,11 @@ import { GetWebhookAlertByIdHandler } from './application/queries/get-webhook-al
 import { WebhookAlertsController } from './adapters/inbound/http/controllers/webhook-alerts.controller';
 import { DomainExceptionFilter } from './adapters/inbound/http/filters/domain-exception.filter';
 import { VolumeSpikeScannerCron } from './adapters/inbound/cron/volume-spike-scanner.cron';
+import { AlertDetectedListener } from './application/listeners/alert-detected.listener';
 
 const CommandHandlers = [CreateWebhookAlertHandler];
 const QueryHandlers = [GetWebhookAlertsHandler, GetWebhookAlertByIdHandler];
+const EventHandlers = [AlertDetectedListener];
 
 @Module({
   imports: [CqrsModule, AuthModule, EndpointModule, RequestModule],
@@ -28,6 +30,7 @@ const QueryHandlers = [GetWebhookAlertsHandler, GetWebhookAlertByIdHandler];
   providers: [
     ...CommandHandlers,
     ...QueryHandlers,
+    ...EventHandlers,
     WebhookAlertMapper,
     DomainExceptionFilter,
     VolumeSpikeScannerCron,

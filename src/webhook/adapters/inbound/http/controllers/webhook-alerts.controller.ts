@@ -2,12 +2,15 @@ import {
   BadRequestException,
   Controller,
   Get,
+  Inject,
   Param,
+  Post,
+  Body,
   Query,
   UseFilters,
   UseGuards,
 } from '@nestjs/common';
-import { QueryBus } from '@nestjs/cqrs';
+import { EventBus, QueryBus } from '@nestjs/cqrs';
 import { AuthGuard } from '@auth/adapters/inbound/http/guards/auth.guard';
 import { CurrentUser } from '@auth/adapters/inbound/http/decorators/current-user.decorator';
 import type { AuthenticatedUser } from '@auth/domain/ports/outbound';
@@ -23,12 +26,65 @@ import {
   toPaginatedWebhookAlertsResponseDto,
   toWebhookAlertResponseDto,
 } from '../mappers/webhook-alert-response.mapper';
+import { Token } from '@endpoint/constants';
+import type { EndpointRepositoryPort } from '@endpoint/domain/ports/outbound/persistence/repositories/endpoint.repository.port';
+import { AlertDetectedEvent } from '@webhook/domain/events/alert-detected.event';
+import { AlertMetadata } from '@webhook/domain/value-objects/alert-metadata.vo';
 
 @Controller('webhook-alerts')
 @UseFilters(DomainExceptionFilter)
 @UseGuards(AuthGuard)
 export class WebhookAlertsController {
-  constructor(private readonly queryBus: QueryBus) {}
+  constructor(
+    private readonly queryBus: QueryBus,
+    private readonly eventBus: EventBus,
+    @Inject(Token.EndpointRepository)
+    private readonly endpointRepository: EndpointRepositoryPort,
+  ) {}
+
+  @Post('test/schema-drift')
+  async emitSchemaDriftTestAlert(
+    @Body() body: { endpointId?: string; eventType?: string },
+    @CurrentUser() user: AuthenticatedUser,
+  ): Promise<{ queued: boolean; endpointId: string; eventType: string }> {
+    let endpointId = body?.endpointId;
+
+    if (!endpointId) {
+      const endpoints = await this.endpointRepository.findAllByUserId(user.userId);
+      if (endpoints.length === 0) {
+        throw new BadRequestException(
+          'No endpoints found for current user. Create endpoint first or pass endpointId.',
+        );
+      }
+      endpointId = endpoints[0].id;
+    } else {
+      const endpoint = await this.endpointRepository.findById(endpointId);
+      if (!endpoint || endpoint.userId !== user.userId) {
+        throw new BadRequestException(
+          `Endpoint ${endpointId} not found or not owned by current user.`,
+        );
+      }
+    }
+
+    const eventType = body?.eventType ?? 'checkout.session.completed';
+
+    await this.eventBus.publish(
+      new AlertDetectedEvent({
+        type: 'schema_drift',
+        endpointId,
+        userId: user.userId,
+        eventType,
+        metadata: AlertMetadata.schemaDrift({
+          added: ['customer.address.postal_code'],
+          removed: [],
+          typeChanged: [{ field: 'amount_total', from: 'number', to: 'string' }],
+          updatedDto: null,
+        }).value,
+      }),
+    );
+
+    return { queued: true, endpointId, eventType };
+  }
 
   @Get()
   async list(
