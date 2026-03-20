@@ -2,7 +2,9 @@ import type { AlertMetadataValue } from '@webhook/domain/value-objects/alert-met
 import type { PageParams } from '@shared/utils/pagination';
 
 /** JSON-serialized alert metadata (e.g. dates as ISO strings). */
-export type WebhookAlertMetadataJson = AlertMetadataValue | Record<string, unknown>;
+export type WebhookAlertMetadataJson =
+  | AlertMetadataValue
+  | Record<string, unknown>;
 
 export type WebhookAlertResponseDto = {
   id: string;
@@ -11,6 +13,7 @@ export type WebhookAlertResponseDto = {
   type: string;
   status: string;
   eventType?: string;
+  scannerStatus: string;
   metadata?: WebhookAlertMetadataJson;
   createdAt: string;
   updatedAt: string;

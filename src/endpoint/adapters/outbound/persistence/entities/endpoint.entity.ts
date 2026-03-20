@@ -14,6 +14,7 @@ export type EndpointEntityProps = {
   targetUrl?: string | null;
   webhookUrl: string;
   secretKey?: string | null;
+  silenceTreshold: number;
   requestCount?: number;
   lastRequestAt?: Date | null;
   schemas?: Record<string, Record<string, string>>;
@@ -59,6 +60,8 @@ export class EndpointEntity extends BaseEntity implements EndpointEntityProps {
   })
   lastRequestAt: Date | null = null;
 
+  @Property({ type: 'int', default: 1440 })
+  silenceTreshold: number;
   @Property({ type: 'jsonb', nullable: true })
   schemas?: Record<string, Record<string, string>>;
   @Property({ type: 'timestamptz', nullable: true })
@@ -69,6 +72,7 @@ export class EndpointEntity extends BaseEntity implements EndpointEntityProps {
     this.id = props.id ?? generateUUID();
     this.user = props.user;
     this.name = props.name;
+    this.silenceTreshold = props.silenceTreshold;
     this.description = props.description ?? '';
     this.token = props.token;
     this.schemas = props.schemas;

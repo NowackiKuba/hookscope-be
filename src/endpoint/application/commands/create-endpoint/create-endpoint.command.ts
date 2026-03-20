@@ -2,6 +2,7 @@ export type CreateEndpointPayload = {
   userId: string;
   name: string;
   description?: string;
+  silenceTreshold: number;
   provider: string;
   isActive?: boolean;
   targetUrl?: string | null;

@@ -663,6 +663,22 @@
           "comment": null,
           "enumItems": [],
           "mappedType": "datetime"
+        },
+        "silence_treshold": {
+          "name": "silence_treshold",
+          "type": "int4",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": 32,
+          "scale": 0,
+          "default": "1440",
+          "comment": null,
+          "enumItems": [],
+          "mappedType": "integer"
         }
       },
       "name": "endpoints",
@@ -2540,6 +2556,22 @@
           "comment": null,
           "enumItems": [],
           "mappedType": "json"
+        },
+        "scanner_status": {
+          "name": "scanner_status",
+          "type": "text",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": "'active'",
+          "comment": null,
+          "enumItems": [],
+          "mappedType": "text"
         }
       },
       "name": "webhook_alerts",

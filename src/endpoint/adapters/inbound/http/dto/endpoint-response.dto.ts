@@ -5,6 +5,7 @@ export type EndpointResponseDto = {
   description: string;
   token: string;
   isActive: boolean;
+  silenceTreshold: number;
   targetUrl: string | null;
   requestCount: number;
   lastRequestAt: string | null;

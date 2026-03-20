@@ -43,6 +43,7 @@ function toResponseDto(
     token: json.token,
     isActive: json.isActive,
     targetUrl: json.targetUrl,
+    silenceTreshold: json.silenceTreshold,
     requestCount: json.requestCount,
     lastRequestAt: json.lastRequestAt?.toISOString() ?? null,
     webhookUrl: `${appUrl}/hooks/${json.token}`,
@@ -82,14 +83,22 @@ export class EndpointsController {
     if (!parsed.success) {
       throw new BadRequestException(parsed.error.flatten());
     }
-    const { name, description, isActive, targetUrl, secretKey, provider } =
-      parsed.data;
+    const {
+      name,
+      description,
+      isActive,
+      targetUrl,
+      secretKey,
+      provider,
+      silenceTreshold,
+    } = parsed.data;
     const endpointId = await this.commandBus.execute(
       new CreateEndpointCommand({
         userId: user.userId,
         name,
         description,
         isActive,
+        silenceTreshold,
         targetUrl,
         provider,
         secretKey,

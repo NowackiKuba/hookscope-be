@@ -13,6 +13,9 @@ import { HttpServicePort } from '@shared/domain/ports/outbound/http.service.port
 import { addMilliseconds } from 'date-fns';
 import { RetryQueuePort } from '@retry/domain/ports/outbound/queue/retry.queue.port';
 import type { Logger } from 'winston';
+import { EventBus } from '@nestjs/cqrs';
+import { AlertDetectedEvent } from '@webhook/domain/events/alert-detected.event';
+import { AlertMetadata } from '@webhook/domain/value-objects/alert-metadata.vo';
 
 function safeErrorMeta(error: unknown): {
   name?: string;
@@ -51,6 +54,7 @@ export class RetryQueueProcessor extends WorkerHost {
     @Inject(RequestToken.RequestRepository)
     private readonly requestRepository: RequestRepositoryPort,
     @Inject(Token.RetryQueue) private readonly queue: RetryQueuePort,
+    private readonly eventBus: EventBus,
   ) {
     super();
   }
@@ -61,6 +65,8 @@ export class RetryQueueProcessor extends WorkerHost {
   ): Promise<any> {
     try {
       await withForkedContext(this.orm, async () => {
+        let terminalError: Error | null = null;
+
         this.logger.info('RETRY JOB START', {
           jobId: job.id,
           jobName: job.name,
@@ -134,7 +140,7 @@ export class RetryQueueProcessor extends WorkerHost {
           status: response.status,
         });
 
-        if (response.status >= 400) {
+        if (response.status >= 500) {
           const nextAttemptCount = retry.attemptCount + 1;
           const nextDelayMs = RETRY_DELAY_MAP.get(nextAttemptCount);
 
@@ -153,12 +159,39 @@ export class RetryQueueProcessor extends WorkerHost {
               nextDelayMs,
             });
           } else {
+            await this.eventBus.publish(
+              new AlertDetectedEvent({
+                endpointId: request.endpointId,
+                metadata: AlertMetadata.endpointError({
+                  requestId: retry.requestId,
+                  responseBody: retry.responseBody,
+                  statusCode: retry.responseStatus,
+                }).value,
+                type: 'endpoint_error',
+                userId: '',
+              }),
+            );
             this.logger.warn('RETRY NOT RESCHEDULED (NO DELAY CONFIGURED)', {
               retryId: retry.id,
               requestId: retry.requestId,
               attemptCount: retry.attemptCount,
             });
+            terminalError = new Error(
+              `Retry exhausted for retryId=${retry.id} requestId=${retry.requestId}`,
+            );
           }
+        } else if (response.status >= 400) {
+          retry.onFail({
+            body: response.body,
+            next: new Date(),
+            status: response.status,
+          });
+          this.logger.info('RETRY STOPPED (NON-RETRYABLE 4XX)', {
+            retryId: retry.id,
+            requestId: retry.requestId,
+            attemptCount: retry.attemptCount,
+            status: response.status,
+          });
         } else {
           retry.onSuccess({ body: response.body, status: response.status });
           this.logger.info('RETRY SUCCEEDED', {
@@ -176,6 +209,10 @@ export class RetryQueueProcessor extends WorkerHost {
           status: retry.status,
           attemptCount: retry.attemptCount,
         });
+
+        if (terminalError) {
+          throw terminalError;
+        }
       });
     } catch (error) {
       const meta = safeErrorMeta(error);

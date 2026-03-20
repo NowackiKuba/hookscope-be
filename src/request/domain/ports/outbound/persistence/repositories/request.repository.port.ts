@@ -40,10 +40,14 @@ export interface RequestRepositoryPort {
     start: Date,
     end: Date,
   ): Promise<number>;
-  countByEndpointInPeriod(start: Date, end: Date): Promise<EndpointRequestCount[]>;
+  countByEndpointInPeriod(
+    start: Date,
+    end: Date,
+  ): Promise<EndpointRequestCount[]>;
   findInPeriod(start: Date, end: Date): Promise<Request[]>;
   countThisMonth(endpointId: string): Promise<number>;
   deleteOlderThan(endpointId: string, before: Date): Promise<number>;
   delete(id: string): Promise<void>;
   updateForwardResult(id: string, result: ForwardResult): Promise<void>;
+  findLastRequestPerEndpoint(ids: string[]): Promise<Map<string, Request>>;
 }

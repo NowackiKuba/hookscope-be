@@ -39,6 +39,7 @@ export function toWebhookAlertResponseDto(
     userId: json.userId,
     type: json.type,
     status: json.status,
+    scannerStatus: json.scannerStatus,
     eventType: json.eventType,
     metadata: serializeMetadata(json.metadata),
     createdAt: json.createdAt.toISOString(),

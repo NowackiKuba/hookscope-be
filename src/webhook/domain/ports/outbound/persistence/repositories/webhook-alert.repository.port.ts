@@ -23,4 +23,12 @@ export interface WebhookAlertRepositoryPort {
     filters: WebhookAlertFilters,
     id: string,
   ): Promise<Page<WebhookAlert>>;
+  getLatestByEndpointAndType(
+    endpointId: string,
+    type: string,
+  ): Promise<WebhookAlert | null>;
+  getActiveByEndpointAndType(
+    endpointId: string,
+    type: string,
+  ): Promise<WebhookAlert | null>;
 }

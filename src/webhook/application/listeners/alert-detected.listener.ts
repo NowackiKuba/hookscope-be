@@ -7,6 +7,8 @@ import { WebhookAlert } from '@webhook/domain/aggreagates/webhook-alert';
 import { AlertDetectedEvent } from '@webhook/domain/events/alert-detected.event';
 import { WebhookAlertRepositoryPort } from '@webhook/domain/ports/outbound/persistence/repositories/webhook-alert.repository.port';
 
+const ALERT_COOLDOWN_MS = 30 * 60 * 1000;
+
 @EventsHandler(AlertDetectedEvent)
 export class AlertDetectedListener implements IEventHandler<AlertDetectedEvent> {
   constructor(
@@ -16,9 +18,31 @@ export class AlertDetectedListener implements IEventHandler<AlertDetectedEvent> 
   ) {}
 
   async handle(event: AlertDetectedEvent): Promise<string> {
+    const activeAlert =
+      await this.webhookAlertRepository.getActiveByEndpointAndType(
+        event.payload.endpointId,
+        event.payload.type,
+      );
+    if (activeAlert) {
+      return activeAlert.id.value;
+    }
+
+    const latestAlert = await this.webhookAlertRepository.getLatestByEndpointAndType(
+      event.payload.endpointId,
+      event.payload.type,
+    );
+    if (
+      latestAlert &&
+      latestAlert.scannerStatus.value === 'resolved' &&
+      Date.now() - latestAlert.updatedAt.getTime() < ALERT_COOLDOWN_MS
+    ) {
+      return latestAlert.id.value;
+    }
+
     const alert = WebhookAlert.create({
       endpointId: event.payload.endpointId,
       status: 'unread',
+      scannerStatus: 'active',
       type: event.payload.type,
       userId: event.payload.userId,
       eventType: event.payload.eventType,

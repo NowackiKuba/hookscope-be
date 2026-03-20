@@ -117,6 +117,41 @@ export class WebhookAlertRepository implements WebhookAlertRepositoryPort {
     );
   }
 
+  async getLatestByEndpointAndType(
+    endpointId: string,
+    type: string,
+  ): Promise<WebhookAlert | null> {
+    const alert = await this.dbSource.findOne(
+      {
+        endpoint: { id: endpointId },
+        type,
+      },
+      {
+        orderBy: { createdAt: 'desc' },
+      },
+    );
+
+    return alert ? this.mapper.toDomain(alert) : null;
+  }
+
+  async getActiveByEndpointAndType(
+    endpointId: string,
+    type: string,
+  ): Promise<WebhookAlert | null> {
+    const alert = await this.dbSource.findOne(
+      {
+        endpoint: { id: endpointId },
+        type,
+        scannerStatus: 'active',
+      },
+      {
+        orderBy: { createdAt: 'desc' },
+      },
+    );
+
+    return alert ? this.mapper.toDomain(alert) : null;
+  }
+
   private async getPaginated(
     where: FilterQuery<WebhookAlertEntity>,
     page: {

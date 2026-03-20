@@ -5,6 +5,7 @@ import {
   EndpointProviderValue,
 } from '../value-objects/endpoint-provider.vo';
 import { DEFAULT_EVENT_TYPE_KEY } from '@endpoint/constants';
+import { SilenceTreshold } from '../value-objects/silence-treshold.vo';
 
 export type EndpointProps = {
   id?: string;
@@ -19,6 +20,7 @@ export type EndpointProps = {
   secretKey?: string | null;
   requestCount?: number;
   lastRequestAt?: Date | null;
+  silenceTreshold?: number;
   schemas?: Record<string, Record<string, string>>;
   lastSchemaAt?: Date;
   createdAt?: Date;
@@ -38,6 +40,7 @@ export type EndpointJSON = {
   secretKey: string | null;
   requestCount: number;
   lastRequestAt: Date | null;
+  silenceTreshold: number;
   schemas?: Record<string, Record<string, string>>;
   lastSchemaAt?: Date;
   createdAt: Date;
@@ -57,6 +60,7 @@ export class Endpoint {
   private _secretKey: string | null;
   private _requestCount: number;
   private _lastRequestAt: Date | null;
+  private _silenceTreshold: SilenceTreshold;
   private _schemas?: Record<string, Record<string, string>>;
   private _lastSchemaAt?: Date;
   private _createdAt: Date;
@@ -74,6 +78,7 @@ export class Endpoint {
     this._webhookUrl = props.webhookUrl;
     this._secretKey = props.secretKey ?? null;
     this._schemas = props.schemas ?? null;
+    this._silenceTreshold = SilenceTreshold.create(props.silenceTreshold);
     this._lastSchemaAt = props.lastSchemaAt ?? null;
     this._requestCount = props.requestCount ?? 0;
     this._lastRequestAt = props.lastRequestAt ?? null;
@@ -88,6 +93,7 @@ export class Endpoint {
     isActive?: boolean;
     provider?: EndpointProviderValue;
     targetUrl?: string | null;
+    silenceTreshold?: number;
     webhookUrl: string;
     secretKey?: string | null;
   }): Endpoint {
@@ -101,6 +107,7 @@ export class Endpoint {
       webhookUrl: props.webhookUrl + token,
       secretKey: props.secretKey ?? null,
       provider: props.provider,
+      silenceTreshold: props.silenceTreshold,
       token,
     });
   }
@@ -148,6 +155,9 @@ export class Endpoint {
   get requestCount(): number {
     return this._requestCount;
   }
+  get silenceTreshold(): SilenceTreshold {
+    return this._silenceTreshold;
+  }
   get lastRequestAt(): Date | null {
     return this._lastRequestAt;
   }
@@ -177,6 +187,7 @@ export class Endpoint {
       isActive: this._isActive,
       provider: this._provider.value,
       targetUrl: this._targetUrl,
+      silenceTreshold: this._silenceTreshold.value,
       webhookUrl: this._webhookUrl,
       secretKey: this._secretKey,
       schemas: this._schemas,

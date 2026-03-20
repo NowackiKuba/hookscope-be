@@ -11,6 +11,7 @@ export type WebhookAlertEntityProps = {
   user: UserEntity;
   type: string;
   status: string;
+  scannerStatus?: string;
   eventType?: string;
   metadata?: AlertMetadataValue;
 };
@@ -36,6 +37,8 @@ export class WebhookAlertEntity
   type: string;
   @Property({ type: 'text' })
   status: string;
+  @Property({ type: 'text', fieldName: 'scanner_status', default: 'active' })
+  scannerStatus: string;
   @Property({ type: 'text', nullable: true })
   eventType?: string;
   @Property({ type: 'jsonb', nullable: true })
@@ -48,6 +51,7 @@ export class WebhookAlertEntity
     this.user = props.user;
     this.type = props.type;
     this.status = props.status;
+    this.scannerStatus = props.scannerStatus ?? 'active';
     this.eventType = props.eventType;
     this.metadata = props.metadata;
   }

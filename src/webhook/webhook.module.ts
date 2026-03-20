@@ -19,8 +19,9 @@ import { WebhookAlertsController } from './adapters/inbound/http/controllers/web
 import { DomainExceptionFilter } from './adapters/inbound/http/filters/domain-exception.filter';
 import { VolumeSpikeScannerCron } from './adapters/inbound/cron/volume-spike-scanner.cron';
 import { AlertDetectedListener } from './application/listeners/alert-detected.listener';
+import { UpdateWebhookAlertHandler } from './application/commands/update-webhook-alert/update-webhook-alert.handler';
 
-const CommandHandlers = [CreateWebhookAlertHandler];
+const CommandHandlers = [CreateWebhookAlertHandler, UpdateWebhookAlertHandler];
 const QueryHandlers = [GetWebhookAlertsHandler, GetWebhookAlertByIdHandler];
 const EventHandlers = [AlertDetectedListener];
 

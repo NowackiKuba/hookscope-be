@@ -26,6 +26,7 @@ export class CreateEndpointHandler implements ICommandHandler<CreateEndpointComm
       targetUrl,
       secretKey,
       provider,
+      silenceTreshold,
     } = command.payload;
 
     const encryptedSecret = encryptSecret(secretKey);
@@ -36,6 +37,7 @@ export class CreateEndpointHandler implements ICommandHandler<CreateEndpointComm
       provider: provider as EndpointProviderValue,
       isActive,
       targetUrl,
+      silenceTreshold,
       secretKey: encryptedSecret,
       webhookUrl: `https://api.hookscope.dev/hooks/`,
     });

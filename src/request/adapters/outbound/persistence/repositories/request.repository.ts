@@ -235,4 +235,22 @@ export class RequestRepository implements RequestRepositoryPort {
 
     return entities.map((entity) => this.mapper.toDomain(entity));
   }
+
+  async findLastRequestPerEndpoint(
+    ids: string[],
+  ): Promise<Map<string, Request>> {
+    const result = await this.em.getConnection().execute(
+      `
+        SELECT DISTINCT ON (endpoint_id) * 
+        FROM requests
+        WHERE endpoint_id = ANY(?)
+        ORDER BY endpoint_id, received_at DESC
+      `,
+      ids,
+    );
+
+    return new Map(
+      result.map((row) => [row.endpoint_id, this.em.map(Request, row)]),
+    );
+  }
 }

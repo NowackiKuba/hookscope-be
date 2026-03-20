@@ -8,6 +8,10 @@ import {
   WebhookAlertStatusValue,
 } from '../value-objects/webhook-status.vo';
 import {
+  WebhookAlertScannerStatus,
+  WebhookAlertScannerStatusValue,
+} from '../value-objects/webhook-scanner-status.vo';
+import {
   WebhookAlertType,
   WebhookAlertTypeValue,
 } from '../value-objects/webhook-type.vo';
@@ -18,6 +22,7 @@ export type WebhookAlertProps = {
   userId: string;
   type: string;
   status: string;
+  scannerStatus?: string;
   eventType?: string;
   metadata?: AlertMetadataValue;
   createdAt?: Date;
@@ -30,6 +35,7 @@ export type WebhookAlertJSON = {
   userId: string;
   type: WebhookAlertTypeValue;
   status: WebhookAlertStatusValue;
+  scannerStatus: WebhookAlertScannerStatusValue;
   eventType?: string;
   metadata?: AlertMetadataValue;
   createdAt: Date;
@@ -42,6 +48,7 @@ export class WebhookAlert {
   private _userId: string;
   private _type: WebhookAlertType;
   private _status: WebhookAlertStatus;
+  private _scannerStatus: WebhookAlertScannerStatus;
   private _eventType?: string;
   private _metadata?: AlertMetadata;
   private _createdAt: Date;
@@ -53,6 +60,9 @@ export class WebhookAlert {
     this._userId = props.userId;
     this._type = WebhookAlertType.create(props.type);
     this._status = WebhookAlertStatus.create(props.status);
+    this._scannerStatus = WebhookAlertScannerStatus.create(
+      props.scannerStatus ?? 'active',
+    );
     this._eventType = props.eventType;
     this._metadata =
       props.metadata != null ? AlertMetadata.create(props.metadata) : undefined;
@@ -79,6 +89,9 @@ export class WebhookAlert {
   get status(): WebhookAlertStatus {
     return this._status;
   }
+  get scannerStatus(): WebhookAlertScannerStatus {
+    return this._scannerStatus;
+  }
   get eventType(): string | undefined {
     return this._eventType;
   }
@@ -92,6 +105,20 @@ export class WebhookAlert {
     return this._updatedAt;
   }
 
+  update(status?: string, scannerStatus?: string) {
+    if (status && status !== this._status.value) {
+      this._status = WebhookAlertStatus.create(status);
+    }
+    if (scannerStatus && scannerStatus !== this._scannerStatus.value) {
+      this._scannerStatus = WebhookAlertScannerStatus.create(scannerStatus);
+    }
+  }
+
+  resolve(): void {
+    this._scannerStatus = WebhookAlertScannerStatus.resolved();
+    this._updatedAt = new Date();
+  }
+
   toJSON(): WebhookAlertJSON {
     return {
       id: this._id.value,
@@ -99,6 +126,7 @@ export class WebhookAlert {
       userId: this._userId,
       type: this._type.value,
       status: this._status.value,
+      scannerStatus: this._scannerStatus.value,
       eventType: this._eventType,
       metadata: this._metadata?.value,
       createdAt: this._createdAt,

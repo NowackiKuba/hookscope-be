@@ -19,6 +19,7 @@ export class EndpointMapper {
       isActive: entity.isActive,
       targetUrl: entity.targetUrl,
       webhookUrl: entity.webhookUrl,
+      silenceTreshold: entity.silenceTreshold,
       secretKey: entity.secretKey,
       requestCount: entity.requestCount,
       lastRequestAt: entity.lastRequestAt,
@@ -27,7 +28,7 @@ export class EndpointMapper {
     });
   }
 
-  toPersistence(endpoint: Endpoint): EndpointEntity {
+  toEntity(endpoint: Endpoint): EndpointEntity {
     const json = endpoint.toJSON();
     return new EndpointEntity({
       id: json.id,
@@ -40,6 +41,7 @@ export class EndpointMapper {
       targetUrl: json.targetUrl,
       webhookUrl: json.webhookUrl,
       secretKey: json.secretKey,
+      silenceTreshold: json.silenceTreshold,
       requestCount: json.requestCount,
       lastRequestAt: json.lastRequestAt,
       schemas: json.schemas,
