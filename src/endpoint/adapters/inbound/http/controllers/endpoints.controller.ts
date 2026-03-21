@@ -9,6 +9,7 @@ import {
   Inject,
   Param,
   Post,
+  Query,
   UseFilters,
   UseGuards,
 } from '@nestjs/common';
@@ -34,6 +35,10 @@ import { Token } from '@endpoint/constants';
 import { EndpointSchemaRepositoryPort } from '@endpoint/domain/ports/outbound/persistence/repositories/endpoint-schema.repository.port';
 import { CreateEndpiointSchemaDto } from '../dto/create-endpoint-schema';
 import { CreateEndpointSchemaCommand } from '@endpoint/application/commands/create-endpoint-schema/create-endpoint-schema.command';
+import { GetEndpointSchemasQuery } from '@endpoint/application/queries/get-endpoint-schemas/get-endpoint-schemas.query';
+import { Page } from '@shared/utils/pagination';
+import { EndpointSchema } from '@endpoint/domain/aggregates/endpoint-schema';
+import { GetEndpointsSchemasDto } from '../dto/get-endpoint-schemas';
 
 function toResponseDto(
   endpoint: Endpoint,
@@ -133,36 +138,16 @@ export class EndpointsController {
   @Get(':id/schemas')
   async getSchemas(
     @Param('id') id: string,
+    @Query() query: GetEndpointsSchemasDto,
     @CurrentUser() user: AuthenticatedUser,
-  ): Promise<
-    Array<{
-      id: string;
-      eventType: string | null;
-      version: number;
-      isLatest: boolean;
-      schema: Record<string, string>;
-      generated: Record<string, string>;
-      generatedAt: string;
-      createdAt: string;
-      updatedAt: string;
-    }>
-  > {
-    await this.queryBus.execute(
-      new GetEndpointByIdQuery({ userId: user.userId, endpointId: id }),
+  ): Promise<Page<EndpointSchema>> {
+    return await this.queryBus.execute(
+      new GetEndpointSchemasQuery({
+        ...query,
+        endpointId: id,
+        userId: user.userId,
+      }),
     );
-
-    const schemas = await this.endpointSchemaRepository.getByEndpointId(id);
-    return schemas.map((schema) => ({
-      id: schema.id,
-      eventType: schema.eventType,
-      version: schema.version,
-      isLatest: schema.isLatest,
-      schema: schema.schema,
-      generated: schema.generated,
-      generatedAt: schema.generatedAt.toISOString(),
-      createdAt: schema.createdAt.toISOString(),
-      updatedAt: schema.updatedAt.toISOString(),
-    }));
   }
 
   @Delete(':id')

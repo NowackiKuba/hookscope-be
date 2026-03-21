@@ -20,6 +20,7 @@ import { EndpointSchemaMapper } from '@endpoint/adapters/outbound/persistence/ma
 import { CreateEndpointSchemaHandler } from './application/commands/create-endpoint-schema/create-endpoint-schema.handler';
 import { AIService } from '@shared/constants';
 import { AiService } from '@shared/adapters/outbound/ai.service';
+import { GetEndpointSchemasHandler } from './application/queries/get-endpoint-schemas/get-endpoint-schemes.handler';
 
 const CommandHandlers = [
   CreateEndpointHandler,
@@ -30,6 +31,7 @@ const QueryHandlers = [
   GetEndpointsHandler,
   GetEndpointByIdHandler,
   GetEndpointByTokenHandler,
+  GetEndpointSchemasHandler,
 ];
 
 @Module({

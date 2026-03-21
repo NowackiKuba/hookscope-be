@@ -1,12 +1,18 @@
-import { EntityManager, EntityRepository, FilterQuery } from '@mikro-orm/postgresql';
+import {
+  EntityManager,
+  EntityRepository,
+  FilterQuery,
+} from '@mikro-orm/postgresql';
 import { Injectable } from '@nestjs/common';
 import {
   EndpointSchemaRepositoryPort,
+  Filters,
 } from '@endpoint/domain/ports/outbound/persistence/repositories/endpoint-schema.repository.port';
 import { EndpointSchemaEntity } from '../entities/endpoint-schema.entity';
 import type { EndpointSchemaGeneratedValue } from '@endpoint/domain/value-objects/endpoint-schema-generated.vo';
 import { EndpointSchema } from '@endpoint/domain/aggregates/endpoint-schema';
 import { EndpointSchemaMapper } from '../mappers/endpoint-schema.mapper';
+import { Page, paginate } from '@shared/utils/pagination';
 
 @Injectable()
 export class EndpointSchemaRepository implements EndpointSchemaRepositoryPort {
@@ -80,20 +86,37 @@ export class EndpointSchemaRepository implements EndpointSchemaRepositoryPort {
   }
 
   async getByEndpointId(
+    filters: Filters,
     endpointId: string,
-    eventType?: string | null,
-  ): Promise<EndpointSchema[]> {
+  ): Promise<Page<EndpointSchema>> {
     const where: FilterQuery<EndpointSchemaEntity> = {
-      endpoint: { id: endpointId },
+      endpoint: {
+        id: endpointId,
+      },
     };
-    if (eventType !== undefined) {
-      where.eventType = eventType ?? null;
+
+    const { eventType, isLatest, limit, offset, orderBy, orderByField } =
+      filters;
+
+    if (eventType) {
+      where.eventType = eventType;
     }
 
-    const rows = await this.dbSource.find(where, {
-      orderBy: { version: 'desc' },
-      populate: ['endpoint'],
+    if (typeof isLatest === 'boolean') {
+      where.isLatest = isLatest;
+    }
+
+    const [schemas, totalCount] = await this.dbSource.findAndCount(where, {
+      limit,
+      offset,
+      orderBy: {
+        [orderByField]: orderBy,
+      },
     });
-    return rows.map((row) => this.mapper.toDomain(row));
+
+    return paginate(
+      schemas.map((schema) => this.mapper.toDomain(schema)),
+      { totalCount, limit, offset },
+    );
   }
 }

@@ -1,5 +1,12 @@
 import { EndpointSchema } from '@endpoint/domain/aggregates/endpoint-schema';
 import type { EndpointSchemaGeneratedValue } from '@endpoint/domain/value-objects/endpoint-schema-generated.vo';
+import { BaseFilters } from '@shared/domain/types/base-filters.type';
+import { Page } from '@shared/utils/pagination';
+
+export type Filters = BaseFilters & {
+  eventType?: string;
+  isLatest?: boolean;
+};
 
 export interface EndpointSchemaRepositoryPort {
   getLatest(
@@ -13,7 +20,7 @@ export interface EndpointSchemaRepositoryPort {
     generated?: EndpointSchemaGeneratedValue;
   }): Promise<EndpointSchema>;
   getByEndpointId(
+    filters: Filters,
     endpointId: string,
-    eventType?: string | null,
-  ): Promise<EndpointSchema[]>;
+  ): Promise<Page<EndpointSchema>>;
 }
