@@ -59,7 +59,10 @@ export function diffSchemas(
   return { added, removed, typeChanged };
 }
 
-export function isSchemaDiffEmpty(diff: SchemaDiff): boolean {
+export function isSchemaDiffEmpty(diff: SchemaDiff | null | undefined): boolean {
+  if (diff == null) {
+    return true;
+  }
   return (
     diff.added.length === 0 &&
     diff.removed.length === 0 &&

@@ -78,10 +78,14 @@ export class ScanWebhookProcessor extends WorkerHost {
           `Webhook scan completed jobId=${job.id} requestId=${requestId} endpointId=${endpointId}`,
         );
       } catch (err) {
-        this.logger.error(
-          `Webhook scan failed jobId=${job.id} requestId=${requestId} endpointId=${endpointId}`,
-          err instanceof Error ? err.stack : String(err),
-        );
+        const message = err instanceof Error ? err.message : String(err);
+        this.logger.error('Webhook scan failed', {
+          jobId: job.id,
+          requestId,
+          endpointId,
+          error: message,
+          stack: err instanceof Error ? err.stack : undefined,
+        });
         throw err;
       }
     });
