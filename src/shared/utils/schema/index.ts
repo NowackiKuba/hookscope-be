@@ -8,6 +8,9 @@ export function flattenSchema(
   obj: Record<string, unknown>,
   prefix = '',
 ): Record<string, string> {
+  if (obj == null) {
+    return {};
+  }
   return Object.entries(obj).reduce(
     (acc, [key, value]) => {
       const fullKey = prefix ? `${prefix}.${key}` : key;

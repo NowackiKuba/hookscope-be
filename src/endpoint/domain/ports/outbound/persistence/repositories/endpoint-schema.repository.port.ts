@@ -19,6 +19,7 @@ export interface EndpointSchemaRepositoryPort {
     schema: Record<string, string>;
     generated?: EndpointSchemaGeneratedValue;
   }): Promise<EndpointSchema>;
+  //
   getByEndpointId(
     filters: Filters,
     endpointId: string,

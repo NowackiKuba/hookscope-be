@@ -25,7 +25,7 @@ export class AiService implements AiServicePort {
     const systemPrompt = SCHEMA_GENERATION_PROMPT;
 
     const response = await this.client.messages.create({
-      model: 'claude-3-5-sonnet-latest',
+      model: 'claude-haiku-4-5-20251001',
       max_tokens: 4096,
       system: systemPrompt,
       messages: [

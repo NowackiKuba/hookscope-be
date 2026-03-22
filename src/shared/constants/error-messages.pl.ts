@@ -51,6 +51,8 @@ export const ERROR_MESSAGES_PL: Record<string, string> = {
   USERNAME_ALREADY_EXISTS: 'Ta nazwa użytkownika jest już zajęta.',
 
   ENDPOINT_NOT_FOUND: 'Nie znaleziono endpointu.',
+  ENDPOINT_LATEST_SCHEMA_NOT_FOUND:
+    'Nie znaleziono zapisanego schematu dla tego typu zdarzenia. Najpierw zarejestruj webhook lub schemat.',
   USER_SETTINGS_NOT_FOUND: 'Nie znaleziono ustawień użytkownika.',
   REQUEST_NOT_FOUND: 'Nie znaleziono żądania.',
   WEBHOOK_ALERT_NOT_FOUND: 'Nie znaleziono alertu webhook.',

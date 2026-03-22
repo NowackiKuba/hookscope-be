@@ -33,7 +33,10 @@ import type { Endpoint } from '@endpoint/domain/aggregates/endpoint';
 import { SubscriptionLimitsGuard } from '../guards/subscription-limits.guard';
 import { Token } from '@endpoint/constants';
 import { EndpointSchemaRepositoryPort } from '@endpoint/domain/ports/outbound/persistence/repositories/endpoint-schema.repository.port';
-import { CreateEndpiointSchemaDto } from '../dto/create-endpoint-schema';
+import {
+  CREATE_ENDPOINT_SCHEMA_SCHEMA,
+  CreateEndpiointSchemaDto,
+} from '../dto/create-endpoint-schema';
 import { CreateEndpointSchemaCommand } from '@endpoint/application/commands/create-endpoint-schema/create-endpoint-schema.command';
 import { GetEndpointSchemasQuery } from '@endpoint/application/queries/get-endpoint-schemas/get-endpoint-schemas.query';
 import { Page } from '@shared/utils/pagination';
@@ -163,10 +166,16 @@ export class EndpointsController {
 
   @Post('/schemas')
   async createSchema(@Body() body: CreateEndpiointSchemaDto) {
+    const parsed = CREATE_ENDPOINT_SCHEMA_SCHEMA.safeParse(body);
+    if (!parsed.success) {
+      throw new BadRequestException(parsed.error.flatten());
+    }
+    const { endpointId, eventType, targets } = parsed.data;
     return await this.commandBus.execute(
       new CreateEndpointSchemaCommand({
-        endpointId: body.endpointId,
-        schema: body.schema,
+        endpointId,
+        eventType,
+        targets,
       }),
     );
   }

@@ -1,17 +1,14 @@
-import { CommandHandler, ICommandHandler, QueryBus } from '@nestjs/cqrs';
+import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { CreateEndpointSchemaCommand } from './create-endpoint-schema.command';
 import { Inject } from '@nestjs/common';
-import { Token } from '@endpoint/constants';
+import { DEFAULT_EVENT_TYPE_KEY, Token } from '@endpoint/constants';
 import { EndpointSchemaRepositoryPort } from '@endpoint/domain/ports/outbound/persistence/repositories/endpoint-schema.repository.port';
 import { EndpointRepositoryPort } from '@endpoint/domain/ports/outbound/persistence/repositories/endpoint.repository.port';
 import { AIService } from '@shared/constants';
 import { AiServicePort } from '@shared/domain/ports/outbound/ai.service.port';
-import { flattenSchema } from '@shared/utils/schema';
-import { UserSettings } from '@user-settings/domain/aggregates/user-settings';
-import { GetUserSettingsByUserIdQuery } from '@user-settings/application/queries/get-user-settings-by-user-id/get-user-settings-by-user-id.query';
 import { GenerationTarget } from '@endpoint/domain/value-objects/endpoint-schema-generated.vo';
-import { HighlightSubject } from '@mikro-orm/sql-highlighter/enums';
-import { EndpointSchema } from '@endpoint/domain/aggregates/endpoint-schema';
+import { EndpointNotFoundException } from '@endpoint/domain/exceptions/endpoint-not-found.exception';
+import { LatestEndpointSchemaNotFoundException } from '@endpoint/domain/exceptions/latest-endpoint-schema-not-found.exception';
 
 @CommandHandler(CreateEndpointSchemaCommand)
 export class CreateEndpointSchemaHandler implements ICommandHandler<CreateEndpointSchemaCommand> {
@@ -22,7 +19,6 @@ export class CreateEndpointSchemaHandler implements ICommandHandler<CreateEndpoi
     private readonly endpointRepository: EndpointRepositoryPort,
     @Inject(AIService)
     private readonly aiService: AiServicePort,
-    private readonly queryBus: QueryBus,
   ) {}
 
   async execute(command: CreateEndpointSchemaCommand): Promise<string> {
@@ -31,21 +27,38 @@ export class CreateEndpointSchemaHandler implements ICommandHandler<CreateEndpoi
     );
 
     if (!endpoint) {
-      // TODO
+      throw new EndpointNotFoundException(command.payload.endpointId);
     }
 
-    const flattenedSchema = flattenSchema(command.payload.schema);
-
-    const settings: UserSettings = await this.queryBus.execute(
-      new GetUserSettingsByUserIdQuery({ userId: endpoint.userId }),
+    let latest = await this.endpointSchemaRepository.getLatest(
+      command.payload.endpointId,
+      command.payload.eventType,
     );
+    if (
+      !latest &&
+      command.payload.eventType === DEFAULT_EVENT_TYPE_KEY
+    ) {
+      latest = await this.endpointSchemaRepository.getLatest(
+        command.payload.endpointId,
+        null,
+      );
+    }
 
-    const targets = settings.autoGenerationTargets;
+    if (!latest) {
+      throw new LatestEndpointSchemaNotFoundException(
+        command.payload.endpointId,
+        command.payload.eventType,
+      );
+    }
+
+    const flattenedSchema = { ...latest.schema };
+
+    const targets = command.payload.targets;
 
     const userPrompt = `
 Generate code for this webhook payload schema:
 
-${JSON.stringify(flattenSchema, null, 2)}
+${JSON.stringify(flattenedSchema, null, 2)}
 
 Generate ONLY these targets: ${targets.join(', ')}
 
