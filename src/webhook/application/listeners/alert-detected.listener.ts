@@ -5,6 +5,7 @@ import { Token as NotificationsToken } from '@notifications/constants';
 import type { NotificationProviderPort } from '@notifications/domain/ports/outbound/external/notification-provider.port';
 import { generateUUID } from '@shared/utils/generate-uuid';
 import { Token } from '@webhook/constants';
+import { MAILER_TOKEN } from '@mailer/constants';
 import { WebhookAlert } from '@webhook/domain/aggreagates/webhook-alert';
 import { AlertDetectedEvent } from '@webhook/domain/events/alert-detected.event';
 import { WebhookAlertRepositoryPort } from '@webhook/domain/ports/outbound/persistence/repositories/webhook-alert.repository.port';
@@ -19,6 +20,7 @@ import {
   SilenceDetectedMetadata,
   VolumeSpikeMetadata,
 } from '@webhook/domain/value-objects/alert-metadata.vo';
+import { EmailOutboxRepositoryPort } from '@mailer/domain/ports/email-outbox.repository.port';
 
 const ALERT_COOLDOWN_MS = 30 * 60 * 1000;
 
@@ -34,6 +36,8 @@ export class AlertDetectedListener implements IEventHandler<AlertDetectedEvent> 
     private readonly notificationProvider: NotificationProviderPort,
     @Inject(UserSettingsToken.UserSettingsRepository)
     private readonly userSettingsRepository: UserSettingsRepositoryPort,
+    @Inject(MAILER_TOKEN.EmailOutboxRepository)
+    private readonly emailOutbox: EmailOutboxRepositoryPort,
   ) {}
 
   async handle(event: AlertDetectedEvent): Promise<string> {
@@ -197,6 +201,22 @@ export class AlertDetectedListener implements IEventHandler<AlertDetectedEvent> 
     const channels = settings.notificationChannels;
     const text = this.buildExternalAlertText(event);
     const deliveries: Promise<void>[] = [];
+
+    // TODO: Email from settings
+    if (channels.email) {
+      await this.emailOutbox.enqueue({
+        subject: 'New Alert',
+        template: 'alert',
+        to: 'kuba.nowacki77@gmail.com',
+        context: {
+          type: event.payload.type,
+          endpointId: event.payload.endpointId,
+          eventType: event.payload.eventType,
+          metadata: event.payload.metadata,
+          appUrl: `https://app.hookscope.dev/endpoints/${event.payload.endpointId}`,
+        },
+      });
+    }
 
     if (channels.slack && settings.slackWebhookUrl) {
       deliveries.push(

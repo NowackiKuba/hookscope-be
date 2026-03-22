@@ -64,13 +64,14 @@ export class RegisterUserHandler implements ICommandHandler<RegisterUserCommand>
         try {
           await this.emailOutbox.enqueue({
             to: command.payload.email,
-            subject: 'Welcome to Revoply 🎉',
+            subject: 'Welcome to HookScope 🎉',
             template: 'welcome',
             context: {
-              name: [command.payload.firstName, command.payload.lastName]
-                .filter(Boolean)
-                .join(' ')
-                .trim() || 'User',
+              name:
+                [command.payload.firstName, command.payload.lastName]
+                  .filter(Boolean)
+                  .join(' ')
+                  .trim() || 'User',
               loginUrl,
             },
           });

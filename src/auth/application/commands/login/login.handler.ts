@@ -64,23 +64,6 @@ export class LoginHandler implements ICommandHandler<LoginCommand> {
 
     const onboardingCompleted = true; // Can be extended with user profile completion flag
 
-    if (this.emailOutbox) {
-      const name = [user.firstName, user.lastName].filter(Boolean).join(' ').trim() || 'Użytkowniku';
-      const origin = this.config.get('ORIGIN', { infer: true });
-      const loginUrl = origin ? `${origin}/login` : '';
-      const loggedAt = new Date().toLocaleString('pl-PL');
-      try {
-        await this.emailOutbox.enqueue({
-          to: user.email.value,
-          subject: 'Nowe logowanie do konta – Pokoje Borowa',
-          template: 'new-login',
-          context: { name, email: user.email.value, loggedAt, loginUrl },
-        });
-      } catch {
-        // Non-fatal
-      }
-    }
-
     return {
       accessToken,
       userId: user.id.value,

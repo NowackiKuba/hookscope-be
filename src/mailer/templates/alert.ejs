@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HookScope Alert</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background-color: #0f0f13;
+      color: #e8e8f0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-size: 14px;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .wrapper {
+      max-width: 600px;
+      margin: 40px auto;
+      padding: 0 16px;
+    }
+
+    /* Header */
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 0 0 28px 0;
+      border-bottom: 1px solid #1e1e2a;
+    }
+
+    .logo {
+      width: 32px;
+      height: 32px;
+      background: linear-gradient(135deg, #7c3aed, #9f5ff0);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+    }
+
+    .logo-text {
+      font-size: 16px;
+      font-weight: 600;
+      color: #e8e8f0;
+      letter-spacing: -0.3px;
+    }
+
+    /* Alert card */
+    .card {
+      background: #16161f;
+      border: 1px solid #1e1e2a;
+      border-radius: 12px;
+      overflow: hidden;
+      margin-top: 28px;
+    }
+
+    .card-header {
+      padding: 20px 24px;
+      border-bottom: 1px solid #1e1e2a;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .alert-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 0.2px;
+    }
+
+    <% if (type === 'schema_drift') { %>
+    .alert-badge { background: #1e1a2e; color: #a78bfa; border: 1px solid #3b2f6e; }
+    .accent { color: #a78bfa; }
+    .card-header { border-left: 3px solid #7c3aed; }
+    <% } else if (type === 'endpoint_error') { %>
+    .alert-badge { background: #2a1515; color: #f87171; border: 1px solid #6b2020; }
+    .accent { color: #f87171; }
+    .card-header { border-left: 3px solid #dc2626; }
+    <% } else if (type === 'signature_failed') { %>
+    .alert-badge { background: #2a1f10; color: #fb923c; border: 1px solid #6b3d10; }
+    .accent { color: #fb923c; }
+    .card-header { border-left: 3px solid #ea580c; }
+    <% } else if (type === 'duplicate_detected') { %>
+    .alert-badge { background: #10202a; color: #38bdf8; border: 1px solid #0e4f6b; }
+    .accent { color: #38bdf8; }
+    .card-header { border-left: 3px solid #0284c7; }
+    <% } else if (type === 'volume_spike') { %>
+    .alert-badge { background: #1a2210; color: #86efac; border: 1px solid #2d5a1a; }
+    .accent { color: #86efac; }
+    .card-header { border-left: 3px solid #16a34a; }
+    <% } else if (type === 'silence_detected') { %>
+    .alert-badge { background: #1e1e2a; color: #94a3b8; border: 1px solid #2e3347; }
+    .accent { color: #94a3b8; }
+    .card-header { border-left: 3px solid #475569; }
+    <% } else if (type === 'security_threat') { %>
+    .alert-badge { background: #2a1010; color: #fca5a5; border: 1px solid #7f1d1d; }
+    .accent { color: #fca5a5; }
+    .card-header { border-left: 3px solid #b91c1c; }
+    <% } %>
+
+    .alert-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: #e8e8f0;
+    }
+
+    .card-body {
+      padding: 24px;
+    }
+
+    /* Meta row */
+    .meta {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 24px;
+    }
+
+    .meta-row {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+    }
+
+    .meta-label {
+      font-size: 12px;
+      color: #52526e;
+      min-width: 90px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .meta-value {
+      font-size: 13px;
+      color: #a0a0be;
+      font-family: 'SF Mono', 'Fira Code', monospace;
+    }
+
+    /* Details block */
+    .details {
+      background: #0f0f13;
+      border: 1px solid #1e1e2a;
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 24px;
+    }
+
+    .details-title {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: #52526e;
+      margin-bottom: 12px;
+    }
+
+    .diff-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 5px 8px;
+      border-radius: 4px;
+      margin-bottom: 4px;
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 12px;
+    }
+
+    .diff-added {
+      background: #0d1f12;
+      color: #86efac;
+      border: 1px solid #1a3d22;
+    }
+
+    .diff-removed {
+      background: #1f0d0d;
+      color: #fca5a5;
+      border: 1px solid #3d1a1a;
+    }
+
+    .diff-changed {
+      background: #1a1a0d;
+      color: #fde68a;
+      border: 1px solid #3d3a1a;
+    }
+
+    .diff-icon {
+      font-size: 10px;
+      min-width: 12px;
+    }
+
+    .stat-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .stat-item {
+      background: #0f0f13;
+      border: 1px solid #1e1e2a;
+      border-radius: 6px;
+      padding: 10px 12px;
+    }
+
+    .stat-label {
+      font-size: 11px;
+      color: #52526e;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 4px;
+    }
+
+    .stat-value {
+      font-size: 18px;
+      font-weight: 600;
+    }
+
+    /* CTA */
+    .cta {
+      text-align: center;
+      padding-top: 8px;
+    }
+
+    .btn {
+      display: inline-block;
+      padding: 10px 24px;
+      background: #7c3aed;
+      color: #ffffff !important;
+      text-decoration: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      letter-spacing: -0.1px;
+    }
+
+    /* Footer */
+    .footer {
+      text-align: center;
+      padding: 24px 0 40px;
+      color: #32324a;
+      font-size: 12px;
+      line-height: 1.8;
+    }
+
+    .footer a {
+      color: #52526e;
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+
+    <!-- Header -->
+    <div class="header">
+      <div class="logo">🪝</div>
+      <span class="logo-text">HookScope</span>
+    </div>
+
+    <!-- Card -->
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="alert-badge">
+            <% if (type === 'schema_drift') { %>⚡ Schema Drift
+            <% } else if (type === 'endpoint_error') { %>🚨 Endpoint Error
+            <% } else if (type === 'signature_failed') { %>🔐 Signature Failed
+            <% } else if (type === 'duplicate_detected') { %>🔁 Duplicate Detected
+            <% } else if (type === 'volume_spike') { %>📈 Volume Spike
+            <% } else if (type === 'silence_detected') { %>🔇 Silence Detected
+            <% } else if (type === 'security_threat') { %>⚠️ Security Threat
+            <% } %>
+          </div>
+          <div class="alert-title" style="margin-top: 8px;">
+            <% if (type === 'schema_drift') { %>Webhook schema changed
+            <% } else if (type === 'endpoint_error') { %>Your endpoint returned an error
+            <% } else if (type === 'signature_failed') { %>Signature verification failed
+            <% } else if (type === 'duplicate_detected') { %>Duplicate webhook detected
+            <% } else if (type === 'volume_spike') { %>Unusual traffic spike detected
+            <% } else if (type === 'silence_detected') { %>No webhooks received
+            <% } else if (type === 'security_threat') { %>Suspicious activity detected
+            <% } %>
+          </div>
+        </div>
+      </div>
+
+      <div class="card-body">
+
+        <!-- Meta -->
+        <div class="meta">
+          <div class="meta-row">
+            <span class="meta-label">Endpoint</span>
+            <span class="meta-value"><%= endpointId %></span>
+          </div>
+          <% if (eventType) { %>
+          <div class="meta-row">
+            <span class="meta-label">Event Type</span>
+            <span class="meta-value accent"><%= eventType %></span>
+          </div>
+          <% } %>
+          <div class="meta-row">
+            <span class="meta-label">Detected</span>
+            <span class="meta-value"><%= new Date().toUTCString() %></span>
+          </div>
+        </div>
+
+        <!-- Details per type -->
+        <% if (type === 'schema_drift') { %>
+        <div class="details">
+          <div class="details-title">Changes detected</div>
+          <% if (metadata.added && metadata.added.length > 0) { %>
+            <% metadata.added.forEach(function(field) { %>
+            <div class="diff-row diff-added">
+              <span class="diff-icon">+</span>
+              <span><%= field %></span>
+              <span style="color: #4ade80; margin-left: auto;">added</span>
+            </div>
+            <% }) %>
+          <% } %>
+          <% if (metadata.removed && metadata.removed.length > 0) { %>
+            <% metadata.removed.forEach(function(field) { %>
+            <div class="diff-row diff-removed">
+              <span class="diff-icon">−</span>
+              <span><%= field %></span>
+              <span style="color: #f87171; margin-left: auto;">removed</span>
+            </div>
+            <% }) %>
+          <% } %>
+          <% if (metadata.typeChanged && metadata.typeChanged.length > 0) { %>
+            <% metadata.typeChanged.forEach(function(change) { %>
+            <div class="diff-row diff-changed">
+              <span class="diff-icon">~</span>
+              <span><%= change.field %></span>
+              <span style="margin-left: auto; color: #fde68a;"><%= change.from %> → <%= change.to %></span>
+            </div>
+            <% }) %>
+          <% } %>
+        </div>
+
+        <% } else if (type === 'endpoint_error') { %>
+        <div class="details">
+          <div class="details-title">Error details</div>
+          <div class="stat-grid">
+            <div class="stat-item">
+              <div class="stat-label">Status Code</div>
+              <div class="stat-value" style="color: #f87171;"><%= metadata.statusCode %></div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-label">Request ID</div>
+              <div class="stat-value" style="font-size: 12px; font-family: monospace; color: #a0a0be; margin-top: 4px;"><%= metadata.requestId %></div>
+            </div>
+          </div>
+          <% if (metadata.responseBody) { %>
+          <div style="margin-top: 8px; padding: 10px; background: #0f0f13; border-radius: 6px; font-family: monospace; font-size: 12px; color: #94a3b8; border: 1px solid #1e1e2a;">
+            <%= metadata.responseBody.slice(0, 300) %><%= metadata.responseBody.length > 300 ? '...' : '' %>
+          </div>
+          <% } %>
+        </div>
+
+        <% } else if (type === 'signature_failed') { %>
+        <div class="details">
+          <div class="details-title">Verification details</div>
+          <div class="stat-grid">
+            <div class="stat-item">
+              <div class="stat-label">Provider</div>
+              <div class="stat-value" style="font-size: 14px; color: #fb923c; margin-top: 4px;"><%= metadata.provider %></div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-label">IP Address</div>
+              <div class="stat-value" style="font-size: 13px; font-family: monospace; color: #a0a0be; margin-top: 4px;"><%= metadata.ip %></div>
+            </div>
+          </div>
+        </div>
+
+        <% } else if (type === 'duplicate_detected') { %>
+        <div class="details">
+          <div class="details-title">Duplicate details</div>
+          <div class="meta" style="margin-bottom: 0;">
+            <div class="meta-row">
+              <span class="meta-label">Original</span>
+              <span class="meta-value"><%= metadata.originalRequestId %></span>
+            </div>
+            <div class="meta-row">
+              <span class="meta-label">Duplicate</span>
+              <span class="meta-value accent"><%= metadata.duplicateRequestId %></span>
+            </div>
+          </div>
+        </div>
+
+        <% } else if (type === 'volume_spike') { %>
+        <div class="details">
+          <div class="details-title">Traffic analysis</div>
+          <div class="stat-grid">
+            <div class="stat-item">
+              <div class="stat-label">Normal Rate</div>
+              <div class="stat-value" style="color: #86efac;"><%= metadata.normalRate %><span style="font-size: 12px; font-weight: 400; color: #52526e;">/h</span></div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-label">Current Rate</div>
+              <div class="stat-value" style="color: #fde68a;"><%= metadata.currentRate %><span style="font-size: 12px; font-weight: 400; color: #52526e;">/h</span></div>
+            </div>
+          </div>
+          <div style="margin-top: 8px; padding: 10px 12px; background: #1a1a0d; border: 1px solid #3d3a1a; border-radius: 6px; text-align: center;">
+            <span style="font-size: 24px; font-weight: 700; color: #fde68a;"><%= metadata.multiplier.toFixed(1) %>x</span>
+            <span style="font-size: 12px; color: #52526e; margin-left: 6px;">above normal</span>
+          </div>
+        </div>
+
+        <% } else if (type === 'silence_detected') { %>
+        <div class="details">
+          <div class="details-title">Silence details</div>
+          <div class="stat-grid">
+            <div class="stat-item">
+              <div class="stat-label">Silent for</div>
+              <div class="stat-value" style="color: #94a3b8;">
+                <% var h = Math.floor(metadata.silenceDurationMinutes / 60); %>
+                <% var m = metadata.silenceDurationMinutes % 60; %>
+                <% if (h > 0) { %><%= h %>h <% } %><%= m %>m
+              </div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-label">Last seen</div>
+              <div class="stat-value" style="font-size: 12px; font-family: monospace; color: #a0a0be; margin-top: 4px;"><%= new Date(metadata.lastSeenAt).toUTCString() %></div>
+            </div>
+          </div>
+        </div>
+
+        <% } else if (type === 'security_threat') { %>
+        <div class="details">
+          <div class="details-title">Threat details</div>
+          <div class="stat-grid">
+            <div class="stat-item">
+              <div class="stat-label">IP Address</div>
+              <div class="stat-value" style="font-size: 13px; font-family: monospace; color: #fca5a5; margin-top: 4px;"><%= metadata.ip %></div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-label">Failed Attempts</div>
+              <div class="stat-value" style="color: #fca5a5;"><%= metadata.failedAttempts %></div>
+            </div>
+          </div>
+          <div style="margin-top: 8px; padding: 8px 12px; background: #1f0d0d; border: 1px solid #3d1a1a; border-radius: 6px; font-size: 12px; color: #94a3b8;">
+            <%= metadata.failedAttempts %> failed signature verifications from this IP in the last <%= metadata.windowMinutes %> minutes.
+          </div>
+        </div>
+        <% } %>
+
+        <!-- CTA -->
+        <div class="cta">
+          <a href="<%= appUrl %>/endpoints/<%= endpointId %>/alerts" class="btn">
+            View Alert in HookScope →
+          </a>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+      <p>You're receiving this because you have email alerts enabled.</p>
+      <p style="margin-top: 4px;">
+        <a href="<%= appUrl %>/settings/notifications">Manage notifications</a>
+        &nbsp;·&nbsp;
+        <a href="<%= appUrl %>/settings/notifications">Unsubscribe</a>
+      </p>
+      <p style="margin-top: 12px; color: #1e1e2a;">© <%= new Date().getFullYear() %> HookScope</p>
+    </div>
+
+  </div>
+</body>
+</html>
