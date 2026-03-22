@@ -5,7 +5,7 @@ export class CreateEndpointSchemaCommand {
     public readonly payload: {
       endpointId: string;
       eventType: string;
-      targets: GenerationTarget[];
+      targets?: GenerationTarget[];
     },
   ) {}
 }

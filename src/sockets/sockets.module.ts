@@ -7,7 +7,6 @@ import { RequestReceivedListener } from '@sockets/application/listeners/request-
 import { RequestForwardedListener } from '@sockets/application/listeners/request-forwarded.listener';
 import { CliTokenModule } from '@cli-token/cli-token.module';
 import { AuthModule } from '@auth/auth.module';
-
 @Module({
   imports: [
     CqrsModule,

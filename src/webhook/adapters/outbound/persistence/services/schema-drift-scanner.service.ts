@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { DEFAULT_EVENT_TYPE_KEY, Token } from '@endpoint/constants';
 import {
   ScanContext,
@@ -14,15 +14,20 @@ import { EventBus } from '@nestjs/cqrs';
 import { AlertDetectedEvent } from '@webhook/domain/events/alert-detected.event';
 import { AlertMetadata } from '@webhook/domain/value-objects/alert-metadata.vo';
 import { EndpointSchemaRepositoryPort } from '@endpoint/domain/ports/outbound/persistence/repositories/endpoint-schema.repository.port';
+import { EndpointSchemaCodeGenerationService } from '@endpoint/application/services/endpoint-schema-code-generation.service';
+import type { EndpointSchemaGeneratedValue } from '@endpoint/domain/value-objects/endpoint-schema-generated.vo';
 
 @Injectable()
 export class SchemaDriftScannerService implements ScanServicePort {
+  private readonly logger = new Logger(SchemaDriftScannerService.name);
+
   constructor(
     @Inject(Token.EndpointRepository)
     private readonly endpointRepository: EndpointRepositoryPort,
     @Inject(Token.EndpointSchemaRepository)
     private readonly endpointSchemaRepository: EndpointSchemaRepositoryPort,
     private readonly eventBus: EventBus,
+    private readonly codeGeneration: EndpointSchemaCodeGenerationService,
   ) {}
 
   async scan(context: ScanContext): Promise<void> {
@@ -47,10 +52,15 @@ export class SchemaDriftScannerService implements ScanServicePort {
     const targetSchema = latestSchema?.schema;
 
     if (!targetSchema) {
+      const generated = await this.tryGenerateArtifacts(
+        context.userId,
+        flattenedPayload,
+      );
       await this.endpointSchemaRepository.createNextVersion({
         endpointId: context.endpointId,
         eventType: schemaKey,
         schema: flattenedPayload,
+        generated,
       });
       endpoint.saveSchema(flattenedPayload, schemaKey);
       await this.endpointRepository.save(endpoint);
@@ -74,15 +84,37 @@ export class SchemaDriftScannerService implements ScanServicePort {
           eventType: context.eventType ?? undefined,
         })
       );
+      const generated = await this.tryGenerateArtifacts(
+        context.userId,
+        flattenedPayload,
+      );
       await this.endpointSchemaRepository.createNextVersion({
         endpointId: context.endpointId,
         eventType: schemaKey,
         schema: flattenedPayload,
+        generated,
       });
       endpoint.saveSchema(flattenedPayload, schemaKey);
       await this.endpointRepository.save(endpoint);
     }
 
     return;
+  }
+
+  private async tryGenerateArtifacts(
+    userId: string,
+    flattenedSchema: Record<string, string>,
+  ): Promise<EndpointSchemaGeneratedValue | undefined> {
+    try {
+      return await this.codeGeneration.generateArtifacts(
+        userId,
+        flattenedSchema,
+      );
+    } catch (err) {
+      this.logger.warn(
+        `Schema code generation failed for user ${userId}: ${err instanceof Error ? err.message : String(err)}`,
+      );
+      return undefined;
+    }
   }
 }

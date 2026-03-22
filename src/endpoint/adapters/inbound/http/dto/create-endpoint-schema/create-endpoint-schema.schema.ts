@@ -7,5 +7,6 @@ export const CREATE_ENDPOINT_SCHEMA_SCHEMA = z.strictObject({
   targets: z
     .array(z.nativeEnum(GenerationTarget))
     .min(1, { message: 'Select at least one generation target' })
-    .transform((arr) => [...new Set(arr)]),
+    .transform((arr) => [...new Set(arr)])
+    .optional(),
 });

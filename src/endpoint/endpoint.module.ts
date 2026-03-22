@@ -14,6 +14,7 @@ import { EndpointMapper } from '@endpoint/adapters/outbound/persistence/mappers/
 import { EndpointsController } from '@endpoint/adapters/inbound/http/controllers/endpoints.controller';
 import { DomainExceptionFilter } from '@endpoint/adapters/inbound/http/filters/domain-exception.filter';
 import { BillingModule } from '@billing/billing.module';
+import { UserSettingsModule } from '@user-settings/user-settings.module';
 import { SubscriptionLimitsGuard } from '@endpoint/adapters/inbound/http/guards/subscription-limits.guard';
 import { EndpointSchemaRepository } from '@endpoint/adapters/outbound/persistence/repositories/endpoint-schema.repository';
 import { EndpointSchemaMapper } from '@endpoint/adapters/outbound/persistence/mappers/endpoint-schema.mapper';
@@ -21,6 +22,7 @@ import { CreateEndpointSchemaHandler } from './application/commands/create-endpo
 import { AIService } from '@shared/constants';
 import { AiService } from '@shared/adapters/outbound/ai.service';
 import { GetEndpointSchemasHandler } from './application/queries/get-endpoint-schemas/get-endpoint-schemes.handler';
+import { EndpointSchemaCodeGenerationService } from './application/services/endpoint-schema-code-generation.service';
 
 const CommandHandlers = [
   CreateEndpointHandler,
@@ -35,13 +37,20 @@ const QueryHandlers = [
 ];
 
 @Module({
-  imports: [CqrsModule, ConfigModule, AuthModule, BillingModule],
+  imports: [
+    CqrsModule,
+    ConfigModule,
+    AuthModule,
+    BillingModule,
+    UserSettingsModule,
+  ],
   controllers: [EndpointsController],
   providers: [
     ...CommandHandlers,
     ...QueryHandlers,
     EndpointMapper,
     EndpointSchemaMapper,
+    EndpointSchemaCodeGenerationService,
     DomainExceptionFilter,
     SubscriptionLimitsGuard,
     {
@@ -61,6 +70,7 @@ const QueryHandlers = [
     CqrsModule,
     Token.EndpointRepository,
     Token.EndpointSchemaRepository,
+    EndpointSchemaCodeGenerationService,
   ],
 })
 export class EndpointModule {}

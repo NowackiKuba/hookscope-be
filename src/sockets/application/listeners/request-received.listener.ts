@@ -5,10 +5,12 @@ import type { Logger } from 'winston';
 
 import { Token } from '@sockets/constants';
 import { Token as RequestToken } from '@request/constants';
+import { WEBHOOK_SCAN_QUEUE_PROVIDER } from '@webhook/constants';
 import type { SocketsServicePort } from '@sockets/domain/ports/outbound/services/sockets.service.port';
 import type { CliSocketsServicePort } from '@sockets/domain/ports/outbound/services/cli-sockets.service.port';
 import { RequestReceivedEvent } from '@request/domain/events/request-received.event';
 import type { RequestRepositoryPort } from '@request/domain/ports/outbound/persistence/repositories/request.repository.port';
+import { ScanWebhooksQueuePort } from '@webhook/domain/ports/outbound/queue/scan-webhooks.queue.port';
 
 @EventsHandler(RequestReceivedEvent)
 @Injectable()
@@ -22,6 +24,8 @@ export class RequestReceivedListener implements IEventHandler<RequestReceivedEve
     private readonly cliSocketsService: CliSocketsServicePort,
     @Inject(RequestToken.RequestRepository)
     private readonly requestRepository: RequestRepositoryPort,
+    @Inject(WEBHOOK_SCAN_QUEUE_PROVIDER)
+    private readonly queue: ScanWebhooksQueuePort,
   ) {}
 
   async handle(event: RequestReceivedEvent): Promise<void> {
@@ -41,5 +45,7 @@ export class RequestReceivedListener implements IEventHandler<RequestReceivedEve
       payload,
       event.targetUrl,
     );
+
+    await this.queue.enqueue(event.requestId);
   }
 }

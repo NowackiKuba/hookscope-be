@@ -9,3 +9,5 @@ export const Token = {
   DuplicateScannerService: Symbol('DuplicateScannerService'),
   SchemaDriftScannerService: Symbol('SchemaDriftScannerService'),
 } as const;
+
+export const WEBHOOK_SCAN_QUEUE_PROVIDER = Symbol('WEBHOOK_SCAN_QUEUE');

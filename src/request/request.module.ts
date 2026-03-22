@@ -28,6 +28,8 @@ import { RequestCleanupQueueProcessor } from '@request/adapters/outbound/queue/p
 import { RunRequestCleanupHandler } from '@request/application/commands/run-request-cleanup/run-request-cleanup.handler';
 import { ForwardRequestQueueProducer } from '@request/adapters/outbound/queue/producers/forward-request.queue.producer';
 import { ForwardRequestQueueProcessor } from '@request/adapters/outbound/queue/processors/forward-request.queue.processor';
+import { WEBHOOK_SCAN_QUEUE_PROVIDER } from '@webhook/constants';
+import { ScanWebhooksQueueProducer } from '@webhook/adapters/outbound/queue/scan-webhooks/producers/scan-webhooks.queue.producer';
 
 const CommandHandlers = [
   ReceiveRequestHandler,
@@ -52,6 +54,9 @@ const QueryHandlers = [
     BullModule.registerQueue({
       name: 'forward',
     }),
+    BullModule.registerQueue({
+      name: 'scan-webhooks',
+    }),
   ],
   controllers: [RequestsController, HooksController],
   providers: [
@@ -75,6 +80,10 @@ const QueryHandlers = [
       useClass: ForwardRequestQueueProducer,
     },
     {
+      provide: WEBHOOK_SCAN_QUEUE_PROVIDER,
+      useClass: ScanWebhooksQueueProducer,
+    },
+    {
       provide: HttpClientProvider,
       useClass: HttpClient,
     },
@@ -88,6 +97,7 @@ const QueryHandlers = [
     Token.RequestRepository,
     Token.RequestCleanupQueue,
     Token.ForwardRequestQueue,
+    WEBHOOK_SCAN_QUEUE_PROVIDER,
   ],
 })
 export class RequestModule {}

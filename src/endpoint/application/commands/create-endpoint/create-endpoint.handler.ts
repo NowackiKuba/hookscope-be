@@ -29,7 +29,11 @@ export class CreateEndpointHandler implements ICommandHandler<CreateEndpointComm
       silenceTreshold,
     } = command.payload;
 
-    const encryptedSecret = encryptSecret(secretKey);
+    let encryptedSecret = null;
+
+    if (secretKey) {
+      encryptedSecret = encryptSecret(secretKey);
+    }
     const endpoint = Endpoint.create({
       userId,
       name,

@@ -22,6 +22,8 @@ export type DuplicateDetectedMetadata = {
   duplicateRequestId: string;
 };
 
+//
+
 export type VolumeSpikeMetadata = {
   normalRate: number;
   currentRate: number;
@@ -76,39 +78,27 @@ export class AlertMetadata {
     });
   }
 
-  static endpointError(
-    input: EndpointErrorMetadata,
-  ): AlertMetadata {
+  static endpointError(input: EndpointErrorMetadata): AlertMetadata {
     return AlertMetadata.create(input);
   }
 
-  static signatureFailed(
-    input: SignatureFailedMetadata,
-  ): AlertMetadata {
+  static signatureFailed(input: SignatureFailedMetadata): AlertMetadata {
     return AlertMetadata.create(input);
   }
 
-  static duplicateDetected(
-    input: DuplicateDetectedMetadata,
-  ): AlertMetadata {
+  static duplicateDetected(input: DuplicateDetectedMetadata): AlertMetadata {
     return AlertMetadata.create(input);
   }
 
-  static volumeSpike(
-    input: VolumeSpikeMetadata,
-  ): AlertMetadata {
+  static volumeSpike(input: VolumeSpikeMetadata): AlertMetadata {
     return AlertMetadata.create(input);
   }
 
-  static silenceDetected(
-    input: SilenceDetectedMetadata,
-  ): AlertMetadata {
+  static silenceDetected(input: SilenceDetectedMetadata): AlertMetadata {
     return AlertMetadata.create(input);
   }
 
-  static securityThreat(
-    input: SecurityThreatMetadata,
-  ): AlertMetadata {
+  static securityThreat(input: SecurityThreatMetadata): AlertMetadata {
     return AlertMetadata.create(input);
   }
 

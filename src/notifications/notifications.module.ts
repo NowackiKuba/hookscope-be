@@ -8,6 +8,9 @@ import { NotificationsController } from '@notifications/adapters/inbound/http/co
 import { NewNotificationListener } from '@notifications/application/listeners/new-notification.listener';
 import { NotificationsGateway } from '@notifications/adapters/inbound/ws/notifications.gateway';
 import { AuthModule } from '@auth/auth.module';
+import { HttpClientProvider } from '@shared/constants';
+import { HttpClient } from '@shared/adapters/outbound/http.client';
+import { ExternalNotificationProvider } from '@notifications/adapters/outbound/external/providers/external-notification.provider';
 
 @Global()
 @Module({
@@ -27,7 +30,20 @@ import { AuthModule } from '@auth/auth.module';
       provide: Token.NotificationSocketsService,
       useExisting: NotificationsGateway,
     },
+    {
+      provide: HttpClientProvider,
+      useClass: HttpClient,
+    },
+    {
+      provide: Token.NotificationProvider,
+      useClass: ExternalNotificationProvider,
+    },
   ],
-  exports: [CqrsModule, NotificationService, Token.NotificationRepository],
+  exports: [
+    CqrsModule,
+    NotificationService,
+    Token.NotificationRepository,
+    Token.NotificationProvider,
+  ],
 })
 export class NotificationsModule {}
