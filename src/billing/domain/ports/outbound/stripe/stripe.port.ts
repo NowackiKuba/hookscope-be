@@ -13,6 +13,10 @@ export interface StripePort {
   createCheckoutSession(
     input: CreateCheckoutSessionInput,
   ): Promise<{ id: string; url: string }>;
+  createCustomerPortal(input: Stripe.BillingPortal.SessionCreateParams): Promise<{
+    id: string;
+    url: string;
+  }>;
 
   constructWebhookEvent(payload: Buffer, signature: string): Stripe.Event;
 

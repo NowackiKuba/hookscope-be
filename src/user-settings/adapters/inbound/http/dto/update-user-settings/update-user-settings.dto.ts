@@ -8,6 +8,7 @@ export class UpdateUserSettingsDto {
   };
   slackWebhookUrl?: string | null;
   discordWebhookUrl?: string | null;
+  alertEmailAddress?: string | null;
   defaultSilenceThreshold?: number;
   volumeSpikeMultiplier?: number;
   language?: string;

@@ -24,6 +24,7 @@ export const updateUserSettingsSchema = z
     notificationChannels: notificationChannelsSchema.optional(),
     slackWebhookUrl: z.union([z.string().url(), z.null()]).optional(),
     discordWebhookUrl: z.union([z.string().url(), z.null()]).optional(),
+    alertEmailAddress: z.union([z.string().email(), z.null()]).optional(),
     defaultSilenceThreshold: z.coerce.number().int().min(1).optional(),
     volumeSpikeMultiplier: z.coerce.number().positive().optional(),
     language: z.string().min(2).max(32).optional(),

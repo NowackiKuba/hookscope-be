@@ -12,6 +12,7 @@ export type UserSettingsResponseDto = {
   notificationChannels: UserSettingsNotificationChannels;
   slackWebhookUrl: string | null;
   discordWebhookUrl: string | null;
+  alertEmailAddress: string | null;
   defaultSilenceThreshold: number;
   volumeSpikeMultiplier: number;
   language: string;

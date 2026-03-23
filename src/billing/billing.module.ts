@@ -14,6 +14,7 @@ import { AuthModule } from '@auth/auth.module';
 import { StripeService } from './infrastructure/stripe/stripe.service';
 import { CreateCheckoutSessionHandler } from './application/commands/create-checkout-session/create-checkout-session.handler';
 import { HandleStripeWebhookHandler } from './application/commands/handle-stripe-webhook/handle-stripe-webhook.handler';
+import { CreateBillingSessionHandler } from './application/commands/create-billing-session/create-billing-session.handler';
 
 @Module({
   imports: [CqrsModule, ConfigModule, AuthModule],
@@ -24,6 +25,7 @@ import { HandleStripeWebhookHandler } from './application/commands/handle-stripe
     CreateCheckoutSessionHandler,
     HandleStripeWebhookHandler,
     PacketMapper,
+    CreateBillingSessionHandler,
     SubscriptionMapper,
     {
       provide: Token.Stripe,

@@ -85,15 +85,26 @@ export class StripeService implements StripePort {
     return { id: session.id, url: session.url };
   }
 
-  constructWebhookEvent(
-    payload: Buffer,
-    signature: string,
-  ): Stripe.Event {
+  async createCustomerPortal(input: Stripe.BillingPortal.SessionCreateParams) {
+    const session = await this.client.billingPortal.sessions.create(input);
+
+    if (!session.url) {
+      throw new Error('Stripe billing session did not return an URL');
+    }
+
+    return { id: session.id, url: session.url };
+  }
+
+  constructWebhookEvent(payload: Buffer, signature: string): Stripe.Event {
     const webhookSecret = this.configService.get('STRIPE_WEBHOOK_SECRET', {
       infer: true,
     });
     if (!webhookSecret) throw new StripeNotConfiguredException();
-    return this.client.webhooks.constructEvent(payload, signature, webhookSecret);
+    return this.client.webhooks.constructEvent(
+      payload,
+      signature,
+      webhookSecret,
+    );
   }
 
   async getSubscription(subscriptionId: string): Promise<Stripe.Subscription> {

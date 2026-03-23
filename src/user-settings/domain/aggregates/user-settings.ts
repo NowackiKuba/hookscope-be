@@ -15,6 +15,7 @@ export const DEFAULT_USER_SETTINGS: {
   notificationChannels: UserSettingsNotificationChannels;
   slackWebhookUrl: string | null;
   discordWebhookUrl: string | null;
+  alertEmailAddress: string | null;
   defaultSilenceThreshold: number;
   volumeSpikeMultiplier: number;
   language: string;
@@ -32,6 +33,7 @@ export const DEFAULT_USER_SETTINGS: {
   },
   slackWebhookUrl: null,
   discordWebhookUrl: null,
+  alertEmailAddress: null,
   defaultSilenceThreshold: 1440,
   volumeSpikeMultiplier: 3,
   language: 'en',
@@ -46,6 +48,7 @@ export type UserSettingsProps = {
   notificationChannels: UserSettingsNotificationChannels;
   slackWebhookUrl: string | null;
   discordWebhookUrl: string | null;
+  alertEmailAddress: string | null;
   defaultSilenceThreshold: number;
   volumeSpikeMultiplier: number;
   language: string;
@@ -64,6 +67,7 @@ export type UserSettingsJSON = {
   discordWebhookUrl: string | null;
   defaultSilenceThreshold: number;
   volumeSpikeMultiplier: number;
+  alertEmailAddress: string | null;
   language: string;
   theme: UserSettingsTheme;
   createdAt: Date;
@@ -73,11 +77,7 @@ export type UserSettingsJSON = {
 export type UserSettingsPatch = Partial<
   Omit<
     UserSettingsProps,
-    | 'id'
-    | 'userId'
-    | 'createdAt'
-    | 'updatedAt'
-    | 'notificationChannels'
+    'id' | 'userId' | 'createdAt' | 'updatedAt' | 'notificationChannels'
   >
 > & {
   notificationChannels?: Partial<UserSettingsNotificationChannels>;
@@ -95,6 +95,7 @@ export class UserSettings {
   private _volumeSpikeMultiplier: number;
   private _language: string;
   private _theme: UserSettingsTheme;
+  private _alertEmailAddress: string | null;
   private _createdAt: Date;
   private _updatedAt: Date;
 
@@ -106,6 +107,7 @@ export class UserSettings {
     this._notificationChannels = { ...props.notificationChannels };
     this._slackWebhookUrl = props.slackWebhookUrl;
     this._discordWebhookUrl = props.discordWebhookUrl;
+    this._alertEmailAddress = props.alertEmailAddress;
     this._defaultSilenceThreshold = props.defaultSilenceThreshold;
     this._volumeSpikeMultiplier = props.volumeSpikeMultiplier;
     this._language = props.language;
@@ -146,6 +148,9 @@ export class UserSettings {
   get discordWebhookUrl(): string | null {
     return this._discordWebhookUrl;
   }
+  get alertEmailAddress(): string | null {
+    return this._alertEmailAddress;
+  }
   get defaultSilenceThreshold(): number {
     return this._defaultSilenceThreshold;
   }
@@ -184,6 +189,9 @@ export class UserSettings {
     if (patch.discordWebhookUrl !== undefined) {
       this._discordWebhookUrl = patch.discordWebhookUrl;
     }
+    if (patch.alertEmailAddress !== undefined) {
+      this._alertEmailAddress = patch.alertEmailAddress;
+    }
     if (patch.defaultSilenceThreshold !== undefined) {
       this._defaultSilenceThreshold = patch.defaultSilenceThreshold;
     }
@@ -208,6 +216,7 @@ export class UserSettings {
       notificationChannels: { ...this._notificationChannels },
       slackWebhookUrl: this._slackWebhookUrl,
       discordWebhookUrl: this._discordWebhookUrl,
+      alertEmailAddress: this._alertEmailAddress,
       defaultSilenceThreshold: this._defaultSilenceThreshold,
       volumeSpikeMultiplier: this._volumeSpikeMultiplier,
       language: this._language,

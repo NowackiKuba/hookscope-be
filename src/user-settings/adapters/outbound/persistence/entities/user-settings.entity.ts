@@ -16,6 +16,7 @@ export type UserSettingsEntityProps = {
   notificationChannels: UserSettingsNotificationChannels;
   slackWebhookUrl: string | null;
   discordWebhookUrl: string | null;
+  alertEmailAddress: string | null;
   defaultSilenceThreshold: number;
   volumeSpikeMultiplier: number;
   language: string;
@@ -55,6 +56,12 @@ export class UserSettingsEntity
     fieldName: 'discord_webhook_url',
   })
   discordWebhookUrl: string | null = null;
+  @Property({
+    type: 'text',
+    nullable: true,
+    fieldName: 'alert_email_address',
+  })
+  alertEmailAddress: string | null = null;
 
   @Property({
     type: 'int',
@@ -83,6 +90,7 @@ export class UserSettingsEntity
     this.notificationChannels = props.notificationChannels;
     this.slackWebhookUrl = props.slackWebhookUrl ?? null;
     this.discordWebhookUrl = props.discordWebhookUrl ?? null;
+    this.alertEmailAddress = props.alertEmailAddress ?? null;
     this.defaultSilenceThreshold = props.defaultSilenceThreshold;
     this.volumeSpikeMultiplier = props.volumeSpikeMultiplier;
     this.language = props.language;

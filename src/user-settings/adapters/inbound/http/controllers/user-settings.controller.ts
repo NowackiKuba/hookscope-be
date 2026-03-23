@@ -31,6 +31,7 @@ function toResponseDto(settings: UserSettings): UserSettingsResponseDto {
     notificationChannels: json.notificationChannels,
     slackWebhookUrl: json.slackWebhookUrl,
     discordWebhookUrl: json.discordWebhookUrl,
+    alertEmailAddress: json.alertEmailAddress,
     defaultSilenceThreshold: json.defaultSilenceThreshold,
     volumeSpikeMultiplier: json.volumeSpikeMultiplier,
     language: json.language,

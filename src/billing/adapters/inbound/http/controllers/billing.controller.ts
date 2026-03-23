@@ -18,6 +18,7 @@ import {
   SubscriptionResponseDto,
   toSubscriptionResponseDto,
 } from '../dto/subscription-response.dto';
+import { CreateBillingSessionCommand } from '@billing/application/commands/create-billing-session/create-billing-session.command';
 
 @Controller('billing')
 export class BillingController {
@@ -64,5 +65,13 @@ export class BillingController {
         cancelUrl,
       ),
     )) as { id: string; url: string };
+  }
+
+  @Post('session')
+  @UseGuards(AuthGuard)
+  async createBillingSession(@CurrentUser() user: AuthenticatedUser) {
+    return await this.commandBus.execute(
+      new CreateBillingSessionCommand({ userId: user.userId }),
+    );
   }
 }
