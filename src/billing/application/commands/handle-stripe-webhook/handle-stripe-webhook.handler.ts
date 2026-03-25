@@ -102,6 +102,7 @@ export class HandleStripeWebhookHandler implements ICommandHandler<HandleStripeW
       stripeCustomerId,
       stripeSubscriptionId: sub.id,
       stripePriceId,
+      tier: sub.items.data[0].plan.product.toString().toLowerCase(),
       status: sub.status,
       currentPeriodEnd: addMonths(new Date(), 1),
       cancelAtPeriodEnd: !!sub.cancel_at_period_end,

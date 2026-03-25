@@ -2,8 +2,12 @@ import { Inject, Injectable } from '@nestjs/common';
 import { EventBus } from '@nestjs/cqrs';
 import { Token } from '@request/constants';
 import { Token as EndpointToken } from '@endpoint/constants';
+import { Token as BillingToken } from '@billing/constants';
 import { RequestRepositoryPort } from '@request/domain/ports/outbound/persistence/repositories/request.repository.port';
 import { EndpointRepositoryPort } from '@endpoint/domain/ports/outbound/persistence/repositories/endpoint.repository.port';
+import type { SubscriptionRepositoryPort } from '@billing/domain/ports/outbound/persistence/repositories/subscription.repository.port';
+import type { PacketRepositoryPort } from '@billing/domain/ports/outbound/persistence/repositories/packet.repository.port';
+import { packetToLimits } from '@billing/application/utils/packet-limits';
 import { Cron } from '@nestjs/schedule';
 import { AlertDetectedEvent } from '@webhook/domain/events/alert-detected.event';
 import { AlertMetadata } from '@webhook/domain/value-objects/alert-metadata.vo';
@@ -26,9 +30,22 @@ export class VolumeSpikeScannerCron {
     private readonly endpointRepository: EndpointRepositoryPort,
     @Inject(WebhookToken.WebhookAlertRepository)
     private readonly webhookAlertRepository: WebhookAlertRepositoryPort,
+    @Inject(BillingToken.SubscriptionRepository)
+    private readonly subscriptions: SubscriptionRepositoryPort,
+    @Inject(BillingToken.PacketRepository)
+    private readonly packets: PacketRepositoryPort,
     private readonly eventBus: EventBus,
     private readonly orm: MikroORM,
   ) {}
+
+  private async hasVolumeSpikeAccess(userId: string): Promise<boolean> {
+    const subscription = await this.subscriptions.findByUserId(userId);
+    const packet = subscription
+      ? await this.packets.findById(subscription.toJSON().packetId)
+      : await this.packets.findByCode('free');
+    if (!packet) return false;
+    return packetToLimits(packet).volumeSpikeDetection;
+  }
 
   @Cron('*/15 * * * *')
   async process() {
@@ -71,6 +88,10 @@ export class VolumeSpikeScannerCron {
 
         await Promise.all(
           endpoints.data.map(async (endpoint) => {
+            if (!(await this.hasVolumeSpikeAccess(endpoint.userId))) {
+              return;
+            }
+
             const currentRate = currentByEndpoint.get(endpoint.id) ?? 0;
             const sevenDaysCount = baselineByEndpoint.get(endpoint.id) ?? 0;
             const normalRate = sevenDaysCount / avgDivider;

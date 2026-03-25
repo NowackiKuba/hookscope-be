@@ -1,5 +1,6 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { DEFAULT_EVENT_TYPE_KEY, Token } from '@endpoint/constants';
+import { Token as BillingToken } from '@billing/constants';
 import {
   ScanContext,
   ScanServicePort,
@@ -16,6 +17,9 @@ import { AlertMetadata } from '@webhook/domain/value-objects/alert-metadata.vo';
 import { EndpointSchemaRepositoryPort } from '@endpoint/domain/ports/outbound/persistence/repositories/endpoint-schema.repository.port';
 import { EndpointSchemaCodeGenerationService } from '@endpoint/application/services/endpoint-schema-code-generation.service';
 import type { EndpointSchemaGeneratedValue } from '@endpoint/domain/value-objects/endpoint-schema-generated.vo';
+import type { SubscriptionRepositoryPort } from '@billing/domain/ports/outbound/persistence/repositories/subscription.repository.port';
+import type { PacketRepositoryPort } from '@billing/domain/ports/outbound/persistence/repositories/packet.repository.port';
+import { packetToLimits } from '@billing/application/utils/packet-limits';
 
 @Injectable()
 export class SchemaDriftScannerService implements ScanServicePort {
@@ -26,9 +30,22 @@ export class SchemaDriftScannerService implements ScanServicePort {
     private readonly endpointRepository: EndpointRepositoryPort,
     @Inject(Token.EndpointSchemaRepository)
     private readonly endpointSchemaRepository: EndpointSchemaRepositoryPort,
+    @Inject(BillingToken.SubscriptionRepository)
+    private readonly subscriptions: SubscriptionRepositoryPort,
+    @Inject(BillingToken.PacketRepository)
+    private readonly packets: PacketRepositoryPort,
     private readonly eventBus: EventBus,
     private readonly codeGeneration: EndpointSchemaCodeGenerationService,
   ) {}
+
+  private async hasDtoGenerationAccess(userId: string): Promise<boolean> {
+    const subscription = await this.subscriptions.findByUserId(userId);
+    const packet = subscription
+      ? await this.packets.findById(subscription.toJSON().packetId)
+      : await this.packets.findByCode('free');
+    if (!packet) return false;
+    return packetToLimits(packet).dtoGeneration;
+  }
 
   async scan(context: ScanContext): Promise<void> {
     if (!context.payload) {
@@ -36,9 +53,7 @@ export class SchemaDriftScannerService implements ScanServicePort {
     }
 
     const flattenedPayload = flattenSchema(context.payload);
-    const endpoint = await this.endpointRepository.findById(
-      context.endpointId,
-    );
+    const endpoint = await this.endpointRepository.findById(context.endpointId);
 
     if (!endpoint) {
       return;
@@ -52,10 +67,9 @@ export class SchemaDriftScannerService implements ScanServicePort {
     const targetSchema = latestSchema?.schema;
 
     if (!targetSchema) {
-      const generated = await this.tryGenerateArtifacts(
-        context.userId,
-        flattenedPayload,
-      );
+      const generated = (await this.hasDtoGenerationAccess(context.userId))
+        ? await this.tryGenerateArtifacts(context.userId, flattenedPayload)
+        : undefined;
       await this.endpointSchemaRepository.createNextVersion({
         endpointId: context.endpointId,
         eventType: schemaKey,
@@ -82,20 +96,25 @@ export class SchemaDriftScannerService implements ScanServicePort {
             updatedDto: null,
           }).value,
           eventType: context.eventType ?? undefined,
-        })
+        }),
       );
-      const generated = await this.tryGenerateArtifacts(
-        context.userId,
-        flattenedPayload,
-      );
-      await this.endpointSchemaRepository.createNextVersion({
-        endpointId: context.endpointId,
-        eventType: schemaKey,
-        schema: flattenedPayload,
-        generated,
-      });
-      endpoint.saveSchema(flattenedPayload, schemaKey);
-      await this.endpointRepository.save(endpoint);
+
+      const hasAccess = await this.hasDtoGenerationAccess(context.userId);
+
+      if (hasAccess) {
+        const generated = await this.tryGenerateArtifacts(
+          context.userId,
+          flattenedPayload,
+        );
+        await this.endpointSchemaRepository.createNextVersion({
+          endpointId: context.endpointId,
+          eventType: schemaKey,
+          schema: flattenedPayload,
+          generated,
+        });
+        endpoint.saveSchema(flattenedPayload, schemaKey);
+        await this.endpointRepository.save(endpoint);
+      }
     }
 
     return;

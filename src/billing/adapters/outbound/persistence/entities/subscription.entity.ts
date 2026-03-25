@@ -13,6 +13,7 @@ export type SubscriptionEntityProps = {
   stripeSubscriptionId: string;
   stripePriceId: string;
 
+  tier: string;
   status: string;
   currentPeriodEnd?: Date | null;
   cancelAtPeriodEnd?: boolean;
@@ -24,7 +25,10 @@ export type SubscriptionEntityProps = {
 @Entity({ tableName: 'subscriptions' })
 @Unique({ properties: ['stripeSubscriptionId'] })
 @Unique({ properties: ['user'] })
-export class SubscriptionEntity extends BaseEntity implements SubscriptionEntityProps {
+export class SubscriptionEntity
+  extends BaseEntity
+  implements SubscriptionEntityProps
+{
   @ManyToOne(() => UserEntity, { fieldName: 'user_id', deleteRule: 'cascade' })
   user!: UserEntity;
 
@@ -46,6 +50,8 @@ export class SubscriptionEntity extends BaseEntity implements SubscriptionEntity
   /** Stripe subscription status string (e.g. active, trialing, past_due, canceled). */
   @Property({ type: 'text' })
   status!: string;
+  @Property({ type: 'text' })
+  tier: string;
 
   @Property({
     type: 'timestamptz',
@@ -54,7 +60,11 @@ export class SubscriptionEntity extends BaseEntity implements SubscriptionEntity
   })
   currentPeriodEnd: Date | null = null;
 
-  @Property({ type: 'boolean', default: false, fieldName: 'cancel_at_period_end' })
+  @Property({
+    type: 'boolean',
+    default: false,
+    fieldName: 'cancel_at_period_end',
+  })
   cancelAtPeriodEnd: boolean = false;
 
   @Property({ type: 'timestamptz', nullable: true, fieldName: 'canceled_at' })
@@ -68,6 +78,7 @@ export class SubscriptionEntity extends BaseEntity implements SubscriptionEntity
     this.id = props.id ?? generateUUID();
     this.user = props.user;
     this.packet = props.packet;
+    this.tier = props.tier;
     this.stripeCustomerId = props.stripeCustomerId;
     this.stripeSubscriptionId = props.stripeSubscriptionId;
     this.stripePriceId = props.stripePriceId;
@@ -78,4 +89,3 @@ export class SubscriptionEntity extends BaseEntity implements SubscriptionEntity
     this.metadata = props.metadata;
   }
 }
-

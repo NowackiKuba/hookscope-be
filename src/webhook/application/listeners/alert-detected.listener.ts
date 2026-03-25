@@ -10,6 +10,7 @@ import { WebhookAlert } from '@webhook/domain/aggreagates/webhook-alert';
 import { AlertDetectedEvent } from '@webhook/domain/events/alert-detected.event';
 import { WebhookAlertRepositoryPort } from '@webhook/domain/ports/outbound/persistence/repositories/webhook-alert.repository.port';
 import { Token as UserSettingsToken } from '@user-settings/constants';
+import { Token as BillingToken } from '@billing/constants';
 import type { UserSettingsRepositoryPort } from '@user-settings/domain/ports/outbound/persistence/repositories/user-settings.repository.port';
 import {
   DuplicateDetectedMetadata,
@@ -21,6 +22,7 @@ import {
   VolumeSpikeMetadata,
 } from '@webhook/domain/value-objects/alert-metadata.vo';
 import { EmailOutboxRepositoryPort } from '@mailer/domain/ports/email-outbox.repository.port';
+import { SubscriptionRepositoryPort } from '@billing/domain/ports/outbound/persistence/repositories/subscription.repository.port';
 
 const ALERT_COOLDOWN_MS = 30 * 60 * 1000;
 
@@ -34,6 +36,8 @@ export class AlertDetectedListener implements IEventHandler<AlertDetectedEvent> 
     private readonly eventBus: EventBus,
     @Inject(NotificationsToken.NotificationProvider)
     private readonly notificationProvider: NotificationProviderPort,
+    @Inject(BillingToken.SubscriptionRepository)
+    private readonly subscriptionRepository: SubscriptionRepositoryPort,
     @Inject(UserSettingsToken.UserSettingsRepository)
     private readonly userSettingsRepository: UserSettingsRepositoryPort,
     @Inject(MAILER_TOKEN.EmailOutboxRepository)
@@ -91,7 +95,7 @@ export class AlertDetectedListener implements IEventHandler<AlertDetectedEvent> 
       }),
     );
 
-    await this.sendExternalWebhookNotifications(event);
+    await this.sendExternalWebhookNotifications(event, event.payload.userId);
 
     return alert.id.value;
   }
@@ -190,11 +194,18 @@ export class AlertDetectedListener implements IEventHandler<AlertDetectedEvent> 
 
   private async sendExternalWebhookNotifications(
     event: AlertDetectedEvent,
+    userId: string,
   ): Promise<void> {
     const settings = await this.userSettingsRepository.findByUserId(
       event.payload.userId,
     );
     if (!settings) {
+      return;
+    }
+
+    const subscription = await this.subscriptionRepository.findByUserId(userId);
+
+    if (!subscription || subscription.tier === 'free') {
       return;
     }
 
