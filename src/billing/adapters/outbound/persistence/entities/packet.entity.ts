@@ -20,7 +20,7 @@ export type PacketEntityProps = {
   /** Stripe billing interval: month/year. */
   interval: 'month' | 'year';
 
-  features: Record<string, string>;
+  features: Record<string, string | boolean>;
   isActive?: boolean;
 
   stripeProductId?: string | null;
@@ -48,7 +48,7 @@ export class PacketEntity extends BaseEntity implements PacketEntityProps {
   interval!: 'month' | 'year';
 
   @Property({ type: 'jsonb' })
-  features: Record<string, string> = {};
+  features: Record<string, string | boolean> = {};
 
   @Property({ type: 'boolean', default: true, fieldName: 'is_active' })
   isActive: boolean = true;

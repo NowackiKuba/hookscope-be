@@ -8,7 +8,7 @@ export type PacketProps = {
   unitAmount: number;
   currency: string;
   interval: 'month' | 'year';
-  features: Record<string, string>;
+  features: Record<string, string | boolean>;
   isActive?: boolean;
   stripeProductId?: string | null;
   stripePriceId?: string | null;
@@ -24,7 +24,7 @@ export type PacketJSON = {
   unitAmount: number;
   currency: string;
   interval: 'month' | 'year';
-  features: Record<string, string>;
+  features: Record<string, string | boolean>;
   isActive: boolean;
   stripeProductId: string | null;
   stripePriceId: string | null;
@@ -40,7 +40,7 @@ export class Packet {
   private _unitAmount: number;
   private _currency: string;
   private _interval: 'month' | 'year';
-  private _features: Record<string, string>;
+  private _features: Record<string, string | boolean>;
   private _isActive: boolean;
   private _stripeProductId: string | null;
   private _stripePriceId: string | null;
@@ -93,4 +93,3 @@ export class Packet {
     };
   }
 }
-

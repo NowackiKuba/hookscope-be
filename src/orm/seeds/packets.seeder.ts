@@ -10,7 +10,7 @@ const DEFAULT_PACKETS: Array<{
   unitAmount: number;
   currency: string;
   interval: 'month' | 'year';
-  features: Record<string, string>;
+  features: Record<string, string | boolean>;
 }> = [
   {
     code: 'free',
@@ -21,11 +21,21 @@ const DEFAULT_PACKETS: Array<{
     interval: 'month',
     features: {
       Endpoints: '3',
-      'Requests / month': '1k',
-      History: '24h',
-      Forwarding: 'no',
-      Retry: 'no',
-      'Manual retry': 'no',
+      'Requests / month': '1,000',
+      'Request history': '7 days',
+      'CLI tunnel': true,
+      Forwarding: true,
+      Retry: true,
+      'Manual retry': true,
+      'Signature verification': true,
+      'Schema drift alerts': true,
+      'Duplicate detection': true,
+      'Silence detection': true,
+      'In-app notifications': true,
+      'Email notifications': false,
+      'Slack / Discord notifications': false,
+      'DTO generation': false,
+      'Volume spike detection': false,
     },
   },
   {
@@ -36,12 +46,22 @@ const DEFAULT_PACKETS: Array<{
     currency: 'usd',
     interval: 'month',
     features: {
-      Endpoints: '10',
-      'Requests / month': '50k',
-      History: '30 days',
-      Forwarding: 'yes',
-      Retry: 'yes',
-      'Manual retry': 'yes',
+      Endpoints: 'Unlimited',
+      'Requests / month': '50,000',
+      'Request history': '90 days',
+      'CLI tunnel': true,
+      Forwarding: true,
+      Retry: true,
+      'Manual retry': true,
+      'Signature verification': true,
+      'Schema drift alerts': true,
+      'Duplicate detection': true,
+      'Silence detection': true,
+      'In-app notifications': true,
+      'Email notifications': true,
+      'Slack / Discord notifications': true,
+      'DTO generation': true,
+      'Volume spike detection': true,
     },
   },
 ];
@@ -95,4 +115,3 @@ export class PacketsSeeder extends Seeder {
     }
   }
 }
-

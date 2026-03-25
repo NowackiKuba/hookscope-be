@@ -17,7 +17,7 @@ export type UsageStatsResponseDto = {
     unitAmount: number;
     currency: string;
     interval: 'month' | 'year';
-    features: Record<string, string>;
+    features: Record<string, string | boolean>;
     limits: {
       requestsPerMonth: number | null;
       endpoints: number | null;
@@ -40,8 +40,7 @@ export type UsageStatsResponseDto = {
     unitAmount: number;
     currency: string;
     interval: 'month' | 'year';
-    features: Record<string, string>;
+    features: Record<string, string | boolean>;
     isActive: boolean;
   }>;
 };
-

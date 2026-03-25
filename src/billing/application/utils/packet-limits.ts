@@ -8,6 +8,15 @@ export type PacketLimits = {
   retry: boolean;
   forwarding: boolean;
   manualRetry: boolean;
+  signatureVerification: boolean;
+  schemaDriftAlerts: boolean;
+  duplicateDetection: boolean;
+  silenceDetection: boolean;
+  inAppNotifications: boolean;
+  emailNotifications: boolean;
+  externalNotifications: boolean;
+  dtoGeneration: boolean;
+  volumeSpikeDetection: boolean;
 };
 
 function addMonthsUtc(date: Date, months: number): Date {
@@ -26,7 +35,6 @@ function addYearsUtc(date: Date, years: number): Date {
   const d = new Date(date.getTime());
   const month = d.getUTCMonth();
   d.setUTCFullYear(d.getUTCFullYear() + years);
-  // handle Feb 29 -> Feb 28 on non-leap years by clamping day
   if (d.getUTCMonth() !== month) {
     d.setUTCDate(0);
   }
@@ -41,8 +49,9 @@ function startOfNextYearUtc(now: Date): Date {
   return new Date(Date.UTC(now.getUTCFullYear() + 1, 0, 1));
 }
 
-function parseAbbrevNumber(value: string): number | null {
-  const v = value.trim().toLowerCase();
+function parseAbbrevNumber(value: string | boolean | undefined): number | null {
+  if (typeof value === 'boolean') return null;
+  const v = (value ?? '').trim().toLowerCase();
   if (v === 'unlimited' || v === '∞') return null;
   const m = v.match(/^(\d+(?:\.\d+)?)(k|m)?$/);
   if (!m) return Number.isFinite(Number(v)) ? Number(v) : null;
@@ -51,16 +60,18 @@ function parseAbbrevNumber(value: string): number | null {
   return Math.round(base * mult);
 }
 
-function parseYesNo(value: string | undefined): boolean {
+function parseYesNo(value: string | boolean | undefined): boolean {
+  if (typeof value === 'boolean') return value;
   const v = (value ?? '').trim().toLowerCase();
-  if (v === 'yes' || v === 'true' || v === '1') return true;
-  return false;
+  return v === 'yes' || v === 'true' || v === '1';
 }
 
-function parseHistoryToHours(value: string | undefined): number | null {
+function parseHistoryToHours(
+  value: string | boolean | undefined,
+): number | null {
+  if (typeof value === 'boolean') return null;
   const v = (value ?? '').trim().toLowerCase();
   if (!v) return null;
-  // examples: "24h", "30d", "30 days"
   const h = v.match(/^(\d+)\s*h$/);
   if (h) return Number(h[1]);
   const d = v.match(/^(\d+)\s*(d|day|days)$/);
@@ -72,12 +83,23 @@ function parseHistoryToHours(value: string | undefined): number | null {
 export function packetToLimits(packet: Packet): PacketLimits {
   const features = packet.toJSON().features;
   return {
-    requestsPerMonth: parseAbbrevNumber(features['Requests / month'] ?? ''),
-    endpoints: parseAbbrevNumber(features.Endpoints ?? ''),
-    historyHours: parseHistoryToHours(features.History),
-    retry: parseYesNo(features.Retry),
-    forwarding: parseYesNo(features.Forwarding),
+    requestsPerMonth: parseAbbrevNumber(features['Requests / month']),
+    endpoints: parseAbbrevNumber(features['Endpoints']),
+    historyHours: parseHistoryToHours(features['Request history']),
+    retry: parseYesNo(features['Retry']),
+    forwarding: parseYesNo(features['Forwarding']),
     manualRetry: parseYesNo(features['Manual retry']),
+    signatureVerification: parseYesNo(features['Signature verification']),
+    schemaDriftAlerts: parseYesNo(features['Schema drift alerts']),
+    duplicateDetection: parseYesNo(features['Duplicate detection']),
+    silenceDetection: parseYesNo(features['Silence detection']),
+    inAppNotifications: parseYesNo(features['In-app notifications']),
+    emailNotifications: parseYesNo(features['Email notifications']),
+    externalNotifications: parseYesNo(
+      features['Slack / Discord notifications'],
+    ),
+    dtoGeneration: parseYesNo(features['DTO generation']),
+    volumeSpikeDetection: parseYesNo(features['Volume spike detection']),
   };
 }
 
@@ -96,4 +118,3 @@ export function subscriptionPeriod(params: {
     interval === 'year' ? addYearsUtc(end, -1) : addMonthsUtc(end, -1);
   return { start, end };
 }
-

@@ -8,7 +8,7 @@ export type PacketResponseDto = {
   unitAmount: number;
   currency: string;
   interval: 'month' | 'year';
-  features: Record<string, string>;
+  features: Record<string, string | boolean>;
   isActive: boolean;
   stripeProductId: string | null;
   stripePriceId: string | null;
@@ -34,4 +34,3 @@ export function toPacketResponseDto(packet: Packet): PacketResponseDto {
     updatedAt: json.updatedAt.toISOString(),
   };
 }
-
