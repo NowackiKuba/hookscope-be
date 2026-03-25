@@ -26,6 +26,7 @@ import { ScanWebhookProcessor } from './adapters/outbound/queue/scan-webhooks/pr
 import { ScannerService } from './adapters/outbound/persistence/services/scanner.service';
 import { DuplicateScanner } from './adapters/outbound/persistence/services/duplicate-scanner';
 import { SchemaDriftScannerService } from './adapters/outbound/persistence/services/schema-drift-scanner.service';
+import { BillingModule } from '@billing/billing.module';
 
 const CommandHandlers = [CreateWebhookAlertHandler, UpdateWebhookAlertHandler];
 const QueryHandlers = [GetWebhookAlertsHandler, GetWebhookAlertByIdHandler];
@@ -35,6 +36,7 @@ const EventHandlers = [AlertDetectedListener];
   imports: [
     CqrsModule,
     AuthModule,
+    BillingModule,
     EndpointModule,
     RequestModule,
     UserSettingsModule,

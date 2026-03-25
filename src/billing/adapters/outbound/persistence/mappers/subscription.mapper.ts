@@ -11,7 +11,9 @@ export class SubscriptionMapper {
 
   toDomain(entity: SubscriptionEntity): Subscription {
     const userId =
-      entity.user?.id ?? (entity as unknown as { user_id?: string }).user_id ?? '';
+      entity.user?.id ??
+      (entity as unknown as { user_id?: string }).user_id ??
+      '';
     const packetId =
       entity.packet?.id ??
       (entity as unknown as { packet_id?: string }).packet_id ??
@@ -26,6 +28,7 @@ export class SubscriptionMapper {
       status: entity.status,
       currentPeriodEnd: entity.currentPeriodEnd ?? null,
       cancelAtPeriodEnd: entity.cancelAtPeriodEnd ?? false,
+      tier: entity.tier,
       canceledAt: entity.canceledAt ?? null,
       metadata: entity.metadata,
       createdAt: entity.createdAt,
@@ -42,6 +45,7 @@ export class SubscriptionMapper {
       stripeCustomerId: json.stripeCustomerId,
       stripeSubscriptionId: json.stripeSubscriptionId,
       stripePriceId: json.stripePriceId,
+      tier: json.tier,
       status: json.status,
       currentPeriodEnd: json.currentPeriodEnd ?? null,
       cancelAtPeriodEnd: json.cancelAtPeriodEnd,
@@ -68,4 +72,3 @@ export class SubscriptionMapper {
     return entity;
   }
 }
-
