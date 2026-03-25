@@ -11,9 +11,7 @@ type SqlDeleteResult = {
 };
 
 @CommandHandler(RunRequestCleanupCommand)
-export class RunRequestCleanupHandler
-  implements ICommandHandler<RunRequestCleanupCommand>
-{
+export class RunRequestCleanupHandler implements ICommandHandler<RunRequestCleanupCommand> {
   constructor(
     private readonly em: EntityManager,
     @Inject(Token.RequestCleanupQueue)
@@ -22,17 +20,49 @@ export class RunRequestCleanupHandler
 
   async execute(): Promise<void> {
     const result = (await this.em.execute(`
-      DELETE FROM requests r
-      USING endpoints e
-      JOIN user_subscriptions us ON us.user_id = e.user_id
-      WHERE r.endpoint_id = e.id
-      AND r.received_at < NOW() - INTERVAL '1 day' * CASE
-        WHEN us.tier = 'pro' THEN 30
-        WHEN us.tier = 'business' THEN 90
-        ELSE 1
-      END
-      AND r.received_at < NOW() - INTERVAL '1 day'
-      LIMIT 1000
+      DELETE FROM requests
+WHERE id IN (
+  SELECT r.id
+  FROM requests r
+  JOIN endpoints e ON e.id = r.endpoint_id
+  JOIN (
+    SELECT
+      e2.id AS endpoint_id,
+      COALESCE(
+        (
+          SELECT
+            CASE
+              WHEN p.features->>'Request history' ~ '^[0-9]+\s*(d|day|days)$'
+                THEN (regexp_match(p.features->>'Request history', '^([0-9]+)'))[1]::int * 24
+              WHEN p.features->>'Request history' ~ '^[0-9]+\s*h$'
+                THEN (regexp_match(p.features->>'Request history', '^([0-9]+)'))[1]::int
+              ELSE NULL
+            END
+          FROM subscriptions s
+          JOIN packets p ON p.id = s.packet_id
+          WHERE s.user_id = e2.user_id
+          LIMIT 1
+        ),
+        (
+          SELECT
+            CASE
+              WHEN p.features->>'Request history' ~ '^[0-9]+\s*(d|day|days)$'
+                THEN (regexp_match(p.features->>'Request history', '^([0-9]+)'))[1]::int * 24
+              WHEN p.features->>'Request history' ~ '^[0-9]+\s*h$'
+                THEN (regexp_match(p.features->>'Request history', '^([0-9]+)'))[1]::int
+              ELSE NULL
+            END
+          FROM packets p
+          WHERE p.code = 'free'
+          LIMIT 1
+        )
+      ) AS retention_hours
+    FROM endpoints e2
+  ) retention ON retention.endpoint_id = e.id
+  WHERE retention.retention_hours IS NOT NULL
+    AND r.received_at < NOW() - (retention.retention_hours || ' hours')::interval
+  LIMIT 1000
+)
     `)) as SqlDeleteResult;
 
     const deleted = result.affectedRows ?? result.rowCount ?? 0;
