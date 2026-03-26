@@ -78,6 +78,7 @@ export class ReceiveRequestHandler implements ICommandHandler<ReceiveRequestComm
         saved.endpointId,
         saved.overlimit,
         endpoint?.targetUrl ?? null,
+        command.payload.rawBody,
       ),
     );
 

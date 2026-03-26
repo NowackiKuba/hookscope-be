@@ -38,7 +38,9 @@ export class RequestReceivedListener implements IEventHandler<RequestReceivedEve
       return;
     }
 
-    const payload = request.toJSON();
+    const payload = { ...request.toJSON(), rawBody: event.rawBody };
+
+    this.logger.info(`RAW BODY IN LISTENER: ${payload.rawBody}`);
     this.socketsService.emitRequest(event.endpointId, payload);
     this.cliSocketsService.emitRequest(
       event.endpointId,
