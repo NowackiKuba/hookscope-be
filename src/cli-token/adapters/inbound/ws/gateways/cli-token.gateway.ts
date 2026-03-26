@@ -1,5 +1,6 @@
 import { Token } from '@cli-token/constants';
 import { Token as AuthToken, DEFAULT_SALT } from '@auth/constants';
+import { Token as RequestToken } from '@request/constants';
 import { CLITokenRepositoryPort } from '@cli-token/domain/ports/outbound/persistence/repositories/cli-token.repository.port';
 import { CLITokenHash } from '@cli-token/domain/value-objects/cli-token-hash.vo';
 import { MikroORM } from '@mikro-orm/core';
@@ -21,6 +22,7 @@ import { CLITokenPrefix } from '@cli-token/domain/value-objects/cli-token-prefix
 import type { RequestJSON } from '@request/domain/aggregates/request';
 import type { CliSocketsServicePort } from '@sockets/domain/ports/outbound/services/cli-sockets.service.port';
 import { Endpoint } from '@endpoint/domain/aggregates/endpoint';
+import type { RequestRepositoryPort } from '@request/domain/ports/outbound/persistence/repositories/request.repository.port';
 
 const ROOM_PREFIX = 'cli:endpoint:';
 
@@ -31,6 +33,8 @@ export class CliGateway implements CliSocketsServicePort {
     private readonly cliTokenRepository: CLITokenRepositoryPort,
     @Inject(AuthToken.HashProvider)
     private readonly hashService: HashServicePort,
+    @Inject(RequestToken.RequestRepository)
+    private readonly requestRepository: RequestRepositoryPort,
     private readonly queryBus: QueryBus,
     private readonly orm: MikroORM,
     @Inject(LoggerProvider)
@@ -213,6 +217,50 @@ export class CliGateway implements CliSocketsServicePort {
         error: message,
       });
       client.emit('subscribe.error', { message: 'internal error' });
+    }
+  }
+
+  @SubscribeMessage('tunnel.response')
+  async handleTunnelResponse(
+    client: Socket,
+    payload: { requestId: string; status: number; error?: string },
+  ) {
+    if (!client.data.userId) {
+      client.emit('tunnel.response.error', { message: 'not authenticated' });
+      return;
+    }
+
+    const { requestId, status, error } = payload ?? {};
+
+    if (!requestId || typeof status !== 'number') {
+      client.emit('tunnel.response.error', { message: 'invalid payload' });
+      return;
+    }
+
+    try {
+      await withForkedContext(this.orm, async () => {
+        await this.requestRepository.updateForwardResult(requestId, {
+          forwardStatus: status,
+          forwardedAt: new Date(),
+          forwardError: error ?? null,
+        });
+
+        this.logger.info('CLI TUNNEL RESPONSE RECORDED', {
+          socketId: client.id,
+          userId: client.data.userId,
+          requestId,
+          status,
+          error,
+        });
+      });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      this.logger.error('CLI TUNNEL RESPONSE FAILED', {
+        socketId: client.id,
+        requestId,
+        error: message,
+      });
+      client.emit('tunnel.response.error', { message: 'internal error' });
     }
   }
 }

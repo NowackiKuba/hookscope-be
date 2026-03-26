@@ -80,7 +80,7 @@ export class ReceiveRequestHandler implements ICommandHandler<ReceiveRequestComm
     );
 
     const targetUrl = endpoint?.targetUrl;
-    if (targetUrl) {
+    if (targetUrl && targetUrl.startsWith('https://')) {
       this.logger.info('ENQUEUE FORWARD REQUEST', {
         requestId: saved.id,
         endpointId: saved.endpointId,
