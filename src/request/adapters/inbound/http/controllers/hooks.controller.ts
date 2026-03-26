@@ -63,7 +63,7 @@ export class HooksController {
     @Req() req: ExpressRequest & { rawBody?: Buffer },
   ): Promise<{ received: true }> {
     try {
-      this.logger.info(`DEBUG req.rawBody: `, req.rawBody?.length ?? 'NULL');
+      this.logger.info(`DEBUG req.rawBody: ${req.rawBody?.length ?? 'NULL'}`);
       const endpoint = await this.queryBus.execute(
         new GetEndpointByTokenQuery({ token }),
       );
