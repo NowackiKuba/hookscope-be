@@ -1,22 +1,27 @@
-import { Injectable, NestMiddleware } from '@nestjs/common';
-import { json, Request, Response, NextFunction } from 'express';
+import { Injectable, NestMiddleware, Logger } from '@nestjs/common';
+import { Request, Response, NextFunction } from 'express';
 
 type RequestWithRawBody = Request & { rawBody?: Buffer };
 
 /**
  * Middleware that preserves raw body bytes for webhook signature verification.
  *
+ * Since NestJS is configured with rawBody: true globally, req.rawBody is already
+ * available on all requests. This middleware simply ensures the body is not parsed
+ * as JSON for webhook requests with signature headers, allowing the raw bytes to
+ * be used for HMAC verification.
+ *
  * For webhook requests with signature headers (stripe-signature, x-hub-signature-256,
- * x-shopify-hmac-sha256, x-header-signature, svix-signature), this middleware:
- * - Disables JSON parsing to prevent body transformations
- * - Preserves raw body bytes exactly as received from webhook provider
- * - Ensures HMAC signature verification succeeds
+ * x-shopify-hmac-sha256, x-header-signature, svix-signature):
+ * - Skip to next middleware (rawBody already captured by NestJS)
  *
  * For non-webhook requests (without signature headers):
- * - Applies normal JSON parsing and transformations
+ * - Continue to next middleware (body will be parsed as JSON by NestJS)
  */
 @Injectable()
 export class RawBodyMiddleware implements NestMiddleware {
+  private readonly logger = new Logger(RawBodyMiddleware.name);
+
   private readonly webhookSignatureHeaders = [
     'stripe-signature',
     'x-hub-signature-256',
@@ -24,14 +29,6 @@ export class RawBodyMiddleware implements NestMiddleware {
     'x-header-signature',
     'svix-signature',
   ];
-
-  private readonly jsonParser = json({
-    verify: (req: RequestWithRawBody, _res, buffer: Buffer) => {
-      if (buffer?.length) {
-        req.rawBody = Buffer.from(buffer);
-      }
-    },
-  });
 
   /**
    * Detects if request contains webhook signature headers
@@ -44,37 +41,23 @@ export class RawBodyMiddleware implements NestMiddleware {
     });
   }
 
-  /**
-   * Manually reads raw body bytes without any transformations
-   */
-  private readRawBody(
-    req: RequestWithRawBody,
-    res: Response,
-    next: NextFunction,
-  ): void {
-    const chunks: Buffer[] = [];
+  use(req: RequestWithRawBody, res: Response, next: NextFunction): void {
+    this.logger.debug(
+      `Middleware processing: ${req.method} ${req.url}, headers: ${JSON.stringify(Object.keys(req.headers))}`,
+    );
 
-    req.on('data', (chunk: Buffer) => {
-      chunks.push(chunk);
-    });
+    const hasSignature = this.hasWebhookSignature(req);
 
-    req.on('end', () => {
-      req.rawBody = Buffer.concat(chunks);
-      next();
-    });
-
-    req.on('error', (error) => {
-      next(error);
-    });
-  }
-
-  use(req: Request, res: Response, next: NextFunction): void {
-    // For webhook requests with signature headers: preserve raw body bytes
-    if (this.hasWebhookSignature(req)) {
-      this.readRawBody(req as RequestWithRawBody, res, next);
+    if (hasSignature) {
+      this.logger.debug(
+        `Webhook signature detected for ${req.url}, rawBody available: ${!!req.rawBody}`,
+      );
     } else {
-      // For non-webhook requests: apply normal JSON parsing
-      this.jsonParser(req, res, next);
+      this.logger.debug(`No webhook signature for ${req.url}`);
     }
+
+    // NestJS with rawBody: true already captures raw body bytes
+    // We just need to pass through to the next middleware
+    next();
   }
 }
