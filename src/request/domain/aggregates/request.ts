@@ -12,6 +12,7 @@ export type RequestProps = {
   payloadHash: string;
   size: number;
   overlimit: boolean;
+  rawBody?: string | null;
   forwardStatus?: number | null;
   forwardedAt?: Date | null;
   forwardError?: string | null;
@@ -25,6 +26,7 @@ export type RequestJSON = RequestProps & {
   forwardedAt: Date | null;
   forwardError: string | null;
   receivedAt: Date;
+  rawBody: string | null;
 };
 
 export class Request {
@@ -39,6 +41,7 @@ export class Request {
   private _contentType: string | null;
   private _size: number;
   private _overlimit: boolean;
+  private _rawBody: string | null;
   private _forwardStatus: number | null;
   private _forwardedAt: Date | null;
   private _forwardError: string | null;
@@ -56,6 +59,7 @@ export class Request {
     this._contentType = props.contentType ?? null;
     this._size = props.size ?? 0;
     this._overlimit = props.overlimit ?? false;
+    this._rawBody = props.rawBody ?? null;
     this._forwardStatus = props.forwardStatus ?? null;
     this._forwardedAt = props.forwardedAt ?? null;
     this._forwardError = props.forwardError ?? null;
@@ -133,6 +137,10 @@ export class Request {
     return this._receivedAt;
   }
 
+  get rawBody(): string | null {
+    return this._rawBody;
+  }
+
   onForward(status: number, error?: string) {
     this._forwardStatus = status;
     this._forwardedAt = new Date();
@@ -152,6 +160,7 @@ export class Request {
       contentType: this._contentType,
       size: this._size,
       overlimit: this._overlimit,
+      rawBody: this._rawBody,
       forwardStatus: this._forwardStatus,
       forwardedAt: this._forwardedAt,
       forwardError: this._forwardError,

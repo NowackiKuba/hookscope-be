@@ -37,6 +37,7 @@ export class ReceiveRequestHandler implements ICommandHandler<ReceiveRequestComm
       contentType,
       size,
       overlimit,
+      rawBody,
     } = command.payload;
 
     const endpoint = await this.endpointRepository.findById(endpointId);
@@ -60,6 +61,7 @@ export class ReceiveRequestHandler implements ICommandHandler<ReceiveRequestComm
           contentType,
           size,
           overlimit: false,
+          rawBody: rawBody ?? null,
         });
 
     const saved = await this.requestRepository.save(request);

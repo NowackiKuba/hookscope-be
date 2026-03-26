@@ -10,6 +10,7 @@ export class ReceiveRequestCommand {
       contentType: string | null;
       size: number;
       overlimit: boolean;
+      rawBody: string | null;
     },
   ) {}
 }

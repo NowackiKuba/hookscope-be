@@ -125,6 +125,7 @@ export const config = defineConfig({
       { name: Migration20260320183000.name, class: Migration20260320183000 },
       { name: Migration20260324224225.name, class: Migration20260324224225 },
       { name: Migration20260325092621.name, class: Migration20260325092621 },
+      { name: Migration20260325092621.name, class: Migration20260325092621 },
     ],
   },
 });

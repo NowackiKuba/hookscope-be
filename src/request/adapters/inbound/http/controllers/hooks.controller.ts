@@ -56,7 +56,7 @@ export class HooksController {
   @Post(':token')
   async receive(
     @Param('token') token: string,
-    @Req() req: ExpressRequest,
+    @Req() req: ExpressRequest & { rawBody?: Buffer },
   ): Promise<{ received: true }> {
     try {
       const endpoint = await this.queryBus.execute(
@@ -104,6 +104,9 @@ export class HooksController {
         body = req.body as Record<string, unknown>;
       }
 
+      // Capture raw body bytes for webhook signature verification
+      const rawBody = req.rawBody ? req.rawBody.toString('base64') : null;
+
       await this.commandBus.execute(
         new ReceiveRequestCommand({
           endpointId: endpoint.id,
@@ -115,6 +118,7 @@ export class HooksController {
           contentType,
           size: Number.isNaN(size) ? 0 : size,
           overlimit,
+          rawBody,
         }),
       );
     } catch {
