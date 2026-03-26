@@ -7,7 +7,7 @@ import { StripeWebhookProvider } from "../../external/stripe-webhook.provider";
 
 /**
  * Bug Condition Exploration Test
- * Validates: Requirements 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7, 2.8
+ * **Validates: Requirements 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7, 2.8**
  *
  * Property 1: Bug Condition - Webhook Signature Headers Trigger Raw Body Passthrough
  *
@@ -16,12 +16,14 @@ import { StripeWebhookProvider } from "../../external/stripe-webhook.provider";
  *
  * GOAL: Surface counterexamples that demonstrate body byte modifications break HMAC verification
  *
- * This test simulates hookscope proxy behavior by applying transformations (whitespace
- * normalization, encoding changes). When applied, signature verification FAILS, proving the bug.
+ * This test simulates the hookscope proxy behavior by applying transformations that the proxy
+ * currently applies (whitespace normalization, encoding changes).
+ * When these transformations are applied, signature verification FAILS, proving the bug exists.
  *
- * EXPECTED OUTCOME: All tests pass, demonstrating body modifications break signatures.
+ * EXPECTED OUTCOME: All tests pass, demonstrating that body modifications break signatures.
+ * This confirms the bug exists and the proxy must preserve raw body bytes.
  */
-describe("Webhook Signature Proxy Passthrough - Bug Exploration", () => {
+describe("Webhook Signature Proxy Passthrough", () => {dition Exploration", () => {
   const providers = [
     new StripeWebhookProvider(),
     new GitHubWebhookProvider(),
@@ -36,33 +38,33 @@ describe("Webhook Signature Proxy Passthrough - Bug Exploration", () => {
     return Buffer.from(normalized, "utf8");
   }
 
-  it("demonstrates Stripe signature fails when body bytes modified", () => {
-    const payload = Buffer.from(
-      JSON.stringify({ event: "charge.succeeded", id: "evt_123" }, null, 2),
-    );
-    const secret = "stripe_test_secret_" + randomBytes(16).toString("hex");
-    const timestamp = Math.floor(Date.now() / 1000).toString();
-    const signedPayload = `${timestamp}.${payload.toString("utf8")}`;
-    const signature = createHmac("sha256", secret).update(signedPayload).digest("hex");
+  describe("Property 1: Body byte modifications break HMAC signature verification", () => {
+    it("demonstrates Stripe signature fails when body bytes modified", () => {
+      const payload = Buffer.from(
+        JSON.stringify({ event: "charge.succeeded", id: "evt_123" }, null, 2),
+      );
+      const secret = "stripe_test_secret_" + randomBytes(16).toString("hex");
+      const timestamp = Math.floor(Date.now() / 1000).toString();
+      const signedPayload = `${timestamp}.${payload.toString("utf8")}`;
+      const signature = createHmac("sha256", secret).update(signedPayload).digest("hex");
 
-    const resultOriginal = service.verify(
-      "stripe",
-      payload,
-      { "stripe-signature": `t=${timestamp},v1=${signature}` },
-      secret,
-    );
-    expect(resultOriginal).toBe(true);
+      const resultOriginal = service.verify(
+        "stripe",
+        payload,
+        { "stripe-signature": `t=${timestamp},v1=${signature}` },
+        secret,
+      );
+      expect(resultOriginal).toBe(true);
 
-    const transformedPayload = simulateProxyTransformations(payload);
-    expect(transformedPayload.equals(payload)).toBe(false);
+      const transformedPayload = simulateProxyTransformations(payload);
+      expect(transformedPayload.equals(payload)).toBe(false);
 
-    const resultTransformed = service.verify(
-      "stripe",
-      transformedPayload,
-      { "stripe-signature": `t=${timestamp},v1=${signature}` },
-      secret,
-    );
-
+      const resultTransformed = service.verify(
+        "stripe",
+        transformedPayload,
+        { "stripe-signature": `t=${timestamp},v1=${signature}` },
+        secret,
+      );
     expect(resultTransformed).toBe(false);
   });
 
@@ -228,12 +230,13 @@ describe("Webhook Signature Proxy Passthrough - Bug Exploration", () => {
       console.log("");
     });
     console.log("CONCLUSION: All providers fail when proxy modifies body bytes");
-    console.log("This confirms hookscope proxy must preserve raw body bytes for webhooks");
     console.log("==========================================\n");
 
     results.forEach(({ originalOk, transformedOk }) => {
       expect(originalOk).toBe(true);
       expect(transformedOk).toBe(false);
     });
+  });
+}); });
   });
 });

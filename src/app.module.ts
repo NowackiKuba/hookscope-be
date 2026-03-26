@@ -82,6 +82,9 @@ export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
     consumer
       .apply(RawBodyMiddleware)
-      .forRoutes({ path: '/hooks/*', method: RequestMethod.POST });
+      .forRoutes(
+        { path: '/hooks/*', method: RequestMethod.POST },
+        { path: '/billing/webhooks/*', method: RequestMethod.POST },
+      );
   }
 }
