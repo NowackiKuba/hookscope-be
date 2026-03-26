@@ -95,9 +95,10 @@ export class Endpoint {
     targetUrl?: string | null;
     silenceTreshold?: number;
     webhookUrl: string;
+    token?: string;
     secretKey?: string | null;
   }): Endpoint {
-    const token = randomBytes(16).toString('hex');
+    const token = props.token ? props.token : randomBytes(16).toString('hex');
     return new Endpoint({
       userId: props.userId,
       name: props.name,

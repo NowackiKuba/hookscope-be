@@ -7,6 +7,7 @@ export type CreateEndpointPayload = {
   isActive?: boolean;
   targetUrl?: string | null;
   secretKey?: string | null;
+  token: string;
 };
 
 export class CreateEndpointCommand {

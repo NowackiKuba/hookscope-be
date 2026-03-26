@@ -8,4 +8,5 @@ export class CreateEndpointDto {
   isActive?: boolean;
   targetUrl?: string | null;
   secretKey?: string | null;
+  token: string;
 }

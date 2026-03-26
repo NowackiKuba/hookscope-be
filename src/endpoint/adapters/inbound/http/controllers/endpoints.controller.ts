@@ -42,6 +42,7 @@ import { GetEndpointSchemasQuery } from '@endpoint/application/queries/get-endpo
 import { Page } from '@shared/utils/pagination';
 import { EndpointSchema } from '@endpoint/domain/aggregates/endpoint-schema';
 import { GetEndpointsSchemasDto } from '../dto/get-endpoint-schemas';
+import { randomBytes } from 'crypto';
 
 function toResponseDto(
   endpoint: Endpoint,
@@ -101,6 +102,7 @@ export class EndpointsController {
     const {
       name,
       description,
+      token,
       isActive,
       targetUrl,
       secretKey,
@@ -114,6 +116,7 @@ export class EndpointsController {
         description,
         isActive,
         silenceTreshold,
+        token,
         targetUrl,
         provider,
         secretKey,
@@ -124,6 +127,11 @@ export class EndpointsController {
     );
     const appUrl = this.configService.get('APP_URL', { infer: true });
     return toResponseDto(endpoint, appUrl);
+  }
+
+  @Post('before/create')
+  async beforeCreate(): Promise<{ token: string }> {
+    return { token: randomBytes(16).toString('hex') };
   }
 
   @Get(':id')

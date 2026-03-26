@@ -15,6 +15,7 @@ export const createEndpointSchema = z.strictObject({
     .optional()
     .default(1440),
   targetUrl: z.union([z.string().url(), z.null()]).optional().default(null),
+  token: z.string(),
   secretKey: z.union([z.string(), z.null()]).optional().default(null),
 });
 

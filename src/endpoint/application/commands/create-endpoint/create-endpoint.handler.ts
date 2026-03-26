@@ -24,6 +24,7 @@ export class CreateEndpointHandler implements ICommandHandler<CreateEndpointComm
       description,
       isActive,
       targetUrl,
+      token,
       secretKey,
       provider,
       silenceTreshold,
@@ -41,9 +42,10 @@ export class CreateEndpointHandler implements ICommandHandler<CreateEndpointComm
       provider: provider as EndpointProviderValue,
       isActive,
       targetUrl,
+      token,
       silenceTreshold,
       secretKey: encryptedSecret,
-      webhookUrl: `https://api.hookscope.dev/hooks/`,
+      webhookUrl: `https://api.hookscope.dev/api/hooks/`,
     });
     const saved = await this.endpointRepository.save(endpoint);
     this.eventBus.publish(new EndpointCreatedEvent(saved.id, saved.userId));
