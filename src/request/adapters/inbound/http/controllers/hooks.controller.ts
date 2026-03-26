@@ -15,6 +15,8 @@ import {
 import { Token as RequestToken } from '@request/constants';
 import type { RequestRepositoryPort } from '@request/domain/ports/outbound/persistence/repositories/request.repository.port';
 import { Inject } from '@nestjs/common';
+import { LoggerProvider } from '@shared/constants';
+import { Logger } from 'winston';
 
 function headersToRecord(
   headers: ExpressRequest['headers'],
@@ -50,6 +52,8 @@ export class HooksController {
     private readonly packets: PacketRepositoryPort,
     @Inject(RequestToken.RequestRepository)
     private readonly requests: RequestRepositoryPort,
+    @Inject(LoggerProvider)
+    private readonly logger: Logger,
   ) {}
 
   @Public()
@@ -59,6 +63,7 @@ export class HooksController {
     @Req() req: ExpressRequest & { rawBody?: Buffer },
   ): Promise<{ received: true }> {
     try {
+      this.logger.info(`DEBUG req.rawBody: `, req.rawBody?.length ?? 'NULL');
       const endpoint = await this.queryBus.execute(
         new GetEndpointByTokenQuery({ token }),
       );
