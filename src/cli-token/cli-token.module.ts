@@ -12,12 +12,18 @@ import { GetUserCLITokenHandler } from '@cli-token/application/queries/get-user-
 import { SocketsModule } from '@sockets/sockets.module';
 import { CLI_SOCKETS_SERVICE } from '@sockets/domain/ports/outbound/services/cli-sockets.service.port';
 import { CliGateway } from '@cli-token/adapters/inbound/ws/gateways/cli-token.gateway';
+import { RequestModule } from '@request/request.module';
 
 const CommandHandlers = [CreateCLITokenHandler, RotateCLITokenHandler];
 const QueryHandlers = [GetUserCLITokenHandler];
 
 @Module({
-  imports: [CqrsModule, AuthModule, forwardRef(() => SocketsModule)],
+  imports: [
+    CqrsModule,
+    AuthModule,
+    forwardRef(() => SocketsModule),
+    RequestModule,
+  ],
   controllers: [CLITokenController],
   providers: [
     ...CommandHandlers,
