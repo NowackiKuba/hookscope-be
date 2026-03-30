@@ -23,11 +23,15 @@ import { AIService } from '@shared/constants';
 import { AiService } from '@shared/adapters/outbound/ai.service';
 import { GetEndpointSchemasHandler } from './application/queries/get-endpoint-schemas/get-endpoint-schemes.handler';
 import { EndpointSchemaCodeGenerationService } from './application/services/endpoint-schema-code-generation.service';
+import { EndpointDirectoryRepository } from './adapters/outbound/persistence/repositories/endpoint-directory.repository';
+import { EndpointDirectoryMapper } from './adapters/outbound/persistence/mappers/endpoint-directory.mapper';
+import { CreateEndpointDirectoryHandler } from './application/commands/create-endpoint-directory/create-endpoint-directory.handler';
 
 const CommandHandlers = [
   CreateEndpointHandler,
   DeleteEndpointHandler,
   CreateEndpointSchemaHandler,
+  CreateEndpointDirectoryHandler,
 ];
 const QueryHandlers = [
   GetEndpointsHandler,
@@ -49,6 +53,7 @@ const QueryHandlers = [
     ...CommandHandlers,
     ...QueryHandlers,
     EndpointMapper,
+    EndpointDirectoryMapper,
     EndpointSchemaMapper,
     EndpointSchemaCodeGenerationService,
     DomainExceptionFilter,
@@ -65,10 +70,16 @@ const QueryHandlers = [
       provide: Token.EndpointSchemaRepository,
       useClass: EndpointSchemaRepository,
     },
+    {
+      provide: Token.EndpointDirectoryRepository,
+      useClass: EndpointDirectoryRepository,
+    },
   ],
   exports: [
     CqrsModule,
+    EndpointDirectoryMapper,
     Token.EndpointRepository,
+    Token.EndpointDirectoryRepository,
     Token.EndpointSchemaRepository,
     EndpointSchemaCodeGenerationService,
   ],

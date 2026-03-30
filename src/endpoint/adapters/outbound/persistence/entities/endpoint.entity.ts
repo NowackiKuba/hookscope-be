@@ -2,6 +2,7 @@ import { Entity, ManyToOne, Property } from '@mikro-orm/core';
 import { BaseEntity } from '@orm/entities/base.entity';
 import { generateUUID } from '@shared/utils/generate-uuid';
 import { UserEntity } from '@users/adapters/outbound/persistence/entities/user.entity';
+import { EndpointDirectoryEntity } from './endpoint-directory.entity';
 
 export type EndpointEntityProps = {
   id?: string;
@@ -13,6 +14,7 @@ export type EndpointEntityProps = {
   isActive?: boolean;
   targetUrl?: string | null;
   webhookUrl: string;
+  directory?: EndpointDirectoryEntity;
   secretKey?: string | null;
   silenceTreshold: number;
   requestCount?: number;
@@ -25,6 +27,8 @@ export type EndpointEntityProps = {
 export class EndpointEntity extends BaseEntity implements EndpointEntityProps {
   @ManyToOne(() => UserEntity)
   user: UserEntity;
+  @ManyToOne(() => EndpointDirectoryEntity)
+  directory?: EndpointDirectoryEntity;
 
   @Property({ type: 'text' })
   name!: string;

@@ -6,6 +6,8 @@ import { Inject } from '@nestjs/common';
 import { Token } from '@users/constants';
 import { Email } from '@users/domain/value-objects/user-email.vo';
 import { CreateUserSettingsCommand } from '@user-settings/application/commands/create-user-settings/create-user-settings.command';
+import { CreateEndpointDirectoryCommand } from '@endpoint/application/commands/create-endpoint-directory/create-endpoint-directory.command';
+import { generateUUID } from '@shared/utils/generate-uuid';
 
 @CommandHandler(CreateUserCommand)
 export class CreateUserHandler implements ICommandHandler<CreateUserCommand> {
@@ -31,6 +33,16 @@ export class CreateUserHandler implements ICommandHandler<CreateUserCommand> {
 
     await this.commandBus.execute(
       new CreateUserSettingsCommand({ userId: created.id.value }),
+    );
+
+    await this.commandBus.execute(
+      new CreateEndpointDirectoryCommand({
+        id: generateUUID(),
+        name: 'Default',
+        userId: user.id.value,
+        color: 'slate',
+        icon: 'Folder',
+      }),
     );
 
     return created.id.value;

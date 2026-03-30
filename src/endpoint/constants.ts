@@ -1,5 +1,6 @@
 export const Token = {
   EndpointRepository: Symbol('EndpointRepository'),
+  EndpointDirectoryRepository: Symbol('EndpointDirectoryRepository'),
   EndpointSchemaRepository: Symbol('EndpointSchemaRepository'),
 } as const;
 

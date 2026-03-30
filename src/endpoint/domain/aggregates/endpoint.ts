@@ -13,6 +13,7 @@ export type EndpointProps = {
   name: string;
   description?: string;
   token: string;
+  directoryId?: string;
   isActive?: boolean;
   provider?: string;
   webhookUrl: string;
@@ -35,6 +36,7 @@ export type EndpointJSON = {
   token: string;
   isActive: boolean;
   provider?: EndpointProviderValue;
+  directoryId?: string;
   targetUrl: string | null;
   webhookUrl: string;
   secretKey: string | null;
@@ -54,6 +56,7 @@ export class Endpoint {
   private _description: string;
   private _token: string;
   private _isActive: boolean;
+  private _directoryId?: string;
   private _provider?: EndpointProvider;
   private _targetUrl: string | null;
   private _webhookUrl: string;
@@ -73,6 +76,7 @@ export class Endpoint {
     this._provider = new EndpointProvider(props.provider);
     this._description = props.description ?? '';
     this._token = props.token;
+    this._directoryId = props.directoryId;
     this._isActive = props.isActive ?? true;
     this._targetUrl = props.targetUrl ?? null;
     this._webhookUrl = props.webhookUrl;
@@ -91,6 +95,7 @@ export class Endpoint {
     name: string;
     description?: string;
     isActive?: boolean;
+    directoryId?: string;
     provider?: EndpointProviderValue;
     targetUrl?: string | null;
     silenceTreshold?: number;
@@ -105,6 +110,7 @@ export class Endpoint {
       description: props.description ?? '',
       isActive: props.isActive ?? true,
       targetUrl: props.targetUrl ?? null,
+      directoryId: props.directoryId,
       webhookUrl: props.webhookUrl + token,
       secretKey: props.secretKey ?? null,
       provider: props.provider,
@@ -131,6 +137,9 @@ export class Endpoint {
   }
   get token(): string {
     return this._token;
+  }
+  get directoryId(): string {
+    return this._directoryId;
   }
   get isActive(): boolean {
     return this._isActive;
@@ -185,6 +194,7 @@ export class Endpoint {
       name: this._name,
       description: this._description,
       token: this._token,
+      directoryId: this._directoryId,
       isActive: this._isActive,
       provider: this._provider.value,
       targetUrl: this._targetUrl,

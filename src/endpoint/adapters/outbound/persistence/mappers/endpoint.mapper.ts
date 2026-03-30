@@ -3,6 +3,7 @@ import { Endpoint } from '@endpoint/domain/aggregates/endpoint';
 import { EndpointEntity } from '@endpoint/adapters/outbound/persistence/entities/endpoint.entity';
 import { EntityManager } from '@mikro-orm/postgresql';
 import { UserEntity } from '@users/adapters/outbound/persistence/entities/user.entity';
+import { EndpointDirectoryEntity } from '../entities/endpoint-directory.entity';
 
 @Injectable()
 export class EndpointMapper {
@@ -15,6 +16,7 @@ export class EndpointMapper {
       name: entity.name,
       description: entity.description,
       provider: entity.provider,
+      directoryId: entity?.directory?.id,
       token: entity.token,
       isActive: entity.isActive,
       targetUrl: entity.targetUrl,
@@ -37,6 +39,9 @@ export class EndpointMapper {
       provider: json.provider,
       description: json.description,
       token: json.token,
+      directory: json?.directoryId
+        ? this.em.getReference(EndpointDirectoryEntity, json?.directoryId)
+        : null,
       isActive: json.isActive,
       targetUrl: json.targetUrl,
       webhookUrl: json.webhookUrl,
