@@ -28,6 +28,7 @@ export class CreateEndpointHandler implements ICommandHandler<CreateEndpointComm
       secretKey,
       provider,
       silenceTreshold,
+      directoryId,
     } = command.payload;
 
     let encryptedSecret = null;
@@ -41,6 +42,7 @@ export class CreateEndpointHandler implements ICommandHandler<CreateEndpointComm
       description,
       provider: provider as EndpointProviderValue,
       isActive,
+      directoryId,
       targetUrl,
       token,
       silenceTreshold,

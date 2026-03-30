@@ -26,18 +26,24 @@ import { EndpointSchemaCodeGenerationService } from './application/services/endp
 import { EndpointDirectoryRepository } from './adapters/outbound/persistence/repositories/endpoint-directory.repository';
 import { EndpointDirectoryMapper } from './adapters/outbound/persistence/mappers/endpoint-directory.mapper';
 import { CreateEndpointDirectoryHandler } from './application/commands/create-endpoint-directory/create-endpoint-directory.handler';
+import { UpdateEndpointDirectoryHandler } from './application/commands/update-endpoint-directory/update-endpoint-directory.handler';
+import { GetEndpointDirectoriesByUserIdHandler } from './application/queries/get-endpoint-directories-by-user-id/get-endpoint-directories-by-user-id.handler';
+import { GetEndpointDirectoryByIdHandler } from './application/queries/get-endpoint-directory-by-id/get-endpoint-directory-by-id.handler';
 
 const CommandHandlers = [
   CreateEndpointHandler,
   DeleteEndpointHandler,
   CreateEndpointSchemaHandler,
   CreateEndpointDirectoryHandler,
+  UpdateEndpointDirectoryHandler,
 ];
 const QueryHandlers = [
   GetEndpointsHandler,
   GetEndpointByIdHandler,
   GetEndpointByTokenHandler,
   GetEndpointSchemasHandler,
+  GetEndpointDirectoriesByUserIdHandler,
+  GetEndpointDirectoryByIdHandler,
 ];
 
 @Module({

@@ -4,6 +4,7 @@ export const createEndpointSchema = z.strictObject({
   name: z.string().min(1, 'Name is required'),
   description: z.string().optional().default(''),
   provider: z.enum(['stripe', 'clerk', 'github', 'shopify', 'przelewy24']),
+  directoryId: z.string().uuid(),
   isActive: z.boolean().optional().default(true),
   silenceTreshold: z.coerce
     .number()

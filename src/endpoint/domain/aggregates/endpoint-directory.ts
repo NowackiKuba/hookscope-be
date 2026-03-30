@@ -11,7 +11,7 @@ import {
 } from '../value-objects/endpoint-directory-icon.vo';
 
 export type EndpointDirectoryProps = {
-  id?: string;
+  id: string;
   name: string;
   description?: string;
   userId: string;
@@ -30,12 +30,12 @@ export type EndpointDirectoryJSON = {
   endpoints?: Endpoint[];
   color?: EndpointDirectoryColorValue;
   icon?: EndpointDirectoryIconValue;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt?: Date;
+  updatedAt?: Date;
 };
 
 export class EndpointDirectory {
-  private _id?: EndpointDirectoryId;
+  private _id: EndpointDirectoryId;
   private _name: string;
   private _description?: string;
   private _userId: string;
@@ -51,10 +51,28 @@ export class EndpointDirectory {
     this._description = props.description;
     this._userId = props.userId;
     this._endpoints = props.endpoints;
-    this._color = EndpointDirectoryColor.create(props.color);
-    this._icon = EndpointDirectoryIcon.create(props.icon);
+    this._color = EndpointDirectory.colorFromProps(props.color);
+    this._icon = EndpointDirectory.iconFromProps(props.icon);
     this._createdAt = props.createdAt;
     this._updatedAt = props.updatedAt;
+  }
+
+  private static colorFromProps(
+    v: string | undefined | null,
+  ): EndpointDirectoryColor | undefined {
+    if (v == null || String(v).trim() === '') {
+      return undefined;
+    }
+    return EndpointDirectoryColor.create(v.trim());
+  }
+
+  private static iconFromProps(
+    v: string | undefined | null,
+  ): EndpointDirectoryIcon | undefined {
+    if (v == null || String(v).trim() === '') {
+      return undefined;
+    }
+    return EndpointDirectoryIcon.create(v.trim());
   }
 
   static create(props: {
@@ -69,9 +87,9 @@ export class EndpointDirectory {
       id: props.id ?? generateUUID(),
       name: props.name,
       description: props.description,
+      userId: props.userId,
       color: props.color,
       icon: props.icon,
-      userId: props.userId,
     });
   }
 
@@ -85,7 +103,7 @@ export class EndpointDirectory {
   get name(): string {
     return this._name;
   }
-  get description(): string {
+  get description(): string | undefined {
     return this._description;
   }
   get userId(): string {
@@ -94,16 +112,42 @@ export class EndpointDirectory {
   get endpoints(): Endpoint[] {
     return this._endpoints;
   }
-  get color(): EndpointDirectoryColor {
+  get color(): EndpointDirectoryColor | undefined {
     return this._color;
   }
-  get icon(): EndpointDirectoryIcon {
+  get icon(): EndpointDirectoryIcon | undefined {
     return this._icon;
   }
-  get createdAt(): Date {
+
+  updateDetails(props: {
+    name?: string;
+    description?: string;
+    color?: string;
+    icon?: string;
+  }): void {
+    if (props.name !== undefined) {
+      const name = props.name.trim();
+      if (!name) {
+        throw new Error('endpoint directory name cannot be empty');
+      }
+      this._name = name;
+    }
+    if (props.description !== undefined) {
+      const d = props.description.trim();
+      this._description = d.length > 0 ? d : undefined;
+    }
+    if (props.color !== undefined) {
+      this._color = EndpointDirectory.colorFromProps(props.color);
+    }
+    if (props.icon !== undefined) {
+      this._icon = EndpointDirectory.iconFromProps(props.icon);
+    }
+    this._updatedAt = new Date();
+  }
+  get createdAt(): Date | undefined {
     return this._createdAt;
   }
-  get updatedAt(): Date {
+  get updatedAt(): Date | undefined {
     return this._updatedAt;
   }
 
@@ -113,8 +157,9 @@ export class EndpointDirectory {
       name: this._name,
       description: this._description,
       userId: this._userId,
-      color: this._color.value,
-      icon: this._icon.value,
+      color: this._color?.value,
+      endpoints: this._endpoints,
+      icon: this._icon?.value,
       createdAt: this._createdAt,
       updatedAt: this._updatedAt,
     };

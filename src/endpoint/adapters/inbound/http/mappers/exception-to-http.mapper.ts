@@ -6,6 +6,7 @@ import {
 } from '@shared/infrastructure/http';
 import { getErrorMessagePl } from '@shared/constants/error-messages.pl';
 import { EndpointNotFoundException } from '@endpoint/domain/exceptions/endpoint-not-found.exception';
+import { EndpointDirectoryNotFoundException } from '@endpoint/domain/exceptions/endpoint-directory-not-found.exception';
 import { LatestEndpointSchemaNotFoundException } from '@endpoint/domain/exceptions/latest-endpoint-schema-not-found.exception';
 
 export class ExceptionToHttpMapper extends BaseExceptionToHttpMapper {
@@ -32,6 +33,16 @@ export class ExceptionToHttpMapper extends BaseExceptionToHttpMapper {
       );
     }
 
+    if (exception instanceof EndpointDirectoryNotFoundException) {
+      return this.createResponse(
+        exception,
+        HttpStatus.NOT_FOUND,
+        'Not Found',
+        path,
+        messagePl,
+      );
+    }
+
     return super.map(exception, path);
   }
 
@@ -40,6 +51,9 @@ export class ExceptionToHttpMapper extends BaseExceptionToHttpMapper {
       return HttpStatus.NOT_FOUND;
     }
     if (exception instanceof LatestEndpointSchemaNotFoundException) {
+      return HttpStatus.NOT_FOUND;
+    }
+    if (exception instanceof EndpointDirectoryNotFoundException) {
       return HttpStatus.NOT_FOUND;
     }
     return super.getStatusCode(exception);

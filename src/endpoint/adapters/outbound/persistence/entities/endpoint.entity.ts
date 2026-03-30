@@ -27,7 +27,7 @@ export type EndpointEntityProps = {
 export class EndpointEntity extends BaseEntity implements EndpointEntityProps {
   @ManyToOne(() => UserEntity)
   user: UserEntity;
-  @ManyToOne(() => EndpointDirectoryEntity)
+  @ManyToOne(() => EndpointDirectoryEntity, { nullable: true })
   directory?: EndpointDirectoryEntity;
 
   @Property({ type: 'text' })
@@ -83,6 +83,7 @@ export class EndpointEntity extends BaseEntity implements EndpointEntityProps {
     this.lastSchemaAt = props.lastSchemaAt;
     this.provider = props.provider;
     this.isActive = props.isActive ?? true;
+    this.directory = props.directory;
     this.targetUrl = props.targetUrl ?? null;
     this.webhookUrl = props.webhookUrl;
     this.secretKey = props.secretKey ?? null;

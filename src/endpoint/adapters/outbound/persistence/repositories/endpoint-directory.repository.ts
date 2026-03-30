@@ -59,6 +59,7 @@ export class EndpointDirectoryRepository implements EndpointDirectoryRepositoryP
       limit,
       offset,
       orderBy: { [orderByField ?? 'createdAt']: orderBy ?? 'desc' },
+      populate: ['endpoints'],
     });
 
     return paginate(

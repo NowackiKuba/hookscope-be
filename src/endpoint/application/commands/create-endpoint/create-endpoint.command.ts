@@ -3,6 +3,7 @@ export type CreateEndpointPayload = {
   name: string;
   description?: string;
   silenceTreshold: number;
+  directoryId?: string;
   provider: string;
   isActive?: boolean;
   targetUrl?: string | null;

@@ -8,6 +8,7 @@ import {
   HttpStatus,
   Inject,
   Param,
+  Patch,
   Post,
   Query,
   UseFilters,
@@ -42,6 +43,22 @@ import { GetEndpointSchemasQuery } from '@endpoint/application/queries/get-endpo
 import { Page } from '@shared/utils/pagination';
 import { EndpointSchema } from '@endpoint/domain/aggregates/endpoint-schema';
 import { GetEndpointsSchemasDto } from '../dto/get-endpoint-schemas';
+import { CreateEndpointDirectoryCommand } from '@endpoint/application/commands/create-endpoint-directory/create-endpoint-directory.command';
+import { UpdateEndpointDirectoryCommand } from '@endpoint/application/commands/update-endpoint-directory/update-endpoint-directory.command';
+import { GetEndpointDirectoriesByUserIdQuery } from '@endpoint/application/queries/get-endpoint-directories-by-user-id/get-endpoint-directories-by-user-id.query';
+import { GetEndpointDirectoryByIdQuery } from '@endpoint/application/queries/get-endpoint-directory-by-id/get-endpoint-directory-by-id.query';
+import type { EndpointDirectoryResponseDto } from '../dto/endpoint-directory-response.dto';
+import {
+  CreateEndpointDirectoryDto,
+  createEndpointDirectorySchema,
+} from '../dto/create-endpoint-directory';
+import {
+  UpdateEndpointDirectoryDto,
+  updateEndpointDirectorySchema,
+} from '../dto/update-endpoint-directory';
+import { GET_ENDPOINT_DIRECTORIES_SCHEME } from '../dto/get-endpoint-directories';
+import type { EndpointDirectory } from '@endpoint/domain/aggregates/endpoint-directory';
+import { generateUUID } from '@shared/utils/generate-uuid';
 import { randomBytes } from 'crypto';
 
 function toResponseDto(
@@ -63,6 +80,23 @@ function toResponseDto(
     webhookUrl: `${appUrl}/hooks/${json.token}`,
     createdAt: json.createdAt.toISOString(),
     updatedAt: json.updatedAt.toISOString(),
+  };
+}
+
+function toEndpointDirectoryResponseDto(
+  directory: EndpointDirectory,
+): EndpointDirectoryResponseDto {
+  const json = directory.toJSON();
+  return {
+    id: json.id,
+    userId: json.userId,
+    name: json.name,
+    description: json.description ?? null,
+    endpoints: json.endpoints,
+    color: json.color ?? null,
+    icon: json.icon ?? null,
+    createdAt: json.createdAt?.toISOString() ?? null,
+    updatedAt: json.updatedAt?.toISOString() ?? null,
   };
 }
 
@@ -108,6 +142,7 @@ export class EndpointsController {
       secretKey,
       provider,
       silenceTreshold,
+      directoryId,
     } = parsed.data;
     const endpointId = await this.commandBus.execute(
       new CreateEndpointCommand({
@@ -117,6 +152,7 @@ export class EndpointsController {
         isActive,
         silenceTreshold,
         token,
+        directoryId,
         targetUrl,
         provider,
         secretKey,
@@ -132,6 +168,111 @@ export class EndpointsController {
   @Post('before/create')
   async beforeCreate(): Promise<{ token: string }> {
     return { token: randomBytes(16).toString('hex') };
+  }
+
+  @Get('directories')
+  async listDirectories(
+    @Query() query: Record<string, string | undefined>,
+    @CurrentUser() user: AuthenticatedUser,
+  ): Promise<Page<EndpointDirectoryResponseDto>> {
+    const parsed = GET_ENDPOINT_DIRECTORIES_SCHEME.safeParse(query);
+    if (!parsed.success) {
+      throw new BadRequestException(parsed.error.flatten());
+    }
+    const page = (await this.queryBus.execute(
+      new GetEndpointDirectoriesByUserIdQuery({
+        userId: user.userId,
+        filters: {
+          limit: parsed.data.limit,
+          offset: parsed.data.offset,
+          orderBy: parsed.data.orderBy,
+          orderByField: parsed.data.orderByField,
+        },
+      }),
+    )) as Page<EndpointDirectory>;
+
+    console.log(`PAGE DATA: `, page.data);
+
+    return {
+      ...page,
+      data: page.data.map(toEndpointDirectoryResponseDto),
+    };
+  }
+
+  @Post('directories')
+  async createDirectory(
+    @Body() body: CreateEndpointDirectoryDto,
+    @CurrentUser() user: AuthenticatedUser,
+  ): Promise<EndpointDirectoryResponseDto> {
+    const parsed = createEndpointDirectorySchema.safeParse(body);
+    if (!parsed.success) {
+      throw new BadRequestException(parsed.error.flatten());
+    }
+    const directoryId = await this.commandBus.execute(
+      new CreateEndpointDirectoryCommand({
+        id: generateUUID(),
+        userId: user.userId,
+        name: parsed.data.name,
+        description: parsed.data.description,
+        color: parsed.data.color,
+        icon: parsed.data.icon,
+      }),
+    );
+    const directory = (await this.queryBus.execute(
+      new GetEndpointDirectoryByIdQuery({
+        userId: user.userId,
+        directoryId,
+      }),
+    )) as EndpointDirectory;
+
+    return toEndpointDirectoryResponseDto(directory);
+  }
+
+  @Get('directories/:directoryId')
+  async getDirectoryById(
+    @Param('directoryId') directoryId: string,
+    @CurrentUser() user: AuthenticatedUser,
+  ): Promise<EndpointDirectoryResponseDto> {
+    const directory = (await this.queryBus.execute(
+      new GetEndpointDirectoryByIdQuery({
+        userId: user.userId,
+        directoryId,
+      }),
+    )) as EndpointDirectory;
+
+    return toEndpointDirectoryResponseDto(directory);
+  }
+
+  @Patch('directories/:directoryId')
+  async updateDirectory(
+    @Param('directoryId') directoryId: string,
+    @Body() body: UpdateEndpointDirectoryDto,
+    @CurrentUser() user: AuthenticatedUser,
+  ): Promise<EndpointDirectoryResponseDto> {
+    const parsed = updateEndpointDirectorySchema.safeParse(body);
+    if (!parsed.success) {
+      throw new BadRequestException(parsed.error.flatten());
+    }
+
+    await this.commandBus.execute(
+      new UpdateEndpointDirectoryCommand({
+        userId: user.userId,
+        directoryId,
+        name: parsed.data.name,
+        description: parsed.data.description,
+        color: parsed.data.color,
+        icon: parsed.data.icon,
+      }),
+    );
+
+    const directory = (await this.queryBus.execute(
+      new GetEndpointDirectoryByIdQuery({
+        userId: user.userId,
+        directoryId,
+      }),
+    )) as EndpointDirectory;
+
+    return toEndpointDirectoryResponseDto(directory);
   }
 
   @Get(':id')
