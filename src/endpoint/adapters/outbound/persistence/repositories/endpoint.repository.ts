@@ -53,7 +53,7 @@ export class EndpointRepository implements EndpointRepositoryPort {
   async findAllByUserId(userId: string): Promise<Endpoint[]> {
     const entities = await this.dbSource.find(
       {
-        $and: [{ user: userId }, { directory: null }],
+        $and: [{ user: userId }],
       },
       { orderBy: { createdAt: 'desc' } },
     );
