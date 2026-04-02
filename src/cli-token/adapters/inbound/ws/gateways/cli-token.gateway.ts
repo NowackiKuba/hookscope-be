@@ -128,7 +128,15 @@ export class CliGateway implements CliSocketsServicePort {
         await this.cliTokenRepository.save(cliToken);
 
         const endpoints = await this.queryBus.execute(
-          new GetEndpointsQuery({ userId: cliToken.userId }),
+          new GetEndpointsQuery({
+            userId: cliToken.userId,
+            directory: undefined,
+            isActive: true,
+            limit: 10000,
+            offset: 0,
+            orderBy: 'desc',
+            orderByField: 'createdAt',
+          }),
         );
 
         const count = Array.isArray(endpoints) ? endpoints.length : undefined;

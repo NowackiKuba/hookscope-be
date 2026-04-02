@@ -4,6 +4,7 @@ import { GetEndpointsQuery } from './get-endpoints.query';
 import type { EndpointRepositoryPort } from '@endpoint/domain/ports/outbound/persistence/repositories/endpoint.repository.port';
 import { Token } from '@endpoint/constants';
 import type { Endpoint } from '@endpoint/domain/aggregates/endpoint';
+import { Page } from '@shared/utils/pagination';
 
 @QueryHandler(GetEndpointsQuery)
 export class GetEndpointsHandler implements IQueryHandler<GetEndpointsQuery> {
@@ -12,7 +13,9 @@ export class GetEndpointsHandler implements IQueryHandler<GetEndpointsQuery> {
     private readonly endpointRepository: EndpointRepositoryPort,
   ) {}
 
-  async execute(query: GetEndpointsQuery): Promise<Endpoint[]> {
-    return this.endpointRepository.findAllByUserId(query.payload.userId);
+  async execute(query: GetEndpointsQuery): Promise<Page<Endpoint>> {
+    return this.endpointRepository.findAllByUserId(query.payload.userId, {
+      ...query.payload,
+    });
   }
 }

@@ -50,14 +50,51 @@ export class EndpointRepository implements EndpointRepositoryPort {
     return entity ? this.mapper.toDomain(entity) : null;
   }
 
-  async findAllByUserId(userId: string): Promise<Endpoint[]> {
-    const entities = await this.dbSource.find(
-      {
-        $and: [{ user: userId }],
+  async findAllByUserId(
+    userId: string,
+    filters: EndpointFilters,
+  ): Promise<Page<Endpoint>> {
+    const where: FilterQuery<EndpointEntity> = {
+      user: { id: userId },
+    };
+
+    const {
+      directory,
+      isActive,
+      limit,
+      offset,
+      orderBy,
+      orderByField,
+      provider,
+    } = filters;
+
+    if (typeof isActive === 'boolean') {
+      where.isActive = isActive;
+    }
+
+    if (directory) {
+      if (directory === 'null') {
+        where.directory = null;
+      } else {
+        where.directory = { id: directory };
+      }
+    }
+
+    if (provider) {
+      where.provider = provider;
+    }
+
+    const [entities, totalCount] = await this.dbSource.findAndCount(where, {
+      limit,
+      offset,
+      orderBy: {
+        [orderByField ?? 'createdAt']: orderBy ?? 'desc',
       },
-      { orderBy: { createdAt: 'desc' } },
+    });
+    return paginate(
+      entities.map((e) => this.mapper.toDomain(e)),
+      { limit, offset, totalCount },
     );
-    return entities.map((e) => this.mapper.toDomain(e));
   }
 
   async countByUserId(userId: string): Promise<number> {

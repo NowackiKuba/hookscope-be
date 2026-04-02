@@ -60,6 +60,7 @@ import { GET_ENDPOINT_DIRECTORIES_SCHEME } from '../dto/get-endpoint-directories
 import type { EndpointDirectory } from '@endpoint/domain/aggregates/endpoint-directory';
 import { generateUUID } from '@shared/utils/generate-uuid';
 import { randomBytes } from 'crypto';
+import { GetEndpointsDto } from '../dto/get-endpoints';
 
 function toResponseDto(
   endpoint: Endpoint,
@@ -115,9 +116,10 @@ export class EndpointsController {
   @Get()
   async list(
     @CurrentUser() user: AuthenticatedUser,
+    @Query() query: GetEndpointsDto,
   ): Promise<EndpointResponseDto[]> {
     const endpoints = (await this.queryBus.execute(
-      new GetEndpointsQuery({ userId: user.userId }),
+      new GetEndpointsQuery({ userId: user.userId, ...query }),
     )) as Endpoint[];
     const appUrl = this.configService.get('APP_URL', { infer: true });
     return endpoints.map((e) => toResponseDto(e, appUrl));
