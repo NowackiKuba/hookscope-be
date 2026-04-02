@@ -23,6 +23,7 @@ import type { RequestJSON } from '@request/domain/aggregates/request';
 import type { CliSocketsServicePort } from '@sockets/domain/ports/outbound/services/cli-sockets.service.port';
 import { Endpoint } from '@endpoint/domain/aggregates/endpoint';
 import type { RequestRepositoryPort } from '@request/domain/ports/outbound/persistence/repositories/request.repository.port';
+import { Page } from '@shared/utils/pagination';
 
 const ROOM_PREFIX = 'cli:endpoint:';
 
@@ -127,7 +128,7 @@ export class CliGateway implements CliSocketsServicePort {
         cliToken.markUsed();
         await this.cliTokenRepository.save(cliToken);
 
-        const endpoints = await this.queryBus.execute(
+        const endpointsData: Page<Endpoint> = await this.queryBus.execute(
           new GetEndpointsQuery({
             userId: cliToken.userId,
             directory: undefined,
@@ -138,6 +139,8 @@ export class CliGateway implements CliSocketsServicePort {
             orderByField: 'createdAt',
           }),
         );
+
+        const endpoints = endpointsData?.data;
 
         const count = Array.isArray(endpoints) ? endpoints.length : undefined;
         this.logger.info('CLI AUTH SUCCESS', {
